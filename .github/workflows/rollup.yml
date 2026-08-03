@@ -1,0 +1,34 @@
+name: rollup
+
+# GOTCHA 4.4 — Vercel Cron trên free tier không chạy mỗi phút.
+# GitHub Actions scheduled workflow là cron miễn phí, đủ dùng cho rollup.
+#
+# LƯU Ý: workflow này KHÔNG cần thiết ở MVP — dashboard đã tính on-demand.
+# Chỉ bật khi aggregation bắt đầu chậm, hoặc khi cần giữ số liệu lịch sử lâu
+# hơn CLICK_TTL_DAYS (vì clickEvents bị TTL xóa).
+#
+# Cần 2 secret trong repo settings: APP_BASE_URL và POSTBACK_SECRET.
+#
+# GitHub không đảm bảo đúng giờ: schedule có thể trễ vài phút đến hàng chục phút
+# lúc tải cao. Rollup là idempotent nên trễ không sai số liệu, chỉ chậm.
+
+on:
+  schedule:
+    - cron: "17 * * * *" # mỗi giờ, phút 17 (tránh giờ tròn — lúc đó GitHub tắc nhất)
+  workflow_dispatch:
+
+jobs:
+  rollup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gọi endpoint rollup
+        run: |
+          # hours=3 để bù cho lần chạy bị bỏ lỡ; upsert nên tính lại không sao.
+          status=$(curl --silent --show-error --fail-with-body \
+            --max-time 90 \
+            --output response.json \
+            --write-out "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.POSTBACK_SECRET }}" \
+            "${{ secrets.APP_BASE_URL }}/api/rollup?hours=3")
+          echo "HTTP $status"
+          cat response.json

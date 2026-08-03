@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — nguồn duy nhất: design-system/trafficiq/MASTER.md
+ *
+ * KHÔNG hard-code màu trong component. Mọi màu phải đi qua token ở đây.
+ * Muốn đổi màu → sửa MASTER.md rồi đồng bộ xuống file này, không sửa ngược lại.
+ *
+ * Palette: "Analytics Dashboard" (ui-ux-pro-max colors.csv)
+ * Style:   Data-Dense Dashboard | Density 8/10 | Variance 4/10 | Motion 3/10
+ */
+
+:root {
+  /* --- Light: nguyên văn từ MASTER.md ------------------------------------ */
+  --background: #f8fafc;
+  --foreground: #1e3a8a;
+
+  /* MASTER.md ghi .card { background: #F8FAFC } — trùng hệt --background nên
+     card sẽ vô hình. Dùng Card role #FFFFFF trong palette gốc mới đúng. */
+  --card: #ffffff;
+  --card-foreground: #1e3a8a;
+
+  --primary: #1e40af;
+  --on-primary: #ffffff;
+  --secondary: #3b82f6;
+  --on-secondary: #ffffff;
+
+  /* Accent = màu DUY NHẤT dùng cho CTA chính.
+     MASTER.md ghi #D97706 và chú thích "adjusted for WCAG 3:1" — nhưng 3:1 là
+     ngưỡng cho UI phi-text; ta dùng nó làm nền nút có chữ trắng nên cần 4.5:1.
+     #D97706 chỉ đạt 3.19:1 => FAIL. Đẩy tối về #92400e (cùng họ amber) đạt
+     7.09:1, thoả luôn mục tiêu CTA 7:1 của pages/campaign-landing.md.
+     Đo lại bằng: npm run check:contrast */
+  --accent: #92400e;
+  --on-accent: #ffffff;
+
+  --muted: #e9eef6;
+  /* MASTER.md ghi #64748B nhưng chỉ đạt 4.08:1 trên nền --muted (badge paused).
+     #556274 giữ được cảm giác "muted" mà vẫn đạt 5.32:1. */
+  --muted-foreground: #556274;
+
+  /* Border trang trí (divider, viền card): KHÔNG cần 3:1 theo WCAG 1.4.11 vì
+     không mang thông tin trạng thái. Giữ nhạt cho bảng data-dense dễ đọc. */
+  --border: #dbeafe;
+  /* Border của control (input/select/textarea): PHẢI đạt 3:1 — nó là thứ duy
+     nhất chỉ ra ranh giới vùng nhập liệu. */
+  --input: #7c8da5;
+
+  --destructive: #dc2626;
+  --on-destructive: #ffffff;
+  --ring: #1e40af;
+
+  /* Status colors cho dashboard (Data-Dense Dashboard yêu cầu green/amber/red).
+     Cả hai đều đã đẩy tối so với palette gốc để chữ đọc được trên nền tint 15%
+     của chính nó (StatusBadge): #15803D→4.09:1 và #B45309→4.08:1 đều FAIL. */
+  --success: #166534;
+  --warning: #854d0e;
+
+  /* --- Spacing: Density 8/10 — Dense / Dashboard ------------------------- */
+  --space-xs: 0.125rem;
+  --space-sm: 0.25rem;
+  --space-md: 0.5rem;
+  --space-lg: 0.75rem;
+  --space-xl: 1rem;
+  --space-2xl: 1.5rem;
+  --space-3xl: 2rem;
+
+  /* --- Shadows ----------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* --- Data-Dense Dashboard variables (từ styles.csv) -------------------- */
+  --table-row-height: 36px;
+  --header-height: 56px;
+  --sidebar-width: 240px;
+}
+
+/*
+ * Dark mode: DERIVED, không có trong MASTER.md.
+ *
+ * Palette "Analytics Dashboard" chỉ cung cấp bộ light, nhưng style
+ * "Data-Dense Dashboard" khai báo Dark ✓ Full nên bắt buộc phải có bộ dark.
+ * Cách suy ra: giữ nguyên họ màu xanh, đảo trục sáng, và làm SÁNG primary/accent
+ * lên (#1E40AF và #D97706 quá tối để đọc trên nền tối).
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1220;
+    --foreground: #e2e8f0;
+
+    --card: #111a2b;
+    --card-foreground: #e2e8f0;
+
+    --primary: #60a5fa;
+    --on-primary: #0b1220;
+    --secondary: #3b82f6;
+    --on-secondary: #ffffff;
+
+    --accent: #fbbf24;
+    --on-accent: #0b1220;
+
+    --muted: #1b2537;
+    --muted-foreground: #94a3b8;
+    --border: #24334a;
+    /* Sáng hơn --border để đạt 3:1 trên nền card tối. */
+    --input: #64748b;
+
+    --destructive: #f87171;
+    --on-destructive: #0b1220;
+    --ring: #60a5fa;
+
+    --success: #4ade80;
+    --warning: #fbbf24;
+
+    /* Nền tối cần shadow đậm hơn mới thấy được. */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.55);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-on-destructive: var(--on-destructive);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  /* Fira Sans = body, Fira Code = heading + mọi số liệu (mono cho cột số thẳng hàng) */
+  --font-sans: var(--font-fira-sans);
+  --font-mono: var(--font-fira-code);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-fira-sans), system-ui, sans-serif;
+}
+
+/* Anti-pattern MASTER.md: "Instant state changes". Mặc định 200ms cho control. */
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+/* Anti-pattern MASTER.md: "Invisible focus states". */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Checklist MASTER.md: prefers-reduced-motion phải được tôn trọng. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

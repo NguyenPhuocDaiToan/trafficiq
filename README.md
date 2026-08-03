@@ -8,14 +8,44 @@ chạy được ở mức chi phí ~0 trong giai đoạn prototype.
 
 ## Surface
 
+Ba surface độc lập, mỗi surface có bộ luật UI riêng:
+
 | Route | Vai trò |
 |---|---|
+| `/`, `/blog/**`, `/chuyen-muc/**` | **Website nội dung công khai** — blog tĩnh, được index, có RSS + sitemap |
+| `/gioi-thieu`, `/lien-he`, `/dieu-khoan`, `/chinh-sach-bao-mat`, `/tiet-lo-lien-ket` | Trang tĩnh bắt buộc của một site thật (form liên hệ ghi vào DB) |
 | `/c/[slug]` | Landing render server-side, OG metadata theo campaign (crawler không chạy JS vẫn đọc được) |
 | `/go/[token]` | Redirect 302 tới destination đã whitelist, ghi click bất đồng bộ |
 | `/api/postback` | Nhận conversion từ advertiser, idempotent |
 | `/api/rollup` | Tổng hợp số liệu (tùy chọn, gọi bằng cron ngoài) |
 | `/api/health` | Health check có ping DB, cho uptime monitor |
-| `/admin` | Control plane: advertiser, destination whitelist, campaign, offer, dashboard |
+| `/admin` | Control plane **tiếng Việt**: đối tác, URL đích, chiến dịch, đích chuyển hướng, hộp thư liên hệ |
+
+Landing `/c/[slug]` **không** dùng shell của website công khai: không nav, không
+footer nhiều link — mọi link khác trên landing đều là chỗ để click rò rỉ ra ngoài
+thay vì vào CTA.
+
+## Viết bài blog
+
+Bài viết là **module TSX trong `src/content/posts/`**, không phải bản ghi trong
+MongoDB. Nhờ vậy trang blog render tĩnh lúc build: 0 truy vấn DB, 0 compute mỗi
+lượt xem.
+
+Thêm một bài:
+
+1. Tạo `src/content/posts/<slug>.tsx`, export `post: Post` (xem file có sẵn làm mẫu).
+2. Thêm một dòng `import` vào `REGISTRY` trong [`src/content/index.ts`](src/content/index.ts).
+   Bắt buộc import tường minh — `generateStaticParams` phải biết danh sách lúc build.
+3. `npm run build`. Registry tự kiểm slug trùng và số bài `featured` khi nạp module.
+
+Link affiliate trong bài **phải** dùng `<PromoBox>`
+([`src/components/content.tsx`](src/components/content.tsx)) — nó gánh
+`rel="nofollow sponsored"` và nhãn tiết lộ. Trỏ vào `/c/<slug>`, đừng chép tay
+token `/go/<token>` vào nội dung tĩnh.
+
+**Đánh đổi cần biết:** người không biết code không tự đăng bài được — mỗi bài là
+một commit. Nếu về sau cần người ngoài viết, chuyển sang collection `posts` + CRUD
+trong admin, và giữ ISR để không bắn query DB mỗi lượt xem.
 
 ## Chạy local
 

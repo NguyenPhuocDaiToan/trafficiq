@@ -84,6 +84,18 @@ function pairsFor(t) {
     ["badge paused: muted-fg / muted", t["muted-foreground"], t.muted, AA_TEXT],
     // Notice component dùng tint 10% trên background trang.
     ["notice: warning / warning@10%", t.warning, blend(t.warning, t.background, 0.1), AA_TEXT],
+    /*
+     * Surface blog dùng --accent làm MÀU CHỮ (nhãn chuyên mục, dòng tagline ở
+     * hero), không chỉ làm nền nút. Khi là chữ thì phải đạt 4.5:1 — nền nút và
+     * chữ trên nền là hai ngưỡng khác nhau.
+     */
+    ["nhãn accent làm chữ / background", t.accent, t.background, AA_TEXT],
+    ["nhãn accent làm chữ / card", t.accent, t.card, AA_TEXT],
+    // `.prose code` và thẻ tag: chữ thường trên nền --muted.
+    ["code trong bài: foreground / muted", t.foreground, t.muted, AA_TEXT],
+    // Thông báo thành công của form (ActionForm trong card, ContactForm trên trang).
+    ["thông báo ok: success / background", t.success, t.background, AA_TEXT],
+    ["thông báo ok: success / card", t.success, t.card, AA_TEXT],
     // UI/non-text: 3:1 là đủ theo WCAG 1.4.11.
     ["focus ring / background", t.ring, t.background, AA_LARGE],
     ["focus ring / card", t.ring, t.card, AA_LARGE],

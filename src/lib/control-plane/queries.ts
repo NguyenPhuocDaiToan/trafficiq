@@ -14,6 +14,7 @@ export interface AdvertiserView {
   contactEmail?: string;
   status: EntityStatus;
   createdAt: string;
+  updatedAt: string;
 }
 
 export async function listAdvertisers(): Promise<AdvertiserView[]> {
@@ -25,6 +26,7 @@ export async function listAdvertisers(): Promise<AdvertiserView[]> {
     contactEmail: doc.contactEmail,
     status: doc.status,
     createdAt: doc.createdAt.toISOString(),
+    updatedAt: doc.updatedAt.toISOString(),
   }));
 }
 
@@ -34,6 +36,7 @@ export interface DestinationView {
   category: string;
   status: EntityStatus;
   advertiserName: string;
+  updatedAt: string;
 }
 
 export async function listDestinations(): Promise<DestinationView[]> {
@@ -44,6 +47,7 @@ export async function listDestinations(): Promise<DestinationView[]> {
       url: string;
       category: string;
       status: EntityStatus;
+      updatedAt: Date;
       advertiser: { name: string }[];
     }>([
       { $sort: { createdAt: -1 } },
@@ -66,6 +70,7 @@ export async function listDestinations(): Promise<DestinationView[]> {
     category: doc.category,
     status: doc.status,
     advertiserName: doc.advertiser[0]?.name ?? "(đã xóa)",
+    updatedAt: doc.updatedAt.toISOString(),
   }));
 }
 

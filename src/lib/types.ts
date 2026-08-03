@@ -113,6 +113,26 @@ export interface Conversion {
   raw?: Record<string, string>;
 }
 
+/**
+ * Tin nhắn từ form ở /lien-he.
+ *
+ * KHÔNG có TTL: đây là thư của người thật, xóa tự động sau 30 ngày là mất liên hệ.
+ * Cùng luật PII với clickEvents — chỉ lưu `ipHash`, không lưu IP thô.
+ */
+export interface ContactMessage {
+  _id?: ObjectId;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: Date;
+  /** Đã đọc/xử lý chưa — đánh dấu trong hộp thư ở admin. */
+  handled: boolean;
+  /** sha256(ip + salt), để lần ra spam theo nguồn mà không lưu IP. */
+  ipHash?: string;
+  userAgent?: string;
+}
+
 /** Tổng hợp giờ × campaign × source × country. Giữ dài hạn thay cho raw. */
 export interface Rollup {
   _id?: ObjectId;

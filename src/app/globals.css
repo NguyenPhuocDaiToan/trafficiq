@@ -143,15 +143,40 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
 
-  /* Fira Sans = body, Fira Code = heading + mọi số liệu (mono cho cột số thẳng hàng) */
-  --font-sans: var(--font-fira-sans);
-  --font-mono: var(--font-fira-code);
+  /*
+   * Be Vietnam Pro = body + MỌI heading (cả ba surface).
+   * JetBrains Mono = CHỈ cột số liệu, code, token/URL — không dùng cho heading.
+   * Cả hai đều có subset `vietnamese`; Fira Code trước đây không có nên chữ có
+   * dấu bị rơi sang font hệ thống. Xem comment trong src/app/layout.tsx.
+   */
+  --font-sans: var(--font-be-vietnam-pro);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-fira-sans), system-ui, sans-serif;
+  font-family: var(--font-be-vietnam-pro), system-ui, sans-serif;
+  /*
+   * 1.6 thay vì 1.5 mặc định: tiếng Việt có dấu ở CẢ hai phía (mũ/móc phía trên,
+   * dấu nặng phía dưới) nên hai dòng liền nhau dễ chạm nhau. Đây là phần lớn cảm
+   * giác "chữ chật, không thân thiện" ở bản trước.
+   */
+  line-height: 1.6;
+}
+
+/* Heading: dấu tiếng Việt cần leading thoáng hơn tỉ lệ mặc định của font size lớn. */
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  /* Không để một chữ rơi lẻ xuống dòng cuối của tiêu đề. */
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 /* Anti-pattern MASTER.md: "Instant state changes". Mặc định 200ms cho control. */
@@ -172,6 +197,179 @@ textarea {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/*
+ * ---------------------------------------------------------------------------
+ * .prose — thân bài viết blog.
+ *
+ * Theo design-system/trafficiq/pages/blog.md (Editorial Grid / Magazine).
+ * Viết bằng CSS descendant thay vì rắc class Tailwind lên từng thẻ: nội dung bài
+ * là JSX do người viết soạn, không nên bắt họ nhớ class cho từng <p>.
+ *
+ * Vẫn tuân luật token: KHÔNG có hex ở đây, chỉ var(--…).
+ * ---------------------------------------------------------------------------
+ */
+.prose {
+  /* 68ch ≈ 75–80 ký tự/dòng — khoảng đọc thoải mái cho văn bản dài. */
+  max-width: 68ch;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.prose > * + * {
+  margin-top: 1.25em;
+}
+
+.prose h2 {
+  margin-top: 2.5em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.prose h3 {
+  margin-top: 2em;
+  font-size: 1.1875rem;
+  font-weight: 600;
+}
+
+/* Section divider kiểu editorial: gạch ngắn trên h2, không phải <hr> toàn dòng. */
+.prose h2::before {
+  display: block;
+  width: 2.5rem;
+  margin-bottom: 0.75rem;
+  border-top: 2px solid var(--accent);
+  content: "";
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.5em;
+}
+
+.prose li::marker {
+  color: var(--muted-foreground);
+}
+
+/* Pull quote — Editorial Grid yêu cầu; thanh accent bên trái thay vì dấu ngoặc lớn. */
+.prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.25rem;
+  font-size: 1.1875rem;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.prose code {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 0.875em;
+  background: var(--muted);
+  border-radius: 0.25rem;
+  padding: 0.125em 0.375em;
+}
+
+.prose pre {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  /* Checklist MASTER.md: bảng/code rộng thì scroll trong khung, không phá layout. */
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.prose hr {
+  margin-top: 2.5em;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.prose figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/*
+ * Bảng trong bài: cho scroll ngang ở mobile. Số liệu dùng mono + tabular-nums
+ * giống dashboard để cột thẳng hàng.
+ */
+.prose table {
+  /*
+   * `display: block` để chính thẻ table thành khung scroll ngang.
+   * Vì sao không bọc bằng <div overflow-x-auto>: thân bài là JSX người viết soạn
+   * tay, không ai nhớ bọc div mỗi lần thêm bảng — và checklist "bảng rộng thì
+   * scroll ngang, không phá layout" phải đúng cho MỌI bảng, kể cả bảng thêm sau.
+   * Các thẻ con vẫn giữ display table-row/table-cell nên cột vẫn thẳng hàng.
+   */
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 0.9375rem;
+  border-collapse: collapse;
+}
+
+/* Ô bảng không được co lại tới mức mỗi chữ một dòng khi bảng đã scroll được. */
+.prose th,
+.prose td {
+  white-space: nowrap;
+}
+
+.prose th,
+.prose td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+/*
+ * KHÔNG dùng drop cap (::first-letter) dù style Editorial Grid gợi ý: chữ hoa
+ * tiếng Việt có dấu ("Ở", "Ế", "Ộ") khi phóng lên 4em sẽ bị cắt phần dấu hoặc
+ * đè lên dòng trên. Bỏ hẳn thay vì để lỗi hiển thị trên chính ngôn ngữ của site.
+ */
 
 /* Checklist MASTER.md: prefers-reduced-motion phải được tôn trọng. */
 @media (prefers-reduced-motion: reduce) {

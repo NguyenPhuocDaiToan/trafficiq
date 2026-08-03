@@ -56,7 +56,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /**
  * UI theo design-system/trafficiq/pages/campaign-landing.md:
  * Hero-Centric + Conversion-Optimized, density 4/10, MỘT CTA duy nhất dùng
- * --color-accent, heading Fira Sans (không phải Fira Code như dashboard).
+ * --color-accent.
+ *
+ * Trang này KHÔNG dùng shell của website công khai (route group `(site)`): landing
+ * phải sạch, không nav, không footer nhiều link — mọi link khác đều là chỗ để
+ * click rò rỉ ra ngoài thay vì vào CTA.
  */
 export default async function LandingPage({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
@@ -120,8 +124,12 @@ export default async function LandingPage({ params, searchParams }: Props) {
 
       <p className="text-xs text-muted-foreground">
         Đây là nội dung quảng cáo. Xem{" "}
-        <a href="/privacy" className="cursor-pointer underline">
+        <a href="/chinh-sach-bao-mat" className="cursor-pointer underline">
           chính sách quyền riêng tư
+        </a>{" "}
+        và{" "}
+        <a href="/tiet-lo-lien-ket" className="cursor-pointer underline">
+          tiết lộ liên kết
         </a>
         .
       </p>

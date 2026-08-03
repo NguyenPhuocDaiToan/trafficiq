@@ -60,15 +60,63 @@
 
 ### Typography
 
-- **Heading Font:** Fira Code
-- **Body Font:** Fira Sans
-- **Mood:** dashboard, data, analytics, code, technical, precise
-- **Google Fonts:** [Fira Code + Fira Sans](https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap)
+- **Heading Font:** Be Vietnam Pro
+- **Body Font:** Be Vietnam Pro
+- **Numeric / Code Font:** JetBrains Mono
+- **Mood:** vietnamese, humanist, readable, friendly, precise-where-it-counts
 
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+> ### ⚠️ Sai lệch có chủ đích so với pairing sinh tự động
+>
+> Output gốc của `--design-system` cho dự án này là pairing **#42 "Dashboard Data"
+> = Fira Code (heading) + Fira Sans (body)**. Đã dùng nó ở bản đầu và **nó sai với
+> một site tiếng Việt**:
+>
+> **Fira Code không có subset `vietnamese`.** Kiểm được bằng hai nguồn độc lập:
+>
+> ```bash
+> # 1. Dữ liệu font của Next
+> node -e "console.log(require('next/dist/compiled/@next/font/dist/google/font-data.json')['Fira Code'].subsets.join(','))"
+> # -> cyrillic,cyrillic-ext,greek,greek-ext,latin,latin-ext,symbols2   (KHÔNG có vietnamese)
+>
+> # 2. Chính data của skill: cột Subsets trong data/google-fonts.csv
+> ```
+>
+> Hệ quả cụ thể: MASTER cũ quy định heading admin dùng `font-mono` (Fira Code), nên
+> mọi chữ có dấu thanh — khối precomposed **U+1EA0–1EF9** (ạ ả ấ ầ ế ệ ộ ớ ợ ữ…) —
+> rơi sang font hệ thống **ngay giữa từ**. `"Trạng thái"` render bằng hai font khác
+> nhau: `Tr` + `ng th` là Fira Code, `ạ` và `á` là font fallback. Toàn bộ admin
+> tiếng Việt bị lệch baseline và lệch độ đậm. `latin-ext` không cứu được vì nó chỉ
+> chứa Ăă Đđ Ơơ Ưư (U+0102-0103, U+0110-0111, U+01A0-01A1, U+01AF-01B0) — không
+> chứa các ký tự đã ghép dấu thanh.
+>
+> | | Pairing gốc (#42) | Đang dùng | Lý do |
+> |---|---|---|---|
+> | Heading | Fira Code | **Be Vietnam Pro** | Fira Code không render được tiếng Việt (trên). Be Vietnam Pro là pairing **#21 "Vietnamese Friendly"** trong chính `typography.csv`, và là font `--design-system` tự chọn khi query có chữ "Vietnamese". |
+> | Body | Fira Sans | **Be Vietnam Pro** | Fira Sans có VI và không sai, nhưng gộp về một family: bớt một họ font tải về, và heading/body cùng họ thì hệ thống chữ nhất quán hơn. |
+> | Số liệu / code | Fira Code | **JetBrains Mono** | Vẫn cần mono để cột số `tabular-nums` thẳng hàng. JetBrains Mono **có** subset `vietnamese` nên nếu chữ Việt lỡ nằm trong ngữ cảnh mono cũng không vỡ. |
+>
+> **Đổi luật quan trọng:** mono **không còn dùng cho heading**. Trước: heading admin
+> = mono. Nay: mono chỉ dùng cho **cột số liệu, code, token/URL**. Heading của cả ba
+> surface đều là `font-sans`.
+>
+> `--design-system` còn đề xuất một palette khác hẳn cho surface blog (editorial
+> black + accent hồng `#EC4899`) — **bị bỏ**. Dự án có đúng một tầng token; thêm
+> accent thứ hai là phá luật "một màu accent duy nhất cho CTA" và sẽ làm
+> `npm run check:contrast` gãy. Xem `pages/blog.md`.
+
+**Cấu hình thật** (`src/app/layout.tsx` — dùng `next/font`, self-host lúc build,
+không `@import` sang fonts.googleapis.com trên hot path):
+
+```ts
+Be_Vietnam_Pro({ subsets: ["latin", "vietnamese"], weight: ["400","500","600","700"], style: ["normal","italic"] })
+JetBrains_Mono({ subsets: ["latin", "vietnamese"] })   // variable: 1 file/subset
 ```
+
+Không nạp `latin-ext`: Ăă Đđ Ơơ Ưư đã nằm trong subset `vietnamese`.
+
+**Leading:** body `1.6`, heading `1.25` (xem `globals.css`). Cao hơn mặc định vì
+tiếng Việt có dấu ở **cả hai phía** con chữ — mũ/móc phía trên, dấu nặng phía dưới —
+nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
 
 ### Spacing Variables
 

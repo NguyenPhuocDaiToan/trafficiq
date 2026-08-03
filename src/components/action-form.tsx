@@ -57,6 +57,36 @@ export function ActionForm({
   );
 }
 
+/**
+ * Nút submit một form nhỏ với các field ẩn tuỳ ý.
+ *
+ * Dùng khi giá trị cần gửi không phải `EntityStatus` — ví dụ đánh dấu tin nhắn
+ * liên hệ đã xử lý (`handled: "true" | "false"`). Vẫn truyền server action trực
+ * tiếp vào `useActionState` như `StatusButton`, nên vẫn chạy khi không có JS.
+ */
+export function FieldsButton({
+  action,
+  fields,
+  label,
+}: {
+  action: ServerAction;
+  fields: Record<string, string>;
+  label: string;
+}) {
+  const [, formAction, pending] = useActionState(action, null);
+
+  return (
+    <form action={formAction} className="inline">
+      {Object.entries(fields).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      <button type="submit" disabled={pending} className={buttonSecondaryClass}>
+        {pending ? "…" : label}
+      </button>
+    </form>
+  );
+}
+
 /** Nút đổi trạng thái: 1 form nhỏ, không cần JS state. */
 export function StatusButton({
   action,

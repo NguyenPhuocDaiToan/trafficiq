@@ -12,29 +12,38 @@ import {
 } from "@/components/ui";
 import { createAdvertiser, setAdvertiserStatus } from "@/lib/control-plane/actions";
 import { listAdvertisers } from "@/lib/control-plane/queries";
+import { formatDateTime } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Đối tác quảng cáo" };
 
 export default async function AdvertisersPage() {
   const rows = await listAdvertisers();
 
   return (
     <div className="space-y-6">
-      <h1 className="font-mono text-2xl font-semibold">Advertisers</h1>
+      <div>
+        <h1 className="text-2xl font-semibold">Đối tác quảng cáo</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Bên trả tiền cho traffic. Mỗi URL đích trong whitelist phải thuộc về một
+          đối tác ở đây.
+        </p>
+      </div>
 
       <Card
-        title="Thêm advertiser"
-        description="Đối tác mới luôn ở trạng thái pending — phải review rồi mới activate."
+        title="Thêm đối tác"
+        description="Đối tác mới luôn ở trạng thái chờ duyệt — phải xem lại rồi mới kích hoạt."
       >
         <ActionForm
           action={createAdvertiser}
-          submitLabel="Tạo advertiser"
+          submitLabel="Thêm đối tác"
           className="grid gap-3 sm:grid-cols-3"
         >
-          <Field label="Tên">
+          <Field label="Tên đối tác">
             <input name="name" required className={inputClass} placeholder="Acme Affiliate" />
           </Field>
-          <Field label="Email" hint="(tùy chọn)">
+          <Field label="Email liên hệ" hint="(không bắt buộc)">
             <input
               name="contactEmail"
               type="email"
@@ -42,26 +51,31 @@ export default async function AdvertisersPage() {
               placeholder="ops@acme.com"
             />
           </Field>
-          <Field label="Ghi chú" hint="(tùy chọn)">
-            <input name="notes" className={inputClass} placeholder="Nguồn, điều khoản payout…" />
+          <Field label="Ghi chú" hint="(không bắt buộc)">
+            <input
+              name="notes"
+              className={inputClass}
+              placeholder="Nguồn, điều khoản chia doanh thu…"
+            />
           </Field>
         </ActionForm>
       </Card>
 
-      <Card title={`Danh sách (${rows.length})`}>
+      <Card title={`Danh sách đối tác (${rows.length})`}>
         <TableWrap>
           <Table>
             <thead>
               <tr>
-                <Th>Tên</Th>
-                <Th>Email</Th>
+                <Th>Tên đối tác</Th>
+                <Th>Email liên hệ</Th>
                 <Th>Trạng thái</Th>
-                <Th>Đổi trạng thái</Th>
+                <Th>Cập nhật lúc</Th>
+                <Th>Thao tác</Th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <EmptyRow colSpan={4}>Chưa có advertiser nào.</EmptyRow>
+                <EmptyRow colSpan={5}>Chưa có đối tác nào.</EmptyRow>
               ) : (
                 rows.map((row) => (
                   <Tr key={row.id}>
@@ -72,19 +86,22 @@ export default async function AdvertisersPage() {
                     <td className="px-3 py-2">
                       <StatusBadge status={row.status} />
                     </td>
+                    <td className="px-3 py-2 font-mono text-xs tabular-nums text-muted-foreground">
+                      {formatDateTime(row.updatedAt)}
+                    </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
                         <StatusButton
                           action={setAdvertiserStatus}
                           id={row.id}
                           status="active"
-                          label="Activate"
+                          label="Kích hoạt"
                         />
                         <StatusButton
                           action={setAdvertiserStatus}
                           id={row.id}
                           status="paused"
-                          label="Pause"
+                          label="Tạm dừng"
                         />
                       </div>
                     </td>

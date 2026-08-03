@@ -4,6 +4,7 @@ import type {
   Advertiser,
   Campaign,
   ClickEvent,
+  ContactMessage,
   Conversion,
   Destination,
   Offer,
@@ -18,6 +19,7 @@ export const COLLECTIONS = {
   clickEvents: "clickEvents",
   conversions: "conversions",
   rollups: "rollups",
+  contactMessages: "contactMessages",
 } as const;
 
 export async function advertisers(): Promise<Collection<Advertiser>> {
@@ -46,4 +48,8 @@ export async function conversions(): Promise<Collection<Conversion>> {
 
 export async function rollups(): Promise<Collection<Rollup>> {
   return (await getDb()).collection<Rollup>(COLLECTIONS.rollups);
+}
+
+export async function contactMessages(): Promise<Collection<ContactMessage>> {
+  return (await getDb()).collection<ContactMessage>(COLLECTIONS.contactMessages);
 }

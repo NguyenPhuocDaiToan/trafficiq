@@ -31,6 +31,7 @@ Page override hiện có:
 |---|---|---|
 | `/admin/**` | `pages/dashboard.md` | Data-Dense Dashboard, density 8/10, max-w 1400px |
 | `/c/[slug]` | `pages/campaign-landing.md` | Hero-Centric + Conversion-Optimized, density 4/10, một CTA |
+| `/`, `/blog/**`, `/chuyen-muc/**`, `/gioi-thieu`, `/lien-he`, `/dieu-khoan`, `/chinh-sach-bao-mat`, `/tiet-lo-lien-ket` | `pages/blog.md` | Editorial Grid / Magazine, density 3/10, thân bài 68ch, không ảnh |
 
 Làm page mới chưa có override → dùng MASTER. Nếu page đó lệch bản chất so với
 MASTER (ví dụ một surface marketing mới), sinh override bằng skill trước khi code:
@@ -68,8 +69,16 @@ Nếu hai kết quả lệch nhau, lấy theo `--domain style` và ghi lý do v�
   `--input` (đạt 3:1). Đừng đổi chỗ hai cái này.
 - `--accent` là màu **duy nhất** được dùng cho CTA chính. Action phụ dùng outline
   `--primary`. Hai CTA accent trên cùng một view = sai.
-- Font: `font-sans` (Fira Sans) cho body và heading **landing**; `font-mono`
-  (Fira Code) cho heading **admin** và **mọi cột số liệu** (`tabular-nums`).
+- Font: `font-sans` (**Be Vietnam Pro**) cho body và **mọi heading của cả ba
+  surface**. `font-mono` (**JetBrains Mono**) **chỉ** cho cột số liệu
+  (`tabular-nums`), code, và token/URL — **không dùng cho heading**.
+  Đừng quay lại Fira Code: nó không có subset `vietnamese` nên chữ có dấu thanh
+  (U+1EA0–1EF9) rơi sang font hệ thống ngay giữa từ. Lý do đầy đủ + cách kiểm
+  trong MASTER.md § Typography. Font mới nào cũng phải có subset `vietnamese`:
+
+  ```bash
+  node -e "console.log(require('next/dist/compiled/@next/font/dist/google/font-data.json')['<Tên Font>'].subsets.join(','))"
+  ```
 
 ### Gate trước khi coi UI là xong
 
@@ -142,6 +151,25 @@ tại chỗ trước.
 8. **Route cache của redirect là per-instance.** `invalidateRouteCache()` chỉ xóa
    cache trên instance đang chạy; instance warm khác còn giữ route cũ tới 60s.
    Sau khi pause campaign, tính là link còn sống thêm ~1 phút.
+
+9. **Nội dung blog là module TSX trong `src/content/`, không phải bản ghi DB.**
+   Trang blog render tĩnh lúc build → 0 query, 0 compute mỗi lượt xem. Thêm bài
+   phải thêm `import` tường minh vào `REGISTRY` trong `src/content/index.ts` —
+   quét thư mục động sẽ làm `generateStaticParams` không thấy bài.
+
+10. **Form liên hệ ghi vào `contactMessages`, KHÔNG gửi email.** Dự án không có
+    hạ tầng mail. Vì vậy `/admin/lien-he` là bắt buộc phải tồn tại — bỏ trang đó
+    là thư của người thật rơi vào chỗ không ai đọc. Đừng thêm câu "chúng tôi sẽ
+    gửi email xác nhận" vào UI: điều đó không xảy ra.
+
+11. **`/chinh-sach-bao-mat` phải khớp với hành vi thật của code.** Thời gian lưu
+    click đọc trực tiếp từ `clickTtlDays()`, không viết cứng "30 ngày". Đổi cách
+    thu thập dữ liệu ở đâu thì sửa cả trang đó — sai ở trang này là tuyên bố sai
+    sự thật với người dùng, không phải lỗi hiển thị.
+
+12. **`(site)` là route group, `/c/[slug]` cố ý nằm ngoài nó.** Landing không có
+    nav/footer: mọi link ngoài CTA đều là chỗ rò rỉ click. Đừng "thống nhất
+    layout" bằng cách kéo landing vào `(site)`.
 
 ---
 

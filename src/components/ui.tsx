@@ -13,12 +13,23 @@ const STATUS_STYLES: Record<EntityStatus, string> = {
   paused: "bg-muted text-muted-foreground",
 };
 
+/**
+ * Nhãn tiếng Việt cho trạng thái. Giá trị trong DB vẫn là "active"/"pending"/
+ * "paused" — chỉ đổi cách hiển thị. Đừng dịch giá trị lưu xuống Mongo, sẽ vỡ
+ * mọi filter trong aggregation và resolve.ts.
+ */
+export const STATUS_LABELS: Record<EntityStatus, string> = {
+  active: "Đang chạy",
+  pending: "Chờ duyệt",
+  paused: "Tạm dừng",
+};
+
 export function StatusBadge({ status }: { status: EntityStatus | string }) {
   const style = STATUS_STYLES[status as EntityStatus] ?? STATUS_STYLES.paused;
+  const label = STATUS_LABELS[status as EntityStatus] ?? status;
   return (
-    <span className={`rounded px-2 py-0.5 font-mono text-xs font-medium ${style}`}>
-      {status}
-    </span>
+    // font-sans, KHÔNG font-mono: nhãn giờ là chữ tiếng Việt có dấu.
+    <span className={`rounded px-2 py-0.5 text-xs font-medium ${style}`}>{label}</span>
   );
 }
 
@@ -67,7 +78,7 @@ export function Card({
 }) {
   return (
     <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-(--shadow-md)">
-      <h2 className="font-mono text-base font-semibold">{title}</h2>
+      <h2 className="text-base font-semibold">{title}</h2>
       {description ? (
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       ) : null}

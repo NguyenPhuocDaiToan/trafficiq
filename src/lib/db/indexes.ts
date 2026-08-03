@@ -5,6 +5,7 @@ import {
   advertisers,
   campaigns,
   clickEvents,
+  contactMessages,
   conversions,
   destinations,
   offers,
@@ -92,6 +93,15 @@ export async function ensureIndexes(): Promise<string[]> {
     ),
   );
   log(await rollupsCol.createIndex({ hour: -1 }));
+
+  const contactCol = await contactMessages();
+  // Hộp thư admin sắp theo mới nhất trước.
+  log(await contactCol.createIndex({ createdAt: -1 }));
+  // Lọc "chưa xử lý" — mặc định của hộp thư.
+  log(await contactCol.createIndex({ handled: 1, createdAt: -1 }));
+  // Giới hạn tần suất gửi trong submitContactMessage đếm theo cặp này.
+  log(await contactCol.createIndex({ ipHash: 1, createdAt: -1 }));
+  // KHÔNG đặt TTL ở collection này: đây là thư người thật gửi, không phải log.
 
   return created;
 }

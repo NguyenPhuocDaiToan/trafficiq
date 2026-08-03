@@ -38,9 +38,9 @@ export default async function LoginPage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="font-mono text-2xl font-semibold">TrafficIQ Admin</h1>
+      <h1 className="text-2xl font-semibold">Quản trị TrafficIQ</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Nhập ADMIN_PASSWORD để vào control plane.
+        Nhập mật khẩu quản trị để vào trang điều hành.
       </p>
 
       <form action={login} className="mt-6 flex flex-col gap-3">

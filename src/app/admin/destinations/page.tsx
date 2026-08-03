@@ -13,8 +13,11 @@ import {
 } from "@/components/ui";
 import { createDestination, setDestinationStatus } from "@/lib/control-plane/actions";
 import { listActiveOptions, listDestinations } from "@/lib/control-plane/queries";
+import { formatDateTime } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "URL đích" };
 
 export default async function DestinationsPage() {
   const [rows, options] = await Promise.all([listDestinations(), listActiveOptions()]);
@@ -22,28 +25,31 @@ export default async function DestinationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-mono text-2xl font-semibold">Destinations (whitelist)</h1>
+        <h1 className="text-2xl font-semibold">URL đích (danh sách cho phép)</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Đây là danh sách URL DUY NHẤT mà redirect được phép trỏ tới. Không có
-          đường nào khác để 302 ra ngoài — link /go không nhận URL từ query param.
+          Đây là danh sách URL <strong>duy nhất</strong> mà redirect được phép trỏ
+          tới. Không có đường nào khác để chuyển hướng ra ngoài — link{" "}
+          <code className="font-mono text-xs">/go</code> không nhận URL từ tham số
+          trên thanh địa chỉ.
         </p>
       </div>
 
       <Card
-        title="Thêm destination"
-        description="Chỉ http/https. Mới thêm là pending — phải activate mới redirect được."
+        title="Thêm URL đích"
+        description="Chỉ nhận http/https. Mới thêm là chờ duyệt — phải kích hoạt mới redirect được."
       >
         {options.advertisers.length === 0 ? (
           <Notice>
-            Chưa có advertiser nào ở trạng thái active. Activate một advertiser trước.
+            Chưa có đối tác nào đang chạy. Hãy kích hoạt một đối tác ở mục Đối tác
+            trước.
           </Notice>
         ) : (
           <ActionForm
             action={createDestination}
-            submitLabel="Thêm vào whitelist"
+            submitLabel="Thêm vào danh sách cho phép"
             className="grid gap-3 sm:grid-cols-3"
           >
-            <Field label="Advertiser">
+            <Field label="Đối tác">
               <select name="advertiserId" required className={inputClass}>
                 {options.advertisers.map((advertiser) => (
                   <option key={advertiser.id} value={advertiser.id}>
@@ -60,28 +66,31 @@ export default async function DestinationsPage() {
                 placeholder="https://offer.example.com/lp"
               />
             </Field>
-            <Field label="Category">
-              <input name="category" required className={inputClass} placeholder="finance" />
+            <Field label="Phân loại" hint="để nhóm lại khi có nhiều URL">
+              <input name="category" required className={inputClass} placeholder="tai-chinh" />
             </Field>
           </ActionForm>
         )}
       </Card>
 
-      <Card title={`Whitelist (${rows.length})`}>
+      <Card title={`Danh sách cho phép (${rows.length})`}>
         <TableWrap>
           <Table>
             <thead>
               <tr>
                 <Th>URL</Th>
-                <Th>Advertiser</Th>
-                <Th>Category</Th>
+                <Th>Đối tác</Th>
+                <Th>Phân loại</Th>
                 <Th>Trạng thái</Th>
-                <Th>Đổi trạng thái</Th>
+                <Th>Cập nhật lúc</Th>
+                <Th>Thao tác</Th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <EmptyRow colSpan={5}>Whitelist đang rỗng.</EmptyRow>
+                <EmptyRow colSpan={6}>
+                  Danh sách đang rỗng — chưa URL nào được phép nhận redirect.
+                </EmptyRow>
               ) : (
                 rows.map((row) => (
                   <Tr key={row.id}>
@@ -93,19 +102,22 @@ export default async function DestinationsPage() {
                     <td className="px-3 py-2">
                       <StatusBadge status={row.status} />
                     </td>
+                    <td className="px-3 py-2 font-mono text-xs tabular-nums text-muted-foreground">
+                      {formatDateTime(row.updatedAt)}
+                    </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
                         <StatusButton
                           action={setDestinationStatus}
                           id={row.id}
                           status="active"
-                          label="Activate"
+                          label="Kích hoạt"
                         />
                         <StatusButton
                           action={setDestinationStatus}
                           id={row.id}
                           status="paused"
-                          label="Pause"
+                          label="Tạm dừng"
                         />
                       </div>
                     </td>

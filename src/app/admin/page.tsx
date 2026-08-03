@@ -7,6 +7,7 @@ import {
   rangeForDays,
 } from "@/lib/analytics/queries";
 import { publicBaseUrl } from "@/lib/env";
+import { countryLabel, deviceLabel, sourceLabel } from "@/lib/labels";
 import {
   Card,
   EmptyRow,
@@ -24,6 +25,8 @@ import {
  * `force-dynamic` vì mọi số liệu phải là realtime — cache trang ở đây là sai.
  *
  * UI theo design-system/trafficiq/pages/dashboard.md.
+ * Ngôn ngữ: tiếng Việt. Viết tắt của ngành (CR, EPC) giữ nguyên vì tài liệu
+ * ad network dùng đúng chữ đó, nhưng luôn kèm chú thích tiếng Việt bên dưới.
  */
 export const dynamic = "force-dynamic";
 
@@ -64,7 +67,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-mono text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Tổng quan</h1>
         <div className="flex gap-2 text-sm">
           {RANGES.map((option) => (
             <Link
@@ -86,32 +89,42 @@ export default async function DashboardPage({
       {/* KPI row — grid-gap 8px theo density 8/10 */}
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         <Stat
-          label="Clicks"
+          label="Lượt click"
           value={overview.clicks.toLocaleString("vi-VN")}
-          hint={`${overview.botClicks.toLocaleString("vi-VN")} bot đã loại`}
+          hint={`đã loại ${overview.botClicks.toLocaleString("vi-VN")} lượt bot`}
         />
         <Stat
-          label="Unique"
+          label="Khách duy nhất"
           value={overview.uniqueVisitors.toLocaleString("vi-VN")}
-          hint="theo IP đã hash"
+          hint="đếm theo IP đã băm"
         />
-        <Stat label="Conversions" value={overview.conversions.toLocaleString("vi-VN")} />
-        <Stat label="CR" value={pct(overview.cr)} />
-        <Stat label="Payout" value={usd(overview.payout)} hint={`EPC ${usd(overview.epc)}`} />
+        <Stat
+          label="Chuyển đổi"
+          value={overview.conversions.toLocaleString("vi-VN")}
+          hint="từ postback của đối tác"
+        />
+        <Stat label="CR" value={pct(overview.cr)} hint="tỷ lệ chuyển đổi" />
+        <Stat
+          label="Doanh thu"
+          value={usd(overview.payout)}
+          hint={`EPC ${usd(overview.epc)} — thu nhập mỗi click`}
+        />
       </div>
 
       <Card
-        title="Clicks theo thời gian"
-        description={days === 1 ? "Theo giờ (UTC)" : "Theo ngày (UTC)"}
+        title="Lượt click theo thời gian"
+        description={days === 1 ? "Theo giờ (giờ UTC)" : "Theo ngày (giờ UTC)"}
       >
         {series.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có click nào trong khoảng này.</p>
+          <p className="text-sm text-muted-foreground">
+            Chưa có lượt click nào trong khoảng thời gian này.
+          </p>
         ) : (
           <div className="flex h-40 items-end gap-1">
             {series.map((point) => (
               <div
                 key={point.bucket}
-                title={`${point.bucket}: ${point.clicks}`}
+                title={`${point.bucket}: ${point.clicks} click`}
                 className="flex-1 rounded-t bg-secondary transition-colors hover:bg-primary"
                 style={{ height: `${Math.max(2, (point.clicks / peak) * 100)}%` }}
               />
@@ -120,24 +133,27 @@ export default async function DashboardPage({
         )}
       </Card>
 
-      <Card title="Campaigns" description="Xếp theo số click trong khoảng đã chọn.">
+      <Card
+        title="Chiến dịch"
+        description="Xếp theo số lượt click trong khoảng thời gian đã chọn."
+      >
         <TableWrap>
           <Table>
             <thead>
               <tr>
-                <Th>Campaign</Th>
-                <Th>Link</Th>
-                <Th align="right">Clicks</Th>
-                <Th align="right">Conv.</Th>
+                <Th>Chiến dịch</Th>
+                <Th>Link theo dõi</Th>
+                <Th align="right">Click</Th>
+                <Th align="right">Chuyển đổi</Th>
                 <Th align="right">CR</Th>
                 <Th align="right">EPC</Th>
-                <Th align="right">Payout</Th>
+                <Th align="right">Doanh thu</Th>
               </tr>
             </thead>
             <tbody>
               {campaignRows.length === 0 ? (
                 <EmptyRow colSpan={7}>
-                  Chưa có campaign nào — tạo ở tab Campaigns.
+                  Chưa có chiến dịch nào — tạo ở mục Chiến dịch.
                 </EmptyRow>
               ) : (
                 campaignRows.map((row) => (
@@ -167,9 +183,9 @@ export default async function DashboardPage({
       </Card>
 
       <div className="grid gap-2 lg:grid-cols-3">
-        <Breakdown title="Top source" rows={sources} />
-        <Breakdown title="Top quốc gia" rows={countries} />
-        <Breakdown title="Thiết bị" rows={devices} />
+        <Breakdown title="Nguồn traffic" rows={sources} label={sourceLabel} />
+        <Breakdown title="Quốc gia" rows={countries} label={countryLabel} />
+        <Breakdown title="Thiết bị" rows={devices} label={deviceLabel} />
       </div>
     </div>
   );
@@ -178,9 +194,12 @@ export default async function DashboardPage({
 function Breakdown({
   title,
   rows,
+  label,
 }: {
   title: string;
   rows: { key: string; clicks: number }[];
+  /** Dịch mã trong DB sang nhãn tiếng Việt — chỉ ở tầng hiển thị. */
+  label: (key: string) => string;
 }) {
   return (
     <Card title={title}>
@@ -193,7 +212,7 @@ function Breakdown({
               key={row.key}
               className="flex justify-between gap-4 rounded px-1 transition-colors hover:bg-muted"
             >
-              <span className="truncate">{row.key}</span>
+              <span className="truncate">{label(row.key)}</span>
               <span className="font-mono tabular-nums text-muted-foreground">
                 {row.clicks}
               </span>

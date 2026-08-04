@@ -29,6 +29,34 @@ export default function robots(): MetadataRoute.Robots {
           "/link-unavailable",
         ],
       },
+      /*
+       * Crawler tạo Social Card (Twitterbot…) TÔN TRỌNG robots.txt — nếu
+       * `/go/` bị chặn ở rule "*", nó từ chối fetch link luôn, không bao giờ
+       * chạm tới bước `isBotRequest()` redirect sang `/c/[slug]` trong
+       * `app/go/[token]/route.ts`. Route đó đã tự lo việc không tính click
+       * giả cho các UA này, nên mở lại `/go/` riêng cho chúng ở đây — không
+       * mở cho `Googlebot`/`Bingbot`: hai bot đó không cần Card preview và
+       * vẫn nên bị chặn index theo rule "*" phía trên.
+       *
+       * facebookexternalhit và WhatsApp trong thực tế KHÔNG tôn trọng
+       * robots.txt (đã tự tìm hiểu lại card preview vẫn hoạt động dù bị
+       * chặn), nhưng khai rõ ở đây để không ai phải đoán lại lần sau.
+       */
+      {
+        userAgent: [
+          "Twitterbot",
+          "facebookexternalhit",
+          "Facebot",
+          "TelegramBot",
+          "LinkedInBot",
+          "WhatsApp",
+          "Slackbot",
+          "Discordbot",
+          "Pinterest",
+          "Quora Link Preview",
+        ],
+        allow: "/go/",
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,

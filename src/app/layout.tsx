@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { publicBaseUrl } from "@/lib/env";
 import { SITE } from "@/lib/site";
@@ -38,6 +38,38 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+/*
+ * Display = Fraunces, CHỈ cho tiêu đề của surface công khai (`.theme-editorial`).
+ *
+ * Vì sao thêm họ chữ thứ ba dù AGENTS.md trước đây chốt "mọi heading dùng
+ * font-sans": site này cố ý không có ảnh (ràng buộc bandwidth Hobby ~100GB/tháng),
+ * nên chữ là phương tiện tạo hình DUY NHẤT. Một site editorial mà tiêu đề và thân
+ * bài cùng một họ sans thì không có tương phản nào giữa "nhan đề" và "văn bản" —
+ * đó là phần lớn cảm giác trang trông phẳng và tạm bợ.
+ *
+ * Điều kiện để được thêm (kiểm trước khi nạp, đúng luật AGENTS.md):
+ *   node -e "console.log(require('next/dist/compiled/@next/font/dist/google/font-data.json')['Fraunces'].subsets.join(','))"
+ *   -> latin,latin-ext,vietnamese   ✓ có subset vietnamese
+ *
+ * Chi phí giữ ở mức tối thiểu: ĐÚNG MỘT weight (700) và chỉ subset `latin` +
+ * `vietnamese`. `/admin` KHÔNG dùng font này.
+ *
+ * Vì sao một weight chứ không phải 600 + 700: đo trên bản build, mỗi weight của
+ * Fraunces tốn ~44KB cho một trang tiếng Việt (latin 32.9KB + vietnamese 11.3KB —
+ * browser tải theo `unicode-range` nên một câu có dấu sẽ kéo cả hai file). Hai
+ * weight là ~88KB chỉ để có hai độ đậm của cùng một họ chữ, trong khi bố cục
+ * editorial dựng thứ bậc bằng CỠ CHỮ. Vì vậy mọi nhan đề dùng `font-bold`; đừng
+ * thêm `font-semibold` lên `font-display` — browser sẽ phải giả độ đậm.
+ * Đo lại sau khi build:
+ *   node -e "..."  # xem @font-face của Fraunces trong .next/static/chunks/*.css
+ */
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "vietnamese"],
+  weight: ["700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(publicBaseUrl()),
   title: { default: `${SITE.name} — ${SITE.tagline}`, template: `%s · ${SITE.name}` },
@@ -60,7 +92,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${beVietnamPro.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${beVietnamPro.variable} ${jetbrainsMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         {children}

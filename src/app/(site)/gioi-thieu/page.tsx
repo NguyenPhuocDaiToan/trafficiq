@@ -17,74 +17,44 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <PageHeader
+        eyebrow="Về site"
         title={`Về ${SITE.name}`}
-        intro="Site này viết về đo lường và tối ưu traffic affiliate, từ góc nhìn của người tự dựng hệ thống chứ không phải người bán công cụ."
+        intro="Một site nội dung tổng hợp bằng tiếng Việt: công nghệ, tiền bạc, đời sống. Không dạy làm giàu, không bán khoá học — chỉ là những hướng dẫn cụ thể cho việc phải tự quyết."
       />
 
       <div className="mt-10">
         <Prose>
           <h2>Vì sao có site này</h2>
           <p>
-            Phần lớn nội dung tiếng Việt về affiliate marketing dừng ở mức
-            &ldquo;chọn nguồn traffic nào&rdquo; và &ldquo;chạy quảng cáo ra
-            sao&rdquo;. Rất ít nội dung nói về phần bên dưới: dữ liệu click được ghi
-            như thế nào, vì sao số của bạn và số của đối tác không bao giờ khớp, và
-            những giới hạn hạ tầng nào sẽ làm bạn phải viết lại code khi lượng traffic
-            tăng.
+            Phần lớn nội dung hướng dẫn tiếng Việt trên mạng dừng ở mức nêu lại điều
+            hiển nhiên: &ldquo;nên tiết kiệm&rdquo;, &ldquo;nên sao lưu dữ liệu&rdquo;,
+            &ldquo;nên ăn ở nhà&rdquo;. Phần khó thì không ai viết: <em>sao lưu như thế
+            nào cho đúng</em>, <em>rà khoản phí định kỳ ở những chỗ nào</em>,{" "}
+            <em>làm sao biết máy hết đời thật hay chỉ chậm</em>.
           </p>
           <p>
-            Đó là khoảng trống site này viết vào. Mỗi bài đi ra từ một vấn đề gặp
-            thật khi dựng và chạy hệ thống, kèm cách kiểm để bạn tự xác minh trên hệ
-            thống của mình — không phải tổng hợp lại từ blog nước ngoài.
+            Đó là khoảng trống site này viết vào. Nguyên tắc chung của mọi bài: nói rõ
+            việc cần làm, theo thứ tự làm được, và kèm cách tự kiểm để bạn xác minh
+            trên chính máy hay chính hoá đơn của mình — không phải tin vì tôi
+            nói vậy.
           </p>
 
           <h2>Viết cho ai</h2>
           <ul>
             <li>
-              Người chạy affiliate và muốn hiểu số liệu của mình thay vì chỉ đọc
-              dashboard của bên khác.
+              Người phải tự quyết những việc kỹ thuật nho nhỏ trong nhà mà không có ai
+              để hỏi.
             </li>
             <li>
-              Người tự dựng hệ thống tracking, hoặc đang cân nhắc giữa tự dựng và
-              dùng nền tảng có sẵn.
+              Người muốn rà lại chi tiêu hằng tháng nhưng không biết bắt đầu từ đâu.
             </li>
             <li>
-              Người làm performance marketing cần đối chiếu số với đối tác và cần lý
-              lẽ kỹ thuật để làm việc đó.
+              Người thích hướng dẫn có bước cụ thể hơn là bài truyền cảm hứng.
             </li>
           </ul>
           <p>
-            Bài viết giả định bạn đọc được đoạn code ngắn, nhưng không giả định bạn
-            là lập trình viên.
-          </p>
-
-          <h2>Chúng tôi kiếm tiền bằng cách nào</h2>
-          <p>
-            Bằng liên kết affiliate. Một số bài có liên kết tới sản phẩm hoặc dịch
-            vụ; nếu bạn dùng liên kết đó và phát sinh giao dịch, chúng tôi nhận hoa
-            hồng từ bên bán mà bạn không phải trả thêm gì.
-          </p>
-          <p>
-            Điều này ảnh hưởng tới việc <em>sản phẩm nào được nhắc tới</em>, nên nói
-            thẳng ra là công bằng với bạn. Ba nguyên tắc chúng tôi tự đặt:
-          </p>
-          <ul>
-            <li>
-              Mọi liên kết được trả tiền đều mang nhãn <strong>liên kết tài trợ</strong>{" "}
-              hiện ngay tại chỗ, và có thuộc tính <code>rel=&quot;nofollow sponsored&quot;</code>.
-            </li>
-            <li>
-              Không nhận tiền để đổi lấy một nhận xét tích cực, và không nhận bài do
-              bên khác viết rồi đăng như bài của mình.
-            </li>
-            <li>
-              Nội dung kỹ thuật không đổi theo việc có hoa hồng hay không. Nếu một
-              cách làm miễn phí là cách tốt hơn, bài viết sẽ nói vậy.
-            </li>
-          </ul>
-          <p>
-            Chi tiết ở trang{" "}
-            <Link href="/tiet-lo-lien-ket">tiết lộ liên kết affiliate</Link>.
+            Bài viết không giả định bạn biết kỹ thuật. Chỗ nào phải mở phần cài đặt
+            trong máy, tôi ghi đường dẫn từng bước.
           </p>
 
           <h2>Chuyên mục</h2>
@@ -97,20 +67,74 @@ export default function AboutPage() {
             ))}
           </ul>
 
+          <h2>Tôi kiếm tiền bằng cách nào</h2>
+          <p>
+            Bằng liên kết affiliate. Một số bài có liên kết tới nơi bán sản phẩm hoặc
+            dịch vụ được nhắc tới; nếu bạn dùng liên kết đó và phát sinh giao dịch,
+            tôi nhận hoa hồng từ bên bán mà bạn không phải trả thêm gì.
+          </p>
+          <p>
+            Điều này ảnh hưởng tới việc <em>sản phẩm nào được nhắc tới</em>, nên nói
+            thẳng ra là công bằng với bạn. Ba nguyên tắc tôi tự đặt:
+          </p>
+          <ul>
+            <li>
+              Mọi liên kết được trả tiền đều mang nhãn <strong>liên kết tài trợ</strong>{" "}
+              hiện ngay tại chỗ, và có thuộc tính <code>rel=&quot;nofollow sponsored&quot;</code>.
+            </li>
+            <li>
+              Không nhận tiền để đổi lấy một nhận xét tích cực, và không nhận bài do
+              bên khác viết rồi đăng như bài của mình.
+            </li>
+            <li>
+              Kết luận của bài không đổi theo việc có hoa hồng hay không. Nếu câu trả
+              lời đúng là &ldquo;chưa cần mua gì cả&rdquo; thì bài viết nói vậy — như
+              bài về{" "}
+              <Link href="/blog/khi-nao-nen-doi-dien-thoai">
+                khi nào nên đổi điện thoại
+              </Link>
+              , phần lớn nội dung là lý do <em>chưa</em> nên đổi.
+            </li>
+          </ul>
+          <p>
+            Chi tiết ở trang{" "}
+            <Link href="/tiet-lo-lien-ket">tiết lộ liên kết affiliate</Link>.
+          </p>
+
+          <h2>Điều site này không làm</h2>
+          <ul>
+            <li>
+              <strong>Không tư vấn đầu tư, tài chính, y tế hay pháp lý.</strong> Bài về
+              chi tiêu là cách rà soát hoá đơn, không phải khuyến nghị nên mua sản phẩm
+              tài chính nào.
+            </li>
+            <li>
+              <strong>Không có thư quảng cáo.</strong> Site không có form đăng ký nhận
+              tin vì tôi không có hệ thống gửi thư — dựng một cái form không xử
+              lý được thì chỉ là thu địa chỉ email của bạn để đó.
+            </li>
+            <li>
+              <strong>Không theo dõi bạn khi bạn chỉ đọc bài.</strong> Không Google
+              Analytics, không pixel mạng xã hội, không cookie theo dõi. Chi tiết trong{" "}
+              <Link href="/chinh-sach-bao-mat">chính sách quyền riêng tư</Link>.
+            </li>
+          </ul>
+
           <h2>Ai viết</h2>
           <p>
             <strong>{author.name}</strong> — {author.role}. {author.bio}
           </p>
           <p>
-            Chúng tôi không dựng thêm tên tác giả giả để site trông lớn hơn. Nếu về
+            Tôi không dựng thêm tên tác giả giả để site trông lớn hơn. Nếu về
             sau có người khác viết, tên họ sẽ xuất hiện ở đây và trên bài của họ.
           </p>
 
           <h2>Sai thì sửa</h2>
           <p>
-            Nội dung kỹ thuật cũ đi và có chỗ sai. Nếu bạn thấy một chi tiết không
-            đúng, <Link href="/lien-he">nhắn cho chúng tôi</Link> — bài sẽ được sửa
-            và ghi rõ ngày cập nhật, không sửa lặng lẽ.
+            Hướng dẫn cũ đi: menu trong máy được đổi tên, dịch vụ thay đổi cách tính
+            phí. Nếu bạn thấy một chi tiết không còn đúng,{" "}
+            <Link href="/lien-he">nhắn cho tôi</Link> — bài sẽ được sửa và ghi rõ
+            ngày cập nhật, không sửa lặng lẽ.
           </p>
         </Prose>
       </div>

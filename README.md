@@ -25,6 +25,23 @@ Landing `/c/[slug]` **không** dùng shell của website công khai: không nav,
 footer nhiều link — mọi link khác trên landing đều là chỗ để click rò rỉ ra ngoài
 thay vì vào CTA.
 
+### Hai cái tên, đừng trộn
+
+| Vai trò | Tên | Xuất hiện ở |
+|---|---|---|
+| Thương hiệu công khai | đọc từ `SITE.name` (**InsightDaily**), người viết `SITE.owner` (**Toàn**) | header, footer, OG, RSS, JSON-LD, byline của website nội dung |
+| Tên hệ thống nội bộ | **TrafficIQ** | repo, `/admin/**`, tài liệu kỹ thuật |
+
+Website công khai là một **site nội dung tổng hợp** (công nghệ, tiền bạc, đời
+sống), không phải blog về affiliate marketing. Nó là nơi người đọc tới vì nội
+dung; phần tracking chỉ nằm sau các liên kết tài trợ trong bài. Vì vậy tên
+"TrafficIQ" cố ý **không** hiện ở surface công khai — để nó ở đó làm site trông
+như trang thu traffic thay vì trang nội dung, và đó là tín hiệu xấu với cả người
+đọc lẫn ad network. `/admin/**` hard-code "TrafficIQ" là đúng, không phải sót.
+
+Đổi tên công khai: sửa `SITE.name`/`tagline`/`description` trong
+[`src/lib/site.ts`](src/lib/site.ts) — mọi trang public, RSS và sitemap đọc từ đó.
+
 ## Viết bài blog
 
 Bài viết là **module TSX trong `src/content/posts/`**, không phải bản ghi trong

@@ -67,6 +67,14 @@ export const buttonPrimaryClass =
 export const buttonSecondaryClass =
   "cursor-pointer rounded-lg border border-primary px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-50";
 
+/**
+ * CTA chính khi nó là một <Link> chứ không phải <button> (vd "Tạo chiến dịch"
+ * điều hướng sang trang tạo). Cùng hình dáng với `buttonPrimaryClass` để một
+ * view không có hai kiểu nút accent khác nhau.
+ */
+export const linkPrimaryClass =
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition-opacity duration-150 hover:opacity-90";
+
 export function Card({
   title,
   description,
@@ -84,6 +92,59 @@ export function Card({
       ) : null}
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+/** Mũi tên của hàng bung/thu. SVG chứ không emoji (checklist MASTER.md). */
+function ChevronIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-90"
+    >
+      <path
+        d="M7.5 4.5 13 10l-5.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Hàng bấm vào để xổ chi tiết.
+ *
+ * Dựng bằng `<details>` chứ không phải state React, cùng lý do với action-form:
+ * control plane phải dùng được khi JS chưa tải xong. `<summary>` còn có sẵn
+ * focus ring, Enter/Space và semantics expand/collapse từ trình duyệt — tự nối
+ * lại bằng div + onClick là tự bỏ hết những thứ đó.
+ */
+export function Collapsible({
+  summary,
+  children,
+  defaultOpen = false,
+}: {
+  summary: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      // Khi đóng, summary là đáy card nên phải bo nốt góc dưới — nếu không,
+      // nền hover vuông góc sẽ thò ra khỏi viền bo của card.
+      className="group rounded-xl border border-border bg-card text-card-foreground shadow-(--shadow-sm) [&:not([open])>summary]:rounded-b-xl"
+    >
+      <summary className="flex list-none cursor-pointer items-center gap-3 rounded-t-xl px-4 py-3 transition-colors duration-150 hover:bg-muted [&::-webkit-details-marker]:hidden">
+        <ChevronIcon />
+        <div className="min-w-0 flex-1">{summary}</div>
+      </summary>
+      <div className="border-t border-border px-4 py-4">{children}</div>
+    </details>
   );
 }
 

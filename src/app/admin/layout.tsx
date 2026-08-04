@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminNav } from "@/components/admin-nav";
 
 export const metadata = {
   title: "Quản trị TrafficIQ",
@@ -6,36 +7,18 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-/**
- * Nhãn tiếng Việt. Toàn bộ control plane dùng tiếng Việt vì người vận hành là
- * người Việt — thuật ngữ nào là danh từ riêng của ngành thì giữ nguyên trong
- * ngoặc để đối chiếu với tài liệu ad network (postback, offer, destination…).
- */
-const NAV = [
-  { href: "/admin", label: "Tổng quan" },
-  { href: "/admin/campaigns", label: "Chiến dịch" },
-  { href: "/admin/destinations", label: "URL đích" },
-  { href: "/admin/advertisers", label: "Đối tác" },
-  { href: "/admin/lien-he", label: "Hộp thư" },
-];
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
-      {/* header-height: 56px (Data-Dense Dashboard variable) */}
+      {/*
+       * header-height: 56px (Data-Dense Dashboard variable) — dùng min-h thay vì
+       * h cố định vì nav wrap xuống dòng ở mobile, h-14 sẽ cắt mất hàng thứ hai.
+       */}
       <header className="border-b border-border bg-card">
-        <nav className="mx-auto flex h-14 max-w-350 flex-wrap items-center gap-4 px-4 text-sm">
+        <nav className="mx-auto flex min-h-14 max-w-350 flex-wrap items-center gap-4 px-4 py-2 text-sm">
           {/* Logo dùng font-sans như mọi heading khác — xem MASTER.md § Typography. */}
           <span className="font-semibold tracking-tight">TrafficIQ</span>
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="cursor-pointer text-muted-foreground hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+          <AdminNav />
           <Link
             href="/"
             className="ml-auto cursor-pointer text-muted-foreground hover:text-foreground"

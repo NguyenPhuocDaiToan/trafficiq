@@ -98,7 +98,7 @@ export async function submitContactMessage(
 
   return {
     ok: true,
-    message: "Đã gửi. Chúng tôi thường phản hồi trong 1–2 ngày làm việc.",
+    message: "Đã gửi. Tôi thường phản hồi trong 1–2 ngày làm việc.",
   };
 }
 

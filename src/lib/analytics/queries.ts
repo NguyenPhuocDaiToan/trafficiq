@@ -33,16 +33,22 @@ function clickMatch(range: DateRange, campaignId?: ObjectId) {
   };
 }
 
+/*
+ * KHÔNG có payout/EPC ở đây — cố ý.
+ *
+ * `conversions.payout` vẫn được postback ghi xuống (xem app/api/postback), nhưng
+ * con số đó là advertiser tự khai: không đối soát được, không sửa được, không
+ * biết đã trả hay chưa. Đưa nó lên dashboard thành ra một cột "doanh thu" trông
+ * như sự thật kế toán trong khi nó chỉ là ước tính. Muốn hiển thị lại thì phải
+ * có chỗ quản lý đối soát trước, không phải chỉ thêm lại cột.
+ */
 export interface Overview {
   clicks: number;
   uniqueVisitors: number;
   botClicks: number;
   conversions: number;
-  payout: number;
   /** conversions / clicks */
   cr: number;
-  /** payout / clicks */
-  epc: number;
 }
 
 export async function getOverview(
@@ -85,7 +91,7 @@ export async function getOverview(
       .toArray(),
 
     conversionsCol
-      .aggregate<{ conversions: number; payout: number }>([
+      .aggregate<{ conversions: number }>([
         {
           $match: {
             ts: { $gte: range.from, $lte: range.to },
@@ -93,26 +99,24 @@ export async function getOverview(
             ...(campaignId ? { campaignId } : {}),
           },
         },
-        { $group: { _id: null, conversions: { $sum: 1 }, payout: { $sum: "$payout" } } },
+        { $group: { _id: null, conversions: { $sum: 1 } } },
       ])
       .toArray(),
   ]);
 
   const clicks = clickStats[0]?.clicks ?? 0;
   const convs = conversionStats[0]?.conversions ?? 0;
-  const payout = conversionStats[0]?.payout ?? 0;
 
   return {
     clicks,
     uniqueVisitors: uniqueStats[0]?.n ?? 0,
     botClicks: clickStats[0]?.botClicks ?? 0,
     conversions: convs,
-    payout,
     cr: clicks > 0 ? convs / clicks : 0,
-    epc: clicks > 0 ? payout / clicks : 0,
   };
 }
 
+/** Không có payout/EPC — cùng lý do đã ghi ở `Overview`. */
 export interface CampaignRow {
   campaignId: string;
   name: string;
@@ -121,9 +125,7 @@ export interface CampaignRow {
   status: string;
   clicks: number;
   conversions: number;
-  payout: number;
   cr: number;
-  epc: number;
 }
 
 export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRow[]> {
@@ -143,20 +145,14 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
       ])
       .toArray(),
     conversionsCol
-      .aggregate<{ _id: ObjectId | null; conversions: number; payout: number }>([
+      .aggregate<{ _id: ObjectId | null; conversions: number }>([
         {
           $match: {
             ts: { $gte: range.from, $lte: range.to },
             status: { $ne: "rejected" },
           },
         },
-        {
-          $group: {
-            _id: "$campaignId",
-            conversions: { $sum: 1 },
-            payout: { $sum: "$payout" },
-          },
-        },
+        { $group: { _id: "$campaignId", conversions: { $sum: 1 } } },
       ])
       .toArray(),
   ]);
@@ -170,9 +166,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
     .map((campaign) => {
       const id = campaign._id.toString();
       const clicks = clicksByCampaign.get(id) ?? 0;
-      const conv = convsByCampaign.get(id);
-      const convCount = conv?.conversions ?? 0;
-      const payout = conv?.payout ?? 0;
+      const convCount = convsByCampaign.get(id)?.conversions ?? 0;
       return {
         campaignId: id,
         name: campaign.name,
@@ -181,9 +175,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
         status: campaign.status,
         clicks,
         conversions: convCount,
-        payout,
         cr: clicks > 0 ? convCount / clicks : 0,
-        epc: clicks > 0 ? payout / clicks : 0,
       };
     })
     .sort((a, b) => b.clicks - a.clicks);

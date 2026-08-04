@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CategoryTag, PostCard, PostMetaLine, Prose } from "@/components/site";
+import { CategoryTag, PostCard, PostCover, PostMetaLine, Prose } from "@/components/site";
 import { allPosts, getPost, relatedPosts } from "@/content";
 import { categoryName, getAuthor } from "@/content/taxonomy";
 import { publicBaseUrl } from "@/lib/env";
@@ -42,11 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.updatedAt ?? post.publishedAt,
       authors: [getAuthor(post.authorId)?.name ?? SITE.name],
       tags: [...post.tags],
+      ...(post.cover ? { images: [{ url: post.cover.src, alt: post.cover.alt }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
+      ...(post.cover ? { images: [post.cover.src] } : {}),
     },
   };
 }
@@ -75,8 +77,15 @@ export default async function PostPage({ params }: Props) {
     dateModified: post.updatedAt ?? post.publishedAt,
     inLanguage: SITE.locale,
     mainEntityOfPage: { "@type": "WebPage", "@id": `${baseUrl}/blog/${post.slug}` },
-    author: { "@type": "Organization", name: author?.name ?? SITE.name },
-    publisher: { "@type": "Organization", name: SITE.name },
+    ...(post.cover ? { image: [`${baseUrl}${post.cover.src}`] } : {}),
+    /*
+     * `Person`, không phải `Organization`: site chạy dưới thương hiệu cá nhân
+     * (`SITE.owner`) và mục tác giả trong JSON-LD phải khớp với byline hiện trên
+     * trang — khai một tổ chức không tồn tại là dữ liệu có cấu trúc sai sự thật,
+     * đúng thứ Google hạ tín nhiệm ở nội dung review/affiliate.
+     */
+    author: { "@type": "Person", name: author?.name ?? SITE.owner },
+    publisher: { "@type": "Person", name: SITE.owner },
     articleSection: categoryName(post.category),
     keywords: post.tags.join(", "),
   };
@@ -117,20 +126,22 @@ export default async function PostPage({ params }: Props) {
       <article className="mt-8">
         <header className="border-b border-border pb-8">
           <CategoryTag category={post.category} />
-          <h1 className="mt-3 max-w-4xl text-3xl font-bold tracking-tight sm:text-4xl">
+          {/* leading 1.15: nhan đề serif cỡ lớn bằng tiếng Việt cần khoảng dòng
+              thoáng hơn mặc định — dấu nằm ở cả hai phía của dòng chữ. */}
+          <h1 className="mt-3 max-w-4xl font-display text-3xl leading-[1.15] font-bold tracking-tight sm:text-[2.5rem]">
             {post.title}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
+          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
             {post.description}
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <PostMetaLine post={post} />
-            {author ? (
-              <p className="text-sm text-muted-foreground">
-                <span aria-hidden="true">· </span>
-                {author.name}
-              </p>
-            ) : null}
+          {/* Byline gộp vào `PostMetaLine` (`withByline`) thay vì ghép thêm một <p>
+              rời: bản trước để tên người viết ở thẻ riêng nên dấu "·" phải viết tay
+              và khi tắt CSS thì thứ tự đọc ra là "ngày · phút · · tên". */}
+          <div className="mt-5">
+            <PostMetaLine post={post} withByline />
+          </div>
+          <div className="mt-6">
+            <PostCover post={post} size="lg" />
           </div>
         </header>
 
@@ -140,12 +151,14 @@ export default async function PostPage({ params }: Props) {
 
         {post.tags.length > 0 ? (
           <footer className="mt-12 border-t border-border pt-6">
-            <h2 className="text-xs font-semibold tracking-wide uppercase">Chủ đề</h2>
+            <h2 className="text-[0.6875rem] font-bold tracking-[0.18em] uppercase">
+              Chủ đề
+            </h2>
             <ul className="mt-3 flex flex-wrap gap-2 text-sm">
               {post.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="rounded-lg bg-muted px-3 py-1 text-muted-foreground"
+                  className="bg-muted px-3 py-1 text-muted-foreground"
                 >
                   {tag}
                 </li>
@@ -157,10 +170,16 @@ export default async function PostPage({ params }: Props) {
 
       {related.length > 0 ? (
         <section aria-labelledby="lien-quan" className="mt-16">
-          <h2 id="lien-quan" className="text-2xl font-bold tracking-tight">
+          {/* Nhãn section cùng mô-típ với `SectionHeading` trên trang chủ: chữ nhỏ
+              + gạch kẻ, để tiêu đề bài bên dưới là thứ to nhất. */}
+          <h2
+            id="lien-quan"
+            className="border-b border-border pb-2 text-[0.6875rem] font-bold tracking-[0.18em] uppercase"
+          >
             Đọc tiếp
           </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* gap-x rộng — xem ghi chú ở PostCard: thẻ phân cách bằng gạch trên. */}
+          <div className="mt-8 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <PostCard key={item.slug} post={item} />
             ))}

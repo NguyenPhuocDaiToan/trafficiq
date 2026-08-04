@@ -16,7 +16,7 @@ export const contactSchema = z.object({
   message: z
     .string()
     .trim()
-    .min(20, "Vui lòng viết ít nhất 20 ký tự để chúng tôi hiểu bạn cần gì")
+    .min(20, "Vui lòng viết ít nhất 20 ký tự để tôi hiểu bạn cần gì")
     .max(5000, "Nội dung quá dài — vui lòng rút gọn dưới 5000 ký tự"),
 });
 

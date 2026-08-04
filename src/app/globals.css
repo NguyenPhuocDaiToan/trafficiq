@@ -6,49 +6,91 @@
  * KHÔNG hard-code màu trong component. Mọi màu phải đi qua token ở đây.
  * Muốn đổi màu → sửa MASTER.md rồi đồng bộ xuống file này, không sửa ngược lại.
  *
- * Palette: "Analytics Dashboard" (ui-ux-pro-max colors.csv)
- * Style:   Data-Dense Dashboard | Density 8/10 | Variance 4/10 | Motion 3/10
+ * ⚠️ FILE NÀY CÓ HAI SCOPE TOKEN, KHÔNG PHẢI MỘT:
+ *
+ *   `:root`             = bộ NỀN. Dùng cho /admin, /c/[slug], /link-unavailable.
+ *   `.theme-editorial`  = bộ CÔNG KHAI. Áp trên route group `(site)` (trang chủ,
+ *                         blog, chuyên mục, các trang tĩnh). Khai lại ĐÚNG cùng
+ *                         một danh sách tên token nên mọi utility Tailwind
+ *                         (`bg-card`, `text-accent`…) tự phân giải theo cây DOM.
+ *
+ * Bản trước cố ý chỉ có một tầng token, và tài liệu ghi rõ "muốn đổi màu thì sửa
+ * MASTER, không thêm tầng riêng cho blog". Quyết định đó đã ĐẢO: chủ dự án chọn
+ * đổi theme cho surface công khai mà /admin đứng yên. Hệ quả phải chấp nhận và
+ * đã xử lý:
+ *   1. `scripts/check-contrast.mjs` gác BỐN bộ (root/editorial × light/dark),
+ *      không phải hai. Thêm token màu mới thì phải thêm vào cả hai scope.
+ *   2. Component dùng chung giữa hai surface (nếu có sau này) sẽ đổi màu theo nơi
+ *      nó được render — đó là ý muốn, nhưng đừng ngạc nhiên khi thấy nó khác màu
+ *      ở /admin.
+ *
+ * Palette nền:   "Magazine/Blog" (ui-ux-pro-max colors.csv) — editorial black + pink
+ * Palette public: near-black + cam đất (broadsheet) — xem block .theme-editorial
+ * Style:   Editorial Grid / Magazine (public) + Data-Dense Dashboard (/admin)
+ *
+ * VÌ SAO ĐỔI KHỎI "Analytics Dashboard":
+ * Palette cũ đặt `--foreground: #1E3A8A` (navy) nên MỌI dòng chữ trên site là chữ
+ * xanh, và `--accent: #D97706→#92400E` là nâu đục. Với dashboard thì chịu được;
+ * với surface đọc văn bản dài thì sai hẳn — style Editorial Grid trong styles.csv
+ * ghi rõ "High contrast: Black #000000, White #FFFFFF, accent brand color", và
+ * hàng "Magazine/Blog" trong colors.csv cho `--foreground: #09090B`.
+ * Palette này giờ là bộ NỀN (/admin và landing) — surface công khai đã tách ra
+ * `.theme-editorial` bên dưới.
  */
 
 :root {
   /* --- Light: nguyên văn từ MASTER.md ------------------------------------ */
-  --background: #f8fafc;
-  --foreground: #1e3a8a;
+  --background: #fafafa;
+  --foreground: #09090b;
 
-  /* MASTER.md ghi .card { background: #F8FAFC } — trùng hệt --background nên
-     card sẽ vô hình. Dùng Card role #FFFFFF trong palette gốc mới đúng. */
   --card: #ffffff;
-  --card-foreground: #1e3a8a;
+  --card-foreground: #09090b;
 
-  --primary: #1e40af;
+  /* Editorial black. Dùng cho nút outline, viền focus, và MÀU CHỮ CỦA LINK.
+     Vì nó gần trùng --foreground, link BẮT BUỘC phải có underline mới phân biệt
+     được — đúng WCAG 1.4.1 (không dùng riêng màu để truyền thông tin) và cũng
+     đúng chất editorial. Hover thì đổi sang --accent, xem ghi chú ở đó. */
+  --primary: #18181b;
   --on-primary: #ffffff;
-  --secondary: #3b82f6;
+  --secondary: #3f3f46;
   --on-secondary: #ffffff;
 
-  /* Accent = màu DUY NHẤT dùng cho CTA chính.
-     MASTER.md ghi #D97706 và chú thích "adjusted for WCAG 3:1" — nhưng 3:1 là
-     ngưỡng cho UI phi-text; ta dùng nó làm nền nút có chữ trắng nên cần 4.5:1.
-     #D97706 chỉ đạt 3.19:1 => FAIL. Đẩy tối về #92400e (cùng họ amber) đạt
-     7.09:1, thoả luôn mục tiêu CTA 7:1 của pages/campaign-landing.md.
+  /* Accent = màu DUY NHẤT dùng cho CTA chính, và là màu hover của link/tiêu đề.
+     colors.csv ghi #EC4899 nhưng chữ trắng trên nó chỉ đạt 3.53:1 => FAIL.
+     #BE185D (cùng họ pink, đậm hơn) đạt 6.04:1 với chữ trắng, và khi làm MÀU CHỮ
+     thì đạt 5.78:1 trên --background, 6.04:1 trên --card, 5.08:1 trên --muted.
      Đo lại bằng: npm run check:contrast */
-  --accent: #92400e;
+  --accent: #be185d;
   --on-accent: #ffffff;
 
-  --muted: #e9eef6;
-  /* MASTER.md ghi #64748B nhưng chỉ đạt 4.08:1 trên nền --muted (badge paused).
-     #556274 giữ được cảm giác "muted" mà vẫn đạt 5.32:1. */
-  --muted-foreground: #556274;
+  /* Nền tint của badge, header bảng, `.prose code` và các tag nhỏ.
+     colors.csv ghi #E8ECF0 — đó là một xám **hơi xanh** (b > r), lệch khỏi thang
+     zinc trung tính của cả palette (#09090B / #18181B / #FAFAFA) và đặt cạnh
+     accent hồng #BE185D thì ra tông đục. Đổi sang #ECECEE: cùng độ sáng, bỏ hẳn
+     sắc xanh, nên vẫn thấy ranh giới với --card #FFFFFF mà không lệch tông. */
+  --muted: #ececee;
+  /* colors.csv ghi #64748B nhưng chỉ đạt 4.01:1 trên nền --muted (badge paused).
+     #52525B (zinc-600, cùng họ với --primary) đạt 6.51:1. */
+  --muted-foreground: #52525b;
 
   /* Border trang trí (divider, viền card): KHÔNG cần 3:1 theo WCAG 1.4.11 vì
      không mang thông tin trạng thái. Giữ nhạt cho bảng data-dense dễ đọc. */
-  --border: #dbeafe;
+  --border: #e4e4e7;
   /* Border của control (input/select/textarea): PHẢI đạt 3:1 — nó là thứ duy
      nhất chỉ ra ranh giới vùng nhập liệu. */
-  --input: #7c8da5;
+  --input: #71717a;
+
+  /* Gạch kẻ ĐẬM kiểu báo in (2px) — mở đầu bài dẫn, đầu mỗi cột bài, trên footer.
+     Xem design-system/trafficiq/pages/blog.md § "Thứ bậc dựng bằng gạch kẻ".
+     Vì sao là token riêng chứ không dùng thẳng --primary: ở bộ dark, --primary là
+     #FAFAFA, tức gạch 2px trắng tinh chạy hết chiều rộng — sáng như một thanh đèn.
+     Token riêng cho phép bộ dark hạ xuống zinc-400 mà không phải thêm biến thể
+     `dark:` trong component (dự án giữ đúng một tầng token, không có `dark:` nào). */
+  --rule: #18181b;
 
   --destructive: #dc2626;
   --on-destructive: #ffffff;
-  --ring: #1e40af;
+  --ring: #18181b;
 
   /* Status colors cho dashboard (Data-Dense Dashboard yêu cầu green/amber/red).
      Cả hai đều đã đẩy tối so với palette gốc để chữ đọc được trên nền tint 15%
@@ -78,38 +120,107 @@
 }
 
 /*
+ * ---------------------------------------------------------------------------
+ * SCOPE CÔNG KHAI — palette "trang nhất báo" (broadsheet).
+ *
+ * Áp bằng class `.theme-editorial` ở `src/app/(site)/layout.tsx`. Không áp lên
+ * <html> vì /admin và /c/[slug] phải giữ bộ nền.
+ *
+ * Khác bộ nền ở đúng ba điểm, mỗi điểm có lý do:
+ *
+ * 1. `--foreground` / `--primary` xuống #0A0A0A (near-black thay vì zinc #09090B
+ *    và #18181B). Style "Bold Typography / broadsheet" trong styles.csv ghi
+ *    "Near Black #0A0A0A, Warm White #FAFAFA" và tương phản 18.97:1 — cần thiết vì
+ *    tiêu đề cỡ lớn bằng font serif có nét mảnh, ở zinc-900 chúng bắt đầu trông xám.
+ *
+ * 2. `--accent` từ hồng #BE185D sang cam đất #C2410C. Hồng magenta cạnh một
+ *    masthead serif đọc ra "tech startup", không ra "tòa soạn"; cam đất là màu mực
+ *    thứ hai của báo in. #C2410C là bậc đậm nhất còn giữ được sắc cam mà vẫn đạt
+ *    ngưỡng chữ: 4.96:1 trên --background, 5.18:1 trên --card, 4.54:1 trên --muted.
+ *    Bậc sáng hơn (#EA580C) chỉ đạt 3.6:1 => FAIL khi làm màu chữ.
+ *
+ * 3. Thang xám đổi từ zinc (hơi lạnh, xanh) sang neutral (trung tính thật). Zinc
+ *    cạnh cam đất tạo tương phản nhiệt độ hai chiều nhìn ra tông đục.
+ *
+ * KHÔNG có `--radius` riêng: surface này không dùng bo góc ở đâu cả (Editorial
+ * Grid dựng thứ bậc bằng gạch kẻ, không bằng hộp), nên component chỉ cần không
+ * viết class `rounded-*`. Thêm một token radius = 0 chỉ để rồi phải nhớ dùng nó.
+ * ---------------------------------------------------------------------------
+ */
+.theme-editorial {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+
+  --primary: #0a0a0a;
+  --on-primary: #fafafa;
+  --secondary: #404040;
+  --on-secondary: #ffffff;
+
+  --accent: #c2410c;
+  --on-accent: #ffffff;
+
+  --muted: #f0f0ef;
+  --muted-foreground: #525252;
+
+  --border: #e5e5e5;
+  --input: #737373;
+
+  /* Gạch kẻ: surface này dùng 3px cho gạch trang nhất (đậm hơn 2px của bộ nền) —
+     độ dày do component quyết (`border-t-[3px]`), token chỉ giữ màu. */
+  --rule: #0a0a0a;
+
+  --destructive: #dc2626;
+  --on-destructive: #ffffff;
+  --ring: #0a0a0a;
+
+  --success: #166534;
+  --warning: #854d0e;
+}
+
+/*
  * Dark mode: DERIVED, không có trong MASTER.md.
  *
- * Palette "Analytics Dashboard" chỉ cung cấp bộ light, nhưng style
- * "Data-Dense Dashboard" khai báo Dark ✓ Full nên bắt buộc phải có bộ dark.
- * Cách suy ra: giữ nguyên họ màu xanh, đảo trục sáng, và làm SÁNG primary/accent
- * lên (#1E40AF và #D97706 quá tối để đọc trên nền tối).
+ * Hàng "Magazine/Blog" của colors.csv chỉ có bộ light, nhưng cả hai style đang
+ * dùng (Editorial Grid, Data-Dense Dashboard) đều khai báo Dark ✓ Full nên bắt
+ * buộc phải suy ra.
+ *
+ * Cách suy: đảo đúng trục sáng của thang zinc (#09090B ↔ #FAFAFA), giữ nguyên họ
+ * pink cho accent nhưng làm sáng lên (#BE185D quá tối trên nền đen).
+ *
+ * `--primary` ở dark là #FAFAFA — tức TRÙNG `--foreground`, cố ý. Editorial black
+ * đảo sang nền tối thì thành trắng; link vẫn phân biệt được bằng underline (xem
+ * ghi chú ở --primary bộ light) và bằng hover đổi sang --accent.
  */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1220;
-    --foreground: #e2e8f0;
+    --background: #09090b;
+    --foreground: #fafafa;
 
-    --card: #111a2b;
-    --card-foreground: #e2e8f0;
+    --card: #18181b;
+    --card-foreground: #fafafa;
 
-    --primary: #60a5fa;
-    --on-primary: #0b1220;
-    --secondary: #3b82f6;
-    --on-secondary: #ffffff;
+    --primary: #fafafa;
+    --on-primary: #09090b;
+    --secondary: #71717a;
+    --on-secondary: #09090b;
 
-    --accent: #fbbf24;
-    --on-accent: #0b1220;
+    --accent: #f472b6;
+    --on-accent: #09090b;
 
-    --muted: #1b2537;
-    --muted-foreground: #94a3b8;
-    --border: #24334a;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --border: #3f3f46;
     /* Sáng hơn --border để đạt 3:1 trên nền card tối. */
-    --input: #64748b;
+    --input: #71717a;
+    /* Gạch đậm: zinc-400 thay vì #FAFAFA — vẫn rõ là gạch chủ ý, không loá. */
+    --rule: #a1a1aa;
 
     --destructive: #f87171;
-    --on-destructive: #0b1220;
-    --ring: #60a5fa;
+    --on-destructive: #09090b;
+    --ring: #fafafa;
 
     --success: #4ade80;
     --warning: #fbbf24;
@@ -119,6 +230,45 @@
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.55);
     --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  }
+
+  /*
+   * Bộ dark của scope công khai. Phải khai TRONG cùng media query này — nếu để
+   * ngoài, `.theme-editorial` (specificity 0-1-0) sẽ luôn thắng `:root` dark
+   * (0-1-0 nhưng đứng trước) và surface công khai không bao giờ vào dark mode.
+   *
+   * Cam #C2410C quá tối trên nền đen (2.6:1) nên bộ dark dùng #FB923C: 8.75:1 làm
+   * chữ trên --background, và chữ #0A0A0A trên nền cam đó cũng đạt 8.75:1 — cùng
+   * một cặp đảo chiều, nên nút accent đọc được ở cả hai bộ.
+   */
+  .theme-editorial {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+
+    --card: #171717;
+    --card-foreground: #fafafa;
+
+    --primary: #fafafa;
+    --on-primary: #0a0a0a;
+    --secondary: #737373;
+    --on-secondary: #0a0a0a;
+
+    --accent: #fb923c;
+    --on-accent: #0a0a0a;
+
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --border: #3f3f3f;
+    --input: #737373;
+    /* neutral-400: gạch 3px trắng tinh chạy hết chiều rộng sẽ loá như thanh đèn. */
+    --rule: #a3a3a3;
+
+    --destructive: #f87171;
+    --on-destructive: #0a0a0a;
+    --ring: #fafafa;
+
+    --success: #4ade80;
+    --warning: #fbbf24;
   }
 }
 
@@ -137,6 +287,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-rule: var(--rule);
   --color-destructive: var(--destructive);
   --color-on-destructive: var(--on-destructive);
   --color-ring: var(--ring);
@@ -151,6 +302,18 @@
    */
   --font-sans: var(--font-be-vietnam-pro);
   --font-mono: var(--font-jetbrains-mono);
+  /*
+   * Display = Fraunces, CHỈ dùng trên surface công khai và CHỈ cho nhan đề:
+   * wordmark, tiêu đề bài, `.prose h2/h3`, tiêu đề trang. KHÔNG dùng cho nhãn nhỏ
+   * uppercase (`SectionHeading`, nhãn chuyên mục) — serif ở 11px uppercase mất hết
+   * đặc điểm và chỉ còn cảm giác nhoè. KHÔNG dùng ở /admin.
+   * Lý do thêm họ chữ thứ ba: xem comment ở src/app/layout.tsx.
+   */
+  --font-display: var(--font-fraunces);
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -220,17 +383,40 @@ textarea {
   margin-top: 1.25em;
 }
 
+/*
+ * Thân bài landing (/c/[slug]) dùng chung .prose với blog nhưng bỏ giới hạn 68ch:
+ * khung landing đã là max-w-2xl và headline/CTA canh theo khung đó, giữ 68ch thì
+ * riêng thân bài hẹp hơn và lệch trái so với mọi thứ còn lại.
+ *
+ * Vì sao không viết bộ CSS thứ hai cho thân bài landing: hai bộ style thân bài
+ * sẽ lệch nhau ngay lần sửa kế tiếp. Xem pages/campaign-landing.md § Thân bài
+ * rich-text.
+ */
+.prose-landing {
+  max-width: none;
+}
+
+/*
+ * Nhan đề trong bài dùng font display (serif). Đây là chỗ họ chữ thứ ba trả lại
+ * giá trị rõ nhất: một bài 2000 chữ không có ảnh thì cái duy nhất tách "mục" khỏi
+ * "văn bản" là hình dáng chữ. Fallback Georgia để lúc font chưa tải (display:
+ * swap) chữ vẫn là serif, không nhảy từ sans sang serif giữa lúc đọc.
+ */
 .prose h2 {
   margin-top: 2.5em;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 1.75rem;
+  /* 700, không phải 600: chỉ weight 700 của Fraunces được nạp (xem layout.tsx) —
+     đặt 600 ở đây là bắt browser giả độ đậm, chữ serif bị dày và nhoè. */
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .prose h3 {
   margin-top: 2em;
-  font-size: 1.1875rem;
-  font-weight: 600;
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 1.3125rem;
+  font-weight: 700;
 }
 
 /* Section divider kiểu editorial: gạch ngắn trên h2, không phải <hr> toàn dòng. */
@@ -242,6 +428,11 @@ textarea {
   content: "";
 }
 
+/*
+ * Link trong thân bài: màu --primary (editorial black) + underline BẮT BUỘC.
+ * Ở palette này --primary gần trùng --foreground nên underline là thứ duy nhất
+ * phân biệt link với chữ thường — bỏ nó đi là vi phạm WCAG 1.4.1.
+ */
 .prose a {
   color: var(--primary);
   text-decoration: underline;
@@ -249,7 +440,9 @@ textarea {
   cursor: pointer;
 }
 
+/* Hover đổi sang --accent, cùng quy ước với tiêu đề bài và wordmark. */
 .prose a:hover {
+  color: var(--accent);
   text-decoration-thickness: 2px;
 }
 
@@ -287,11 +480,12 @@ textarea {
   color: var(--muted-foreground);
 }
 
+/* Bo góc = 0 trên toàn surface công khai: Editorial Grid dựng thứ bậc bằng gạch
+   kẻ, và một khối code bo góc 12px giữa bài là hình duy nhất "mềm" trên cả trang. */
 .prose code {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.875em;
   background: var(--muted);
-  border-radius: 0.25rem;
   padding: 0.125em 0.375em;
 }
 
@@ -299,7 +493,6 @@ textarea {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
   padding: 1rem;
   font-size: 0.875rem;
   line-height: 1.6;
@@ -363,6 +556,26 @@ textarea {
   letter-spacing: 0.03em;
   color: var(--muted-foreground);
   font-weight: 500;
+}
+
+/*
+ * Ô đầu HÀNG (`<th scope="row">`, do `CriteriaTable` sinh) là nhãn của hàng, không
+ * phải tiêu đề cột — nên nó không được nhận style uppercase 12px của `thead th`.
+ * Không có khối này thì tên từng phương án trong bảng so sánh bị in hoa nhỏ xíu và
+ * mờ hơn cả số liệu ở cột bên phải, tức nhãn quan trọng nhất lại nhẹ nhất.
+ */
+.prose tbody th {
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Bảng do `CriteriaTable` bọc trong <figure> — bỏ margin mặc định để khoảng cách
+   do `.prose > * + *` quyết, không cộng đôi. */
+.prose figure {
+  margin-inline: 0;
 }
 
 /*

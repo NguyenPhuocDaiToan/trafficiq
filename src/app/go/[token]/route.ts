@@ -7,6 +7,7 @@ import {
 } from "@/lib/redirect/resolve";
 import { emit } from "@/lib/tracking/emit";
 import { readClickContext } from "@/lib/tracking/request-context";
+import { isBotRequest } from "@/lib/tracking/ua";
 
 /**
  * Hot path: /go/[token] → 302.
@@ -33,6 +34,15 @@ export async function GET(
   const route = await resolveToken(token);
   if (!route) {
     return NextResponse.redirect(new URL("/link-unavailable", request.url), {
+      status: 302,
+      headers: NO_STORE,
+    });
+  }
+
+  // 🤖 Nếu là Bot (Twitterbot, Facebook, Google...), redirect sang campaign SSR gốc
+  // để bot cào Open Graph Card và KHÔNG ghi nhận click rác vào báo cáo.
+  if (isBotRequest(request)) {
+    return NextResponse.redirect(new URL(`/c/${route.slug}`, request.url), {
       status: 302,
       headers: NO_STORE,
     });

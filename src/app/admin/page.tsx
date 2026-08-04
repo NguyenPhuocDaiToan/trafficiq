@@ -25,8 +25,10 @@ import {
  * `force-dynamic` vì mọi số liệu phải là realtime — cache trang ở đây là sai.
  *
  * UI theo design-system/trafficiq/pages/dashboard.md.
- * Ngôn ngữ: tiếng Việt. Viết tắt của ngành (CR, EPC) giữ nguyên vì tài liệu
- * ad network dùng đúng chữ đó, nhưng luôn kèm chú thích tiếng Việt bên dưới.
+ * Ngôn ngữ: tiếng Việt. Viết tắt của ngành (CR) giữ nguyên vì tài liệu ad
+ * network dùng đúng chữ đó, nhưng luôn kèm chú thích tiếng Việt bên dưới.
+ *
+ * KHÔNG có cột doanh thu/EPC — lý do ghi ở lib/analytics/queries.ts § Overview.
  */
 export const dynamic = "force-dynamic";
 
@@ -34,10 +36,6 @@ const RANGES = [1, 7, 30] as const;
 
 function pct(value: number): string {
   return `${(value * 100).toFixed(2)}%`;
-}
-
-function usd(value: number): string {
-  return `$${value.toFixed(2)}`;
 }
 
 export default async function DashboardPage({
@@ -87,7 +85,7 @@ export default async function DashboardPage({
       </div>
 
       {/* KPI row — grid-gap 8px theo density 8/10 */}
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Lượt click"
           value={overview.clicks.toLocaleString("vi-VN")}
@@ -104,11 +102,6 @@ export default async function DashboardPage({
           hint="từ postback của đối tác"
         />
         <Stat label="CR" value={pct(overview.cr)} hint="tỷ lệ chuyển đổi" />
-        <Stat
-          label="Doanh thu"
-          value={usd(overview.payout)}
-          hint={`EPC ${usd(overview.epc)} — thu nhập mỗi click`}
-        />
       </div>
 
       <Card
@@ -146,13 +139,11 @@ export default async function DashboardPage({
                 <Th align="right">Click</Th>
                 <Th align="right">Chuyển đổi</Th>
                 <Th align="right">CR</Th>
-                <Th align="right">EPC</Th>
-                <Th align="right">Doanh thu</Th>
               </tr>
             </thead>
             <tbody>
               {campaignRows.length === 0 ? (
-                <EmptyRow colSpan={7}>
+                <EmptyRow colSpan={5}>
                   Chưa có chiến dịch nào — tạo ở mục Chiến dịch.
                 </EmptyRow>
               ) : (
@@ -172,8 +163,6 @@ export default async function DashboardPage({
                     <TdNum>{row.clicks}</TdNum>
                     <TdNum>{row.conversions}</TdNum>
                     <TdNum>{pct(row.cr)}</TdNum>
-                    <TdNum>{usd(row.epc)}</TdNum>
-                    <TdNum>{usd(row.payout)}</TdNum>
                   </Tr>
                 ))
               )}

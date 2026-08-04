@@ -16,7 +16,27 @@ import type { ReactNode } from "react";
  * bắn truy vấn DB mỗi lượt xem.
  */
 
-export type CategorySlug = "do-luong" | "toi-uu" | "van-hanh";
+/**
+ * Chuyên mục của website nội dung. Bảy mục cố ý phủ nhiều mảng khác nhau — đây là
+ * site tổng hợp, không phải blog một ngành.
+ *
+ * Đổi/thêm slug ở đây thì phải sửa đồng thời: `CATEGORIES` trong `taxonomy.ts`,
+ * `MAIN_NAV`/`FOOTER_NAV` trong `lib/site.ts`, `COVER_MOTIF` trong
+ * `components/site.tsx` (mỗi chuyên mục có một hình bìa riêng), và `category` của
+ * từng bài. TypeScript bắt được tất cả nên đừng bỏ qua lỗi build.
+ *
+ * KHÔNG thêm chuyên mục về y tế/thuốc, đầu tư/chứng khoán, pháp lý hay chính trị:
+ * đó là các mảng "nhạy cảm" mà site này cố ý không viết (xem `Post.kind` và
+ * `/dieu-khoan`). Nội dung ở đây là đồ đạc, chi tiêu trong nhà và việc thường ngày.
+ */
+export type CategorySlug =
+  | "cong-nghe"
+  | "tai-chinh"
+  | "doi-song"
+  | "nha-cua"
+  | "bep"
+  | "di-chuyen"
+  | "lam-viec";
 
 export interface Category {
   slug: CategorySlug;
@@ -30,6 +50,13 @@ export interface Author {
   name: string;
   role: string;
   bio: string;
+}
+
+export interface PostCoverImage {
+  /** Đường dẫn ảnh (WebP <= 200KB, relative hoac absolute URL). */
+  src: string;
+  /** Alt text mô tả ảnh cho screen reader và SEO. */
+  alt: string;
 }
 
 export interface Post {
@@ -50,6 +77,27 @@ export interface Post {
   readingMinutes: number;
   /** Đúng MỘT bài được đặt true — bài này chiếm ô lớn trên trang chủ. */
   featured?: boolean;
+
+  /**
+   * Dạng bài. Mặc định `"guide"` (hướng dẫn làm một việc).
+   *
+   * `"review"` = bài giúp CHỌN một món đồ: tiêu chí, so sánh nhóm sản phẩm, chi phí
+   * dài hạn. Trang chủ có dải riêng cho nhóm này.
+   *
+   * ⚠️ RÀNG BUỘC BẮT BUỘC cho `kind: "review"` — đọc trước khi viết bài mới:
+   * bài review ở site này **không được kể trải nghiệm không có thật**. Không viết
+   * "tôi đã dùng ba tháng", không cho điểm số kiểu 8.5/10, không so sánh hai model
+   * cụ thể bằng số đo mà mình không tự đo. Bịa trải nghiệm là cách mất uy tín nhanh
+   * nhất với cả người đọc lẫn ad network — và nó vô hiệu hoá đúng thứ site này đang
+   * cố xây. Thay vào đó: so sánh theo NHÓM (kiểu máy, tầm giá), nói rõ cơ sở bằng
+   * `<MethodNote>`, và luôn kèm cách người đọc tự kiểm trên món đồ trước mặt họ.
+   * Khi nào có bài dùng thật thì mới được viết ở ngôi "tôi đã dùng".
+   */
+  kind?: "guide" | "review";
+
+  /** Ảnh bìa thật nếu có. Nếu không có, hệ thống tự render art SVG theo slug hoặc category. */
+  cover?: PostCoverImage;
+
   tags: string[];
   /** Thân bài. Trang chi tiết bọc trong <div class="prose">. */
   body: () => ReactNode;

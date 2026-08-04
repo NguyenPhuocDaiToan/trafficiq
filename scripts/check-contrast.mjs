@@ -21,20 +21,54 @@ const css = readFileSync(join(root, "src/app/globals.css"), "utf8");
 const AA_TEXT = 4.5;
 const AA_LARGE = 3;
 
-function parseBlock(source, label) {
-  // Light = khối `:root {` đầu tiên; Dark = khối `:root {` trong @media dark.
+/**
+ * Đọc một khối khai token.
+ *
+ * `globals.css` có BỐN khối màu, không phải hai — surface công khai dùng tầng token
+ * riêng `.theme-editorial` (xem comment đầu globals.css):
+ *
+ *   :root                        light  → /admin, /c/[slug], /link-unavailable
+ *   .theme-editorial             light  → (site): trang chủ, blog, chuyên mục…
+ *   :root trong @media dark      dark
+ *   .theme-editorial trong @media dark  dark
+ *
+ * Chỉ lấy đúng phần trong cặp ngoặc của selector đó — không quét tới hết file như
+ * bản trước. Bản cũ dựa vào "match đầu tiên thắng" nên khi thêm block thứ hai vào
+ * cùng region, token của block sau bị block trước che và gate im lặng đo sai bộ.
+ */
+function parseBlock(source, selector, mode) {
   const darkIndex = source.indexOf("prefers-color-scheme: dark");
   const region =
-    label === "dark"
+    mode === "dark"
       ? source.slice(darkIndex)
       : source.slice(0, darkIndex === -1 ? source.length : darkIndex);
 
-  const start = region.indexOf(":root");
-  if (start === -1) throw new Error(`Không tìm thấy khối :root cho ${label}`);
+  /*
+   * Phải khớp selector ở ĐẦU DÒNG rồi tới `{`, không dùng `indexOf(selector)`:
+   * chính comment đầu globals.css có nhắc tên cả hai selector, nên `indexOf` bắt
+   * vào comment rồi lấy `{` kế tiếp — tức đọc khối `:root` mà vẫn in nhãn "CÔNG
+   * KHAI" và báo PASS. Đó là một gate nói dối, tệ hơn không có gate.
+   */
+  const declaration = new RegExp(
+    `^[ \\t]*${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[ \\t]*\\{`,
+    "m",
+  );
+  const found = declaration.exec(region);
+  if (!found) {
+    throw new Error(`Không tìm thấy khối ${selector} cho bộ ${mode}`);
+  }
+
+  const open = found.index + found[0].length - 1;
+  const close = region.indexOf("}", open);
+  if (close === -1) {
+    throw new Error(`Khối ${selector} (${mode}) không có dấu } đóng`);
+  }
 
   const tokens = {};
-  for (const match of region.slice(start).matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)) {
-    if (!(match[1] in tokens)) tokens[match[1]] = match[2].toLowerCase();
+  for (const match of region
+    .slice(open, close)
+    .matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)) {
+    tokens[match[1]] = match[2].toLowerCase();
   }
   return tokens;
 }
@@ -84,6 +118,16 @@ function pairsFor(t) {
     ["badge paused: muted-fg / muted", t["muted-foreground"], t.muted, AA_TEXT],
     // Notice component dùng tint 10% trên background trang.
     ["notice: warning / warning@10%", t.warning, blend(t.warning, t.background, 0.1), AA_TEXT],
+    // Banner "đã tạo chiến dịch" ở /admin/campaigns: cùng kiểu tint 10%.
+    ["notice ok: success / success@10%", t.success, blend(t.success, t.background, 0.1), AA_TEXT],
+    /*
+     * Hàng chiến dịch bung được (Collapsible) đổi nền sang --muted khi hover,
+     * nên MỌI màu chữ xuất hiện trong hàng đó phải đạt ngưỡng trên nền --muted,
+     * không chỉ trên --card. Cảnh báo "đang chạy nhưng không có đích nào" dùng
+     * --warning: --destructive chỉ đạt 4.09:1 trên --muted ở light mode, nên
+     * đừng đổi sang màu đỏ cho "nổi hơn" — gate này sẽ chặn.
+     */
+    ["cảnh báo trong hàng hover: warning / muted", t.warning, t.muted, AA_TEXT],
     /*
      * Surface blog dùng --accent làm MÀU CHỮ (nhãn chuyên mục, dòng tagline ở
      * hero), không chỉ làm nền nút. Khi là chữ thì phải đạt 4.5:1 — nền nút và
@@ -91,6 +135,20 @@ function pairsFor(t) {
      */
     ["nhãn accent làm chữ / background", t.accent, t.background, AA_TEXT],
     ["nhãn accent làm chữ / card", t.accent, t.card, AA_TEXT],
+    /*
+     * PostCard/FeaturedCard có "cover kiểu chữ": nửa trên nằm trên nền --muted và
+     * chứa nhãn chuyên mục màu accent. Nền tint là nền thứ BA cho cùng màu chữ đó
+     * (background, card, muted) nên phải gác riêng.
+     */
+    ["nhãn accent làm chữ / muted", t.accent, t.muted, AA_TEXT],
+    /*
+     * Palette editorial black: --accent còn là màu HOVER của link, tiêu đề bài và
+     * wordmark (vì --primary gần trùng --foreground nên hover bằng primary sẽ vô
+     * hình). Ba cặp accent-làm-chữ ở trên đã phủ đúng ba nền mà hover xảy ra.
+     *
+     * Và vì --primary được dùng làm màu chữ link, nó cũng phải đạt ngưỡng TEXT
+     * chứ không chỉ ngưỡng UI — hai cặp "link primary" ở trên đã gác việc đó.
+     */
     // `.prose code` và thẻ tag: chữ thường trên nền --muted.
     ["code trong bài: foreground / muted", t.foreground, t.muted, AA_TEXT],
     // Thông báo thành công của form (ActionForm trong card, ContactForm trên trang).
@@ -109,9 +167,25 @@ function pairsFor(t) {
 
 let failures = 0;
 
-for (const mode of ["light", "dark"]) {
-  const tokens = parseBlock(css, mode);
-  console.log(`\n${mode.toUpperCase()}`);
+/*
+ * Bốn bộ phải gác, không phải hai. Bộ `.theme-editorial` là surface người đọc thấy
+ * — bỏ nó ra khỏi gate thì gate chỉ còn kiểm màu của trang admin nội bộ.
+ *
+ * Cả bốn bộ dùng CÙNG một danh sách cặp màu, kể cả những cặp chỉ xảy ra ở /admin
+ * (StatusBadge, notice tint). Cố ý: một cặp không dùng ở surface này thì đo thêm
+ * không tốn gì, còn nếu sau này component admin được dùng lại ở public thì gate đã
+ * phủ sẵn — rẻ hơn nhiều so với việc phát hiện khi đã lên production.
+ */
+const SCOPES = [
+  { selector: ":root", mode: "light", label: "NỀN (/admin) — LIGHT" },
+  { selector: ":root", mode: "dark", label: "NỀN (/admin) — DARK" },
+  { selector: ".theme-editorial", mode: "light", label: "CÔNG KHAI (site) — LIGHT" },
+  { selector: ".theme-editorial", mode: "dark", label: "CÔNG KHAI (site) — DARK" },
+];
+
+for (const scope of SCOPES) {
+  const tokens = parseBlock(css, scope.selector, scope.mode);
+  console.log(`\n${scope.label}`);
 
   for (const [label, fg, bg, min] of pairsFor(tokens)) {
     if (!fg || !bg) {

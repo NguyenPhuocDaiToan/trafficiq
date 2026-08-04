@@ -1,8 +1,16 @@
 import type { CategorySlug, Post } from "@/content/types";
-import { post as clickId } from "@/content/posts/click-id-quyet-dinh-bao-cao";
-import { post as epc } from "@/content/posts/epc-noi-that-hon-cr";
-import { post as freeTier } from "@/content/posts/gioi-han-that-cua-free-tier";
-import { post as lechNhau } from "@/content/posts/so-chuyen-doi-lech-nhau";
+import { post as diCho } from "@/content/posts/di-cho-mot-lan-cho-ca-tuan";
+import { post as chonOCung } from "@/content/posts/chon-o-cung-di-dong";
+import { post as chonNoiComDien } from "@/content/posts/chon-noi-com-dien";
+import { post as doiDienThoai } from "@/content/posts/khi-nao-nen-doi-dien-thoai";
+import { post as dungLaiThuMuc } from "@/content/posts/dung-lai-thu-muc-may-tinh";
+import { post as giuGiayTo } from "@/content/posts/giu-giay-to-quan-trong-trong-nha";
+import { post as mayHutBui } from "@/content/posts/may-hut-bui-cam-tay-co-dang-mua";
+import { post as muaDoCu } from "@/content/posts/mua-do-cu-hay-do-moi";
+import { post as phiAmTham } from "@/content/posts/phi-am-tham-trong-hoa-don-hang-thang";
+import { post as saoLuu } from "@/content/posts/sao-luu-du-lieu-quy-tac-3-2-1";
+import { post as tuKiemXe } from "@/content/posts/tu-kiem-xe-truoc-chuyen-di-xa";
+import { post as xuLyAmMoc } from "@/content/posts/xu-ly-am-moc-trong-nha";
 
 /**
  * Sổ đăng ký bài viết.
@@ -11,7 +19,20 @@ import { post as lechNhau } from "@/content/posts/so-chuyen-doi-lech-nhau";
  * danh sách bài lúc build, và import động theo biến thì bundler không lần được
  * nên bài sẽ không vào build. Thêm bài = thêm một dòng import ở đây.
  */
-const REGISTRY: Post[] = [lechNhau, clickId, epc, freeTier];
+const REGISTRY: Post[] = [
+  doiDienThoai,
+  saoLuu,
+  phiAmTham,
+  diCho,
+  chonOCung,
+  mayHutBui,
+  chonNoiComDien,
+  muaDoCu,
+  tuKiemXe,
+  dungLaiThuMuc,
+  xuLyAmMoc,
+  giuGiayTo,
+];
 
 /** Mới nhất trước. So sánh chuỗi ISO là đủ vì định dạng YYYY-MM-DD. */
 const SORTED: Post[] = [...REGISTRY].sort((a, b) =>

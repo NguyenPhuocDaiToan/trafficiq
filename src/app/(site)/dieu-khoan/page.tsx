@@ -17,6 +17,7 @@ export default function TermsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <PageHeader
+        eyebrow="Pháp lý"
         title="Điều khoản sử dụng"
         intro={`Cập nhật ${formatDate(SITE.policyUpdatedAt)}`}
       />
@@ -41,30 +42,32 @@ export default function TermsPage() {
 
           <h2>2. Nội dung mang tính tham khảo</h2>
           <p>
-            Toàn bộ nội dung trên website là thông tin kỹ thuật mang tính tham khảo.{" "}
+            Toàn bộ nội dung trên website là hướng dẫn thực hành mang tính tham khảo.{" "}
             <strong>
-              Đây không phải tư vấn đầu tư, tư vấn tài chính, tư vấn thuế hay tư vấn
-              pháp lý.
+              Đây không phải tư vấn đầu tư, tư vấn tài chính, tư vấn thuế, tư vấn y tế
+              hay tư vấn pháp lý.
             </strong>
           </p>
           <p>
-            Chúng tôi cố gắng bảo đảm nội dung chính xác tại thời điểm viết, nhưng
-            công nghệ và điều khoản của các nhà cung cấp thay đổi liên tục. Bạn chịu
-            trách nhiệm tự kiểm chứng trước khi áp dụng vào hệ thống của mình.
+            Tôi cố gắng bảo đảm nội dung chính xác tại thời điểm viết, nhưng
+            phần mềm được cập nhật, tên mục trong máy được đổi, và điều khoản của các
+            nhà cung cấp thay đổi liên tục. Bạn chịu trách nhiệm tự kiểm chứng trước
+            khi áp dụng, đặc biệt với những việc không hoàn tác được — xoá dữ liệu,
+            khôi phục cài đặt gốc, đóng thẻ hay huỷ hợp đồng.
           </p>
 
           <h2>3. Liên kết affiliate</h2>
           <p>
             Một số liên kết trên website là liên kết affiliate và có thể mang lại hoa
-            hồng cho chúng tôi. Cách nhận biết và phạm vi ảnh hưởng được mô tả tại{" "}
+            hồng cho tôi. Cách nhận biết và phạm vi ảnh hưởng được mô tả tại{" "}
             <Link href="/tiet-lo-lien-ket">trang tiết lộ liên kết affiliate</Link>.
           </p>
 
           <h2>4. Liên kết tới website của bên thứ ba</h2>
           <p>
-            Website có liên kết tới trang của bên thứ ba. Chúng tôi{" "}
+            Website có liên kết tới trang của bên thứ ba. Tôi{" "}
             <strong>không kiểm soát và không chịu trách nhiệm</strong> về nội dung,
-            sản phẩm, chính sách bảo mật hay hành vi của các trang đó. Việc chúng tôi
+            sản phẩm, chính sách bảo mật hay hành vi của các trang đó. Việc tôi
             liên kết tới một trang không đồng nghĩa với việc bảo đảm cho trang đó.
           </p>
           <p>
@@ -74,7 +77,7 @@ export default function TermsPage() {
 
           <h2>5. Quyền sở hữu nội dung</h2>
           <p>
-            Bài viết, hình ảnh và mã nguồn ví dụ trên website thuộc quyền của{" "}
+            Bài viết, danh sách kiểm và bảng biểu trên website thuộc quyền của{" "}
             {operator}, trừ khi ghi rõ nguồn khác.
           </p>
           <p>Bạn được phép, không cần xin phép trước:</p>
@@ -83,7 +86,9 @@ export default function TermsPage() {
             <li>
               Trích dẫn một phần ngắn kèm ghi nguồn và liên kết trở lại bài gốc.
             </li>
-            <li>Sử dụng các đoạn mã ví dụ trong dự án của bạn.</li>
+            <li>
+              Áp dụng các bước hướng dẫn trong bài vào việc của bạn hoặc của gia đình.
+            </li>
           </ul>
           <p>Bạn không được phép:</p>
           <ul>
@@ -101,7 +106,7 @@ export default function TermsPage() {
             </li>
             <li>
               Cố gắng truy cập các khu vực quản trị, hoặc dò tìm lỗ hổng mà không có
-              sự đồng ý bằng văn bản của chúng tôi.
+              sự đồng ý bằng văn bản của tôi.
             </li>
             <li>
               Gửi qua form liên hệ nội dung spam, quảng cáo không mời, hoặc nội dung
@@ -113,7 +118,7 @@ export default function TermsPage() {
             </li>
           </ul>
           <p>
-            Chúng tôi có thể chặn truy cập từ nguồn có hành vi như trên mà không cần
+            Tôi có thể chặn truy cập từ nguồn có hành vi như trên mà không cần
             báo trước.
           </p>
 
@@ -122,24 +127,24 @@ export default function TermsPage() {
             Website được cung cấp &ldquo;như hiện có&rdquo;. Trong phạm vi pháp luật
             cho phép, {operator} không chịu trách nhiệm về thiệt hại phát sinh từ việc
             bạn sử dụng hoặc không thể sử dụng website, bao gồm cả thiệt hại do bạn áp
-            dụng thông tin trên website vào hệ thống của mình.
+            dụng hướng dẫn trên website vào thiết bị, dữ liệu hoặc hợp đồng của mình.
           </p>
           <p>
-            Chúng tôi không bảo đảm website hoạt động liên tục, không lỗi hay không bị
+            Tôi không bảo đảm website hoạt động liên tục, không lỗi hay không bị
             gián đoạn.
           </p>
 
           <h2>8. Dữ liệu cá nhân</h2>
           <p>
-            Cách chúng tôi thu thập và xử lý dữ liệu được mô tả tại{" "}
+            Cách tôi thu thập và xử lý dữ liệu được mô tả tại{" "}
             <Link href="/chinh-sach-bao-mat">chính sách quyền riêng tư</Link>, là phần
             không tách rời của các điều khoản này.
           </p>
 
           <h2>9. Thay đổi điều khoản</h2>
           <p>
-            Chúng tôi có thể cập nhật điều khoản này. Ngày cập nhật gần nhất luôn hiện
-            ở đầu trang. Nếu có thay đổi đáng kể, chúng tôi sẽ ghi rõ nội dung thay
+            Tôi có thể cập nhật điều khoản này. Ngày cập nhật gần nhất luôn hiện
+            ở đầu trang. Nếu có thay đổi đáng kể, tôi sẽ ghi rõ nội dung thay
             đổi thay vì chỉ đổi ngày.
           </p>
 
@@ -152,7 +157,7 @@ export default function TermsPage() {
 
           <h2>11. Liên hệ</h2>
           <p>
-            Thắc mắc về điều khoản: <Link href="/lien-he">gửi tin nhắn cho chúng tôi</Link>{" "}
+            Thắc mắc về điều khoản: <Link href="/lien-he">gửi tin nhắn cho tôi</Link>{" "}
             hoặc email <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
           </p>
         </Prose>

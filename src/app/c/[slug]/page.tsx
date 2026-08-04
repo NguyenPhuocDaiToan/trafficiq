@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { LandingView } from "@/components/landing-view";
 import { publicBaseUrl } from "@/lib/env";
 import { getLandingCampaign } from "@/lib/landing/get-campaign";
 import { SUB_ID_PARAMS } from "@/lib/tracking/request-context";
@@ -54,20 +55,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * UI theo design-system/trafficiq/pages/campaign-landing.md:
- * Hero-Centric + Conversion-Optimized, density 4/10, MỘT CTA duy nhất dùng
- * --color-accent.
- *
  * Trang này KHÔNG dùng shell của website công khai (route group `(site)`): landing
  * phải sạch, không nav, không footer nhiều link — mọi link khác đều là chỗ để
  * click rò rỉ ra ngoài thay vì vào CTA.
+ *
+ * Phần render nằm ở `<LandingView>` vì `/admin/campaigns/[id]/preview` dùng lại
+ * đúng component đó — preview và trang thật phải là một code path. Route này chỉ
+ * còn lo ba việc: lấy campaign, dựng CTA href kèm param tracking, và OG metadata.
  */
 export default async function LandingPage({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const campaign = await getLandingCampaign(slug);
   if (!campaign) notFound();
-
-  const { landing } = campaign;
 
   // Chuyển tiếp tham số tracking từ landing sang /go, nếu không thì click từ
   // landing sẽ mất source/sub_id và mọi báo cáo attribution thành "direct".
@@ -80,59 +79,5 @@ export default async function LandingPage({ params, searchParams }: Props) {
   const queryString = forwarded.toString();
   const ctaHref = `/go/${campaign.token}${queryString ? `?${queryString}` : ""}`;
 
-  return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-8 px-6 py-16">
-      {landing.heroImageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- ảnh từ CDN ngoài, không qua Image Optimization để tiết kiệm hạn mức free tier
-        <img
-          src={landing.heroImageUrl}
-          alt=""
-          className="w-full rounded-xl object-cover"
-          // Hero là LCP element trên traffic paid — nạp ngay, không lazy.
-          loading="eager"
-          fetchPriority="high"
-        />
-      ) : null}
-
-      {/* Heading landing dùng font-sans (Fira Sans), khác dashboard dùng font-mono. */}
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{landing.headline}</h1>
-
-      {landing.subheadline ? (
-        <p className="text-xl text-muted-foreground">{landing.subheadline}</p>
-      ) : null}
-
-      {landing.bodyText ? (
-        <div className="space-y-3">
-          {landing.bodyText.split("\n").map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-      ) : null}
-
-      {/*
-       * CTA phải là <a href> thật, KHÔNG phải <button onClick>: redirect tracking
-       * phải chạy được cả khi JS chưa load hoặc bị chặn.
-       * Accent là màu duy nhất được dùng cho CTA chính.
-       */}
-      <a
-        href={ctaHref}
-        rel="nofollow sponsored"
-        className="w-fit cursor-pointer rounded-xl bg-accent px-8 py-4 text-lg font-semibold text-on-accent hover:opacity-90"
-      >
-        {landing.ctaLabel}
-      </a>
-
-      <p className="text-xs text-muted-foreground">
-        Đây là nội dung quảng cáo. Xem{" "}
-        <a href="/chinh-sach-bao-mat" className="cursor-pointer underline">
-          chính sách quyền riêng tư
-        </a>{" "}
-        và{" "}
-        <a href="/tiet-lo-lien-ket" className="cursor-pointer underline">
-          tiết lộ liên kết
-        </a>
-        .
-      </p>
-    </main>
-  );
+  return <LandingView landing={campaign.landing} ctaHref={ctaHref} />;
 }

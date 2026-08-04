@@ -29,9 +29,27 @@ export interface Destination {
 export interface CampaignLanding {
   headline: string;
   subheadline?: string;
+  /**
+   * Thân bài dạng HTML đã sanitize (`sanitizeLandingBody`). Đây là field đang
+   * dùng — soạn bằng editor WYSIWYG ở /admin/campaigns/[id]/edit.
+   *
+   * KHÔNG BAO GIỜ ghi HTML thô từ form xuống field này. Nó được render bằng
+   * `dangerouslySetInnerHTML` trên một trang công khai.
+   */
+  bodyHtml?: string;
+  /**
+   * @deprecated Thân bài phẳng của bản đầu, render bằng `split("\n")`.
+   *
+   * Còn giữ để campaign tạo trước khi có editor không mất nội dung. Renderer ưu
+   * tiên `bodyHtml`; chỉ rơi về đây khi `bodyHtml` chưa có. Lần đầu admin mở
+   * trang sửa, giá trị này được nạp vào editor và lần lưu sau sẽ thành `bodyHtml`.
+   * Không ghi mới vào field này.
+   */
   bodyText?: string;
   ctaLabel: string;
   heroImageUrl?: string;
+  /** Tự động chuyển hướng tới CTA sau X giây (0 = tắt) */
+  autoRedirectSeconds?: number;
 }
 
 export interface CampaignOg {

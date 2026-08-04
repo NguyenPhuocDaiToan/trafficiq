@@ -80,6 +80,64 @@ MASTER ở đây sẽ ra landing chật và giảm CR.
 
 ---
 
+## Thân bài rich-text (bổ sung)
+
+Trước đây thân bài landing là một `textarea` phẳng, render bằng `bodyText.split("\n")` — không
+có heading phụ, bullet, hay chữ nhấn mạnh. Admin không dựng được một trang bán hàng thật. Nay
+thân bài soạn bằng editor WYSIWYG (Tiptap) và lưu HTML đã sanitize ở `landing.bodyHtml`.
+
+**Đây KHÔNG phải một section mới.** Nó là section **3. Key benefit / proof** của pattern
+Hero-Centric đã chốt ở trên. Hệ quả bắt buộc giữ nguyên:
+
+- Hero vẫn chiếm 60–80% above the fold. Thân bài nằm **dưới** hero.
+- Vẫn **MỘT** CTA accent duy nhất, đặt sau thân bài. Thân bài dài hơn không phải cớ để thêm CTA thứ hai.
+- Density vẫn 4/10 — đây là chỗ để 3–5 luận điểm có cấu trúc, không phải chỗ nhồi 2000 từ SEO.
+
+### Whitelist node — cố định, không nới bằng cách sửa component
+
+Editor chỉ bật đúng các node dưới đây, và server sanitize lại lần nữa trước khi ghi Mongo
+(`src/lib/landing/sanitize-body.ts`). Client whitelist là UX, server whitelist là luật.
+
+| Cho phép | Vì sao |
+| --- | --- |
+| `p`, `br` | đoạn văn |
+| `h2`, `h3` | cấu trúc luận điểm. KHÔNG có `h1` — `h1` là headline của campaign, một trang một `h1` |
+| `strong`, `em` | nhấn mạnh |
+| `ul`, `ol`, `li` | "Benefit bullets" — chính pattern landing gợi ý |
+| `blockquote` | trust signal / trích dẫn |
+| `hr` | ngắt mạch giữa các luận điểm |
+| `img` | ảnh minh hoạ trong bài |
+
+| Chặn | Vì sao |
+| --- | --- |
+| `a` | **Bất biến kiến trúc 12**: mọi link ngoài CTA là chỗ rò rỉ click. Landing không có nav/footer chính vì lý do này — cho `<a>` vào thân bài là mở lại đúng cái lỗ đó |
+| `style`, `class`, `id`, `on*` | nội dung phải nằm trong design token. Cho admin đặt màu tay là `npm run check:contrast` mất hết ý nghĩa: gate chỉ đọc `globals.css`, không đọc được nội dung trong DB |
+| `script`, `iframe`, `form`, `table` | XSS / nhúng ngoài / thứ không thuộc một landing 4 section |
+
+### Style thân bài
+
+Dùng lại class `.prose` của `pages/blog.md` (đã có trong `globals.css`) + modifier
+`.prose-landing` để bỏ `max-width: 68ch`. Lý do bỏ: khung landing là `max-w-2xl` và
+headline/CTA canh theo khung đó — giữ 68ch thì riêng thân bài hẹp hơn, lệch trái so với
+mọi thứ còn lại. Không viết bộ CSS thứ hai cho thân bài landing: hai bộ sẽ lệch nhau.
+
+### Ảnh trong thân bài
+
+`img` bị ép `loading="lazy"` + `decoding="async"` khi sanitize. Ảnh thân bài nằm dưới fold nên
+không được tranh băng thông với LCP của hero.
+
+**KHÔNG hiện ghi chú giới hạn dung lượng trong UI admin.** Ảnh nằm trên CDN ngoài nên con số đó
+không kiểm được bằng code, và một ràng buộc không kiểm được mà vẫn ghi cạnh field thì chỉ làm
+form rối chứ không ngăn được gì. Ràng buộc băng thông thật vẫn ở AGENTS.md § "Ràng buộc chi phí"
+(nơi nó là quyết định vận hành của dự án), không phải ở nhãn field.
+
+### Editor không thuộc file này
+
+Khung soạn thảo nằm ở `/admin/campaigns/**` nên theo `pages/dashboard.md` (Data-Dense
+Dashboard), không theo file này. File này chỉ chi phối thứ được render ra `/c/[slug]`.
+
+---
+
 ## Anti-Patterns cho page này
 
 - ❌ Muted colors — CTA phải nổi bật

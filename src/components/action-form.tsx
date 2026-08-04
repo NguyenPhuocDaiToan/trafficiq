@@ -23,12 +23,31 @@ export function ActionForm({
   submitLabel,
   className,
   resetOnSuccess = true,
+  submitVariant = "primary",
+  secondarySubmit,
 }: {
   action: ServerAction;
   children: React.ReactNode;
   submitLabel: string;
   className?: string;
   resetOnSuccess?: boolean;
+  /**
+   * `--accent` chỉ được dùng cho MỘT CTA chính trên mỗi view (AGENTS.md § Luật
+   * token). Form nằm lồng bên trong một view đã có CTA accent — ví dụ form thêm
+   * đích trong chi tiết chiến dịch, khi nút "Tạo chiến dịch" đã accent — phải
+   * dùng "secondary".
+   */
+  submitVariant?: "primary" | "secondary";
+  /**
+   * Nút submit thứ hai gửi kèm một field để action rẽ nhánh — ví dụ "Tạo và xem
+   * trước" gửi `afterCreate=preview` để `createCampaign` chuyển sang trang xem
+   * trước thay vì về danh sách.
+   *
+   * Dùng `<button name value>` chứ không phải hai form hay JS: trình duyệt chỉ gửi
+   * name/value của ĐÚNG nút được bấm, nên nó hoạt động cả khi JS chưa tải. Bấm nút
+   * chính thì field này không có trong FormData và action đi nhánh mặc định.
+   */
+  secondarySubmit?: { name: string; value: string; label: string };
 }) {
   const [state, formAction, pending] = useActionState(action, null);
 
@@ -41,9 +60,29 @@ export function ActionForm({
       {children}
 
       <div className="col-span-full">
-        <button type="submit" disabled={pending} className={buttonPrimaryClass}>
-          {pending ? "Đang lưu…" : submitLabel}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            disabled={pending}
+            className={
+              submitVariant === "primary" ? buttonPrimaryClass : buttonSecondaryClass
+            }
+          >
+            {pending ? "Đang lưu…" : submitLabel}
+          </button>
+
+          {secondarySubmit ? (
+            <button
+              type="submit"
+              name={secondarySubmit.name}
+              value={secondarySubmit.value}
+              disabled={pending}
+              className={buttonSecondaryClass}
+            >
+              {secondarySubmit.label}
+            </button>
+          ) : null}
+        </div>
 
         {/* role=status để screen reader đọc kết quả action, không chỉ hiện màu. */}
         <p role="status" aria-live="polite" className="mt-2 text-sm">

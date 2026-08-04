@@ -56,11 +56,11 @@ export function ContactForm() {
             required
             autoComplete="email"
             className={field}
-            placeholder="ban@congty.com"
+            placeholder="ban@email.com"
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Chỉ dùng để trả lời bạn. Chúng tôi không đưa vào danh sách gửi thư nào.
+          Chỉ dùng để trả lời bạn. Tôi không đưa vào danh sách gửi thư nào.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function ContactForm() {
             name="subject"
             required
             className={field}
-            placeholder="Hợp tác / Góp ý nội dung / Báo lỗi"
+            placeholder="Góp ý nội dung / Báo chi tiết sai / Đề nghị chủ đề"
           />
         </div>
       </div>

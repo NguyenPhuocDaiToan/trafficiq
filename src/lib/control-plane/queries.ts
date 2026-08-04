@@ -1,11 +1,11 @@
-import type { ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import {
   advertisers,
   campaigns,
   destinations,
   offers,
 } from "@/lib/db/collections";
-import type { EntityStatus } from "@/lib/types";
+import type { CampaignLanding, CampaignOg, EntityStatus } from "@/lib/types";
 
 /** View model đã serialize (ObjectId -> string) để truyền xuống client component. */
 export interface AdvertiserView {
@@ -160,6 +160,80 @@ export async function listCampaigns(): Promise<CampaignView[]> {
       destinationUrl: offer.destination[0]?.url ?? "(đã xóa)",
       destinationStatus: offer.destination[0]?.status ?? "paused",
     })),
+  }));
+}
+
+/** Campaign đầy đủ để nạp vào form sửa. */
+export interface CampaignEditView {
+  id: string;
+  name: string;
+  slug: string;
+  token: string;
+  status: EntityStatus;
+  advertiserId: string;
+  landing: CampaignLanding;
+  og: CampaignOg;
+}
+
+/**
+ * Lấy một campaign theo id để sửa / xem trước.
+ *
+ * KHÔNG lọc theo status — khác `getLandingCampaign` (chỉ nhận active|pending).
+ * Đó là điểm chính: campaign `paused` phải xem và sửa được, vì tạm dừng chính là
+ * lúc người ta cần mở ra sửa rồi chạy lại. Lọc status ở đây là tự khoá mình khỏi
+ * nội dung của chính mình.
+ */
+export async function getCampaignById(id: string): Promise<CampaignEditView | null> {
+  if (!ObjectId.isValid(id)) return null;
+
+  const col = await campaigns();
+  const doc = await col.findOne({ _id: new ObjectId(id) });
+  if (!doc) return null;
+
+  return {
+    id: doc._id.toString(),
+    name: doc.name,
+    slug: doc.slug,
+    token: doc.token,
+    status: doc.status,
+    advertiserId: doc.advertiserId.toString(),
+    landing: doc.landing,
+    og: doc.og,
+  };
+}
+
+/**
+ * Dropdown đối tác cho form SỬA: advertiser đang active, CỘNG advertiser hiện tại
+ * của campaign nếu nó không còn active.
+ *
+ * Vì sao phải cộng thêm: `listActiveOptions` chỉ trả advertiser active. Nếu đối
+ * tác của campaign này đã bị tạm dừng thì nó không có trong danh sách, `<select>`
+ * rơi về option đầu tiên, và một lần bấm Lưu sẽ ĐỔI ĐỐI TÁC của campaign mà admin
+ * không hề chọn — mất luôn dấu vết ai là chủ chiến dịch.
+ */
+export async function listAdvertiserOptionsForEdit(
+  currentAdvertiserId: string,
+): Promise<{ id: string; name: string }[]> {
+  const col = await advertisers();
+  const docs = await col
+    .find(
+      {
+        $or: [
+          { status: "active" },
+          ...(ObjectId.isValid(currentAdvertiserId)
+            ? [{ _id: new ObjectId(currentAdvertiserId) }]
+            : []),
+        ],
+      },
+      { projection: { name: 1, status: 1 } },
+    )
+    .sort({ name: 1 })
+    .toArray();
+
+  return docs.map((doc) => ({
+    id: doc._id.toString(),
+    // Nói rõ đối tác không còn chạy, thay vì để nó trông như một lựa chọn bình thường.
+    name: doc.status === "active" ? doc.name : `${doc.name} (${doc.status === "paused" ? "đã tạm dừng" : "chờ duyệt"})`,
   }));
 }
 

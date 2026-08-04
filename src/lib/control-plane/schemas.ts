@@ -50,12 +50,38 @@ export const campaignSchema = z.object({
     ),
   headline: z.string().trim().min(3).max(140),
   subheadline: z.string().trim().max(200).optional().or(z.literal("")),
-  bodyText: z.string().trim().max(2000).optional().or(z.literal("")),
+  /*
+   * Thân bài HTML từ editor WYSIWYG.
+   *
+   * Giới hạn 20000 ký tự (không phải 2000 như bản textarea cũ) vì thẻ HTML tự nó
+   * đã ăn hết vài nghìn ký tự: một danh sách 6 bullet là ~200 ký tự thẻ. Đây là
+   * chặn trên chống dán cả một trang web vào, KHÔNG phải hạn mức nội dung —
+   * density 4/10 của landing mới là thứ giới hạn độ dài thật.
+   *
+   * Zod chỉ kiểm ĐỘ DÀI. Việc lọc thẻ do `sanitizeLandingBody` làm ở action —
+   * đừng cố validate HTML bằng regex ở đây.
+   */
+  bodyHtml: z.string().trim().max(20000).optional().or(z.literal("")),
   ctaLabel: z.string().trim().min(2).max(60),
   heroImageUrl: z.url().trim().optional().or(z.literal("")),
+  autoRedirectSeconds: z.coerce.number().int().min(0).max(10).default(0),
   ogTitle: z.string().trim().min(3).max(140),
   ogDescription: z.string().trim().min(3).max(300),
   ogImageUrl: z.url().trim().optional().or(z.literal("")),
+});
+
+/**
+ * Sửa campaign: cùng field với lúc tạo, thêm `id`.
+ *
+ * Dùng `.extend` trên chính `campaignSchema` chứ không khai lại: hai schema tách
+ * rời sẽ lệch nhau ngay lần thêm field kế tiếp, và lệch ở đây có nghĩa là form
+ * sửa âm thầm bỏ mất một field mà form tạo có.
+ *
+ * `token` KHÔNG có trong schema và sẽ không bao giờ có: nó là link đã đem đi chạy
+ * traffic, và mọi `clickEvent` lịch sử neo vào campaign qua nó.
+ */
+export const campaignUpdateSchema = campaignSchema.extend({
+  id: objectIdSchema,
 });
 
 export const offerSchema = z.object({

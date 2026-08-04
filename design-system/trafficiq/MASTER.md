@@ -17,43 +17,92 @@
 
 ### Color Palette
 
+Palette đang dùng: hàng **"Magazine/Blog"** trong `colors.csv`
+(*editorial black, accent pink*).
+
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#1E40AF` | `--color-primary` |
+| Primary | `#18181B` | `--color-primary` |
 | On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#3B82F6` | `--color-secondary` |
-| Accent/CTA | `#D97706` | `--color-accent` |
-| Background | `#F8FAFC` | `--color-background` |
-| Foreground | `#1E3A8A` | `--color-foreground` |
-| Muted | `#E9EEF6` | `--color-muted` |
-| Border | `#DBEAFE` | `--color-border` |
+| Secondary | `#3F3F46` | `--color-secondary` |
+| Accent/CTA | `#EC4899` | `--color-accent` |
+| Background | `#FAFAFA` | `--color-background` |
+| Foreground | `#09090B` | `--color-foreground` |
+| Card | `#FFFFFF` | `--color-card` |
+| Muted | `#E8ECF0` | `--color-muted` |
+| Muted Foreground | `#64748B` | `--color-muted-foreground` |
+| Border | `#E4E4E7` | `--color-border` |
 | Destructive | `#DC2626` | `--color-destructive` |
-| Ring | `#1E40AF` | `--color-ring` |
+| Ring | `#18181B` | `--color-ring` |
 
-**Color Notes:** Blue data + amber highlights [Accent adjusted from #F59E0B for WCAG 3:1]
+**Color Notes:** Editorial black + accent pink
 
+> ### ⚠️ VÌ SAO ĐỔI KHỎI PALETTE "ANALYTICS DASHBOARD"
+>
+> Bản đầu dùng hàng **"Analytics Dashboard"** (`--primary #1E40AF`,
+> `--accent #D97706`, `--background #F8FAFC`, `--foreground #1E3A8A`). Nó sai ở một
+> chỗ không nhìn thấy khi chỉ soi dashboard: **`--foreground` là navy `#1E3A8A`**,
+> nên mọi dòng chữ trong toàn bộ sản phẩm là chữ xanh, kể cả thân bài 2000 chữ trên
+> surface công khai. Cộng thêm `--accent` phải đẩy tối tới `#92400E` để đạt WCAG thì
+> thành nâu đục. Kết quả: đúng gate, vẫn xấu.
+>
+> Hai nguồn trong chính skill nói ngược lại lựa chọn đó:
+>
+> - `styles.csv` → **Editorial Grid / Magazine**: *"High contrast: Black #000000,
+>   White #FFFFFF, accent brand color"*.
+> - `colors.csv` → hàng **Magazine/Blog** (`Best For: news sites, blogs, magazines`):
+>   `--foreground #09090B`, `--primary #18181B`, `--accent #EC4899`.
+>
+> Palette Magazine/Blog áp cho **cả codebase**, gồm `/admin/**` — dự án giữ đúng
+> **một** tầng token trong `globals.css`. Cái giá phải trả là dashboard mất tông
+> xanh, đổi sang đen/xám + bar chart xám (`--secondary #3F3F46`). Chấp nhận: một
+> tầng token là thứ giữ cho `check:contrast` không phải gác hai bộ cặp màu và giữ
+> cho không ai dùng lẫn token giữa hai surface.
+>
 > ### ⚠️ Sai lệch có chủ đích so với palette sinh tự động
 >
-> Bảng trên là output gốc của ui-ux-pro-max. **5 giá trị trong đó không đạt chính
-> checklist "text contrast 4.5:1" ở cuối file này.** Giá trị đang chạy thật nằm ở
+> Bảng trên là output gốc của ui-ux-pro-max. Một số giá trị trong đó không đạt chính
+> checklist "text contrast 4.5:1" ở cuối file này. Giá trị đang chạy thật nằm ở
 > `src/app/globals.css`, kiểm được bằng `npm run check:contrast`.
 >
 > | Token | Palette gốc | Đang dùng | Lý do |
 > |---|---|---|---|
-> | `--accent` | `#D97706` | `#92400E` | Gốc chỉ đạt **3.19:1** với chữ trắng. 3:1 là ngưỡng UI phi-text, nhưng accent là nền nút có chữ → cần 4.5:1. Giá trị mới đạt **7.09:1**, thoả luôn mục tiêu CTA 7:1 của `pages/campaign-landing.md`. |
-> | `--muted-foreground` | `#64748B` | `#556274` | Gốc chỉ **4.08:1** trên nền `--muted` (badge paused). Mới: **5.32:1**. |
+> | `--accent` | `#EC4899` | `#BE185D` | Chữ trắng trên gốc chỉ đạt **3.53:1** → FAIL ngưỡng 4.5:1 của nền nút có chữ. Mới đạt **6.04:1**; và vì accent còn dùng làm *màu chữ* nên đo cả ba nền: **5.78:1** trên `--background`, **6.04:1** trên `--card`, **5.09:1** trên `--muted`. |
+> | `--muted` | `#E8ECF0` | `#ECECEE` | Gốc là xám **hơi xanh** (b > r), lệch khỏi thang zinc trung tính của cả palette (`#09090B`/`#18181B`/`#FAFAFA`); cạnh accent hồng `#BE185D` thì ra tông đục. `#ECECEE` cùng độ sáng, bỏ sắc xanh — vẫn thấy ranh giới với `--card #FFFFFF`. Đo lại: accent trên muted **5.12:1**, muted-fg trên muted **6.55:1**. |
+> | `--muted-foreground` | `#64748B` | `#52525B` | Gốc chỉ **4.01:1** trên nền `--muted` (badge paused). `#52525B` là zinc-600, cùng họ với `--primary`, đạt **6.55:1**. |
 > | `--success` | `#15803D` | `#166534` | Gốc **4.09:1** trên nền tint 15% của chính nó. Mới: **5.66:1**. |
 > | `--warning` | `#B45309` | `#854D0E` | Gốc **4.08:1** trên tint 15%. Mới: **5.46:1**. |
-> | `--card` | `#F8FAFC` | `#FFFFFF` | Component spec `.card` bên dưới đặt background **trùng hệt** `--background` → card vô hình. `#FFFFFF` là Card role trong palette gốc. |
 >
 > Thêm token không có trong palette gốc:
 >
-> - `--input` (`#7C8DA5` light / `#64748B` dark) — viền control phải đạt 3:1 theo
->   WCAG 1.4.11. `--border` (`#DBEAFE`) giữ nhạt và **chỉ** dùng cho divider/viền
+> - `--input` (`#71717A` light / `#71717A` dark) — viền control phải đạt 3:1 theo
+>   WCAG 1.4.11. `--border` (`#E4E4E7`) giữ nhạt và **chỉ** dùng cho divider/viền
 >   card; nó không mang thông tin trạng thái nên không bị ràng 3:1.
-> - Toàn bộ **bộ dark** — palette gốc chỉ có light, nhưng style
->   "Data-Dense Dashboard" khai báo `Dark ✓ Full` nên buộc phải suy ra.
->   Cách suy: giữ họ xanh, đảo trục sáng, làm sáng primary/accent.
+> - `--rule` (`#18181B` light / `#A1A1AA` dark) — **gạch kẻ đậm 2px kiểu báo in**
+>   (`border-rule`): mở đầu bài dẫn, đầu mỗi cột bài, trên footer. Xem
+>   `pages/blog.md § "Thứ bậc dựng bằng gạch kẻ + cỡ chữ"`. Vì sao không dùng thẳng
+>   `--primary`: ở dark `--primary` là `#FAFAFA`, tức một gạch trắng tinh chạy hết
+>   chiều rộng — loá. Token riêng cho phép bộ dark hạ xuống zinc-400 mà component
+>   **không** cần biến thể `dark:` nào (dự án giữ đúng một tầng token; không có
+>   `dark:` trong bất kỳ file `.tsx` nào). Cũng như `--border`, nó là gạch trang trí
+>   → không mang thông tin trạng thái → WCAG 1.4.11 không ràng 3:1, nên
+>   `check-contrast` không gác cặp nào cho nó.
+> - Toàn bộ **bộ dark** — palette gốc chỉ có light, nhưng cả hai style đang dùng
+>   (Editorial Grid, Data-Dense Dashboard) đều khai báo `Dark ✓ Full` nên buộc phải
+>   suy ra. Cách suy: đảo trục sáng của thang zinc (`#09090B` ↔ `#FAFAFA`), giữ họ
+>   pink cho accent nhưng làm sáng lên `#F472B6`.
+>
+> ### ⚠️ `--primary` gần trùng `--foreground` — hệ quả bắt buộc phải nhớ
+>
+> `--primary #18181B` và `--foreground #09090B` chênh nhau rất ít (light), và ở dark
+> thì `--primary` **trùng hệt** `--foreground` (`#FAFAFA`). Hai hệ quả:
+>
+> 1. **Link tô bằng `--primary` PHẢI có underline.** Màu không còn phân biệt được
+>    link với chữ thường → bỏ underline là vi phạm WCAG 1.4.1 (không dùng riêng màu
+>    để truyền thông tin). Đã áp trong `.prose a` và mọi link `text-primary`.
+> 2. **`hover:text-primary` là vô hình — đừng dùng.** Hover của link, tiêu đề bài và
+>    wordmark đổi sang **`--accent`**. Đây là lý do accent xuất hiện ngoài CTA, và là
+>    lý do `check-contrast` gác accent trên cả ba nền.
 >
 > **Quy tắc:** đổi màu thì sửa bảng này TRƯỚC, rồi đồng bộ xuống `globals.css`,
 > rồi chạy `npm run check:contrast`. Không sửa ngược lại.
@@ -63,6 +112,9 @@
 - **Heading Font:** Be Vietnam Pro
 - **Body Font:** Be Vietnam Pro
 - **Numeric / Code Font:** JetBrains Mono
+- **Display Font:** Fraunces (serif) — **CHỈ surface công khai**, xem
+  `pages/blog.md § Typography`. `/admin` và `/c/[slug]` không nạp font này, nên luật
+  "heading của /admin là `font-sans`" ở khối bên dưới vẫn đúng nguyên văn.
 - **Mood:** vietnamese, humanist, readable, friendly, precise-where-it-counts
 
 > ### ⚠️ Sai lệch có chủ đích so với pairing sinh tự động
@@ -103,6 +155,13 @@
 > black + accent hồng `#EC4899`) — **bị bỏ**. Dự án có đúng một tầng token; thêm
 > accent thứ hai là phá luật "một màu accent duy nhất cho CTA" và sẽ làm
 > `npm run check:contrast` gãy. Xem `pages/blog.md`.
+>
+> **⚠️ Hai câu trên đã cũ.** Từ bản hiện tại, dự án có **hai** tầng token
+> (`:root` + `.theme-editorial`) và surface công khai dùng accent riêng (cam đất
+> `#C2410C`). Luật "một accent duy nhất cho CTA" vẫn giữ — nó là *một accent trên
+> mỗi view*, không phải một accent cho cả codebase — và `check:contrast` không gãy
+> vì đã được mở rộng để gác cả bốn bộ token. Chi tiết và lý do:
+> `pages/blog.md § Colors`.
 
 **Cấu hình thật** (`src/app/layout.tsx` — dùng `next/font`, self-host lúc build,
 không `@import` sang fonts.googleapis.com trên hot path):
@@ -110,6 +169,7 @@ không `@import` sang fonts.googleapis.com trên hot path):
 ```ts
 Be_Vietnam_Pro({ subsets: ["latin", "vietnamese"], weight: ["400","500","600","700"], style: ["normal","italic"] })
 JetBrains_Mono({ subsets: ["latin", "vietnamese"] })   // variable: 1 file/subset
+Fraunces({ subsets: ["latin", "vietnamese"], weight: ["700"] })  // chỉ (site), 1 weight
 ```
 
 Không nạp `latin-ext`: Ăă Đđ Ơơ Ưư đã nằm trong subset `vietnamese`.
@@ -147,11 +207,15 @@ nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
 
 ### Buttons
 
+> Các block dưới đây là output gốc, viết bằng hex của palette **cũ**. Đã cập nhật
+> sang token của palette đang chạy. Trong code thì **không bao giờ** viết hex —
+> dùng semantic token (`bg-accent`, `border-primary`…). Xem luật ở `AGENTS.md`.
+
 ```css
-/* Primary Button */
+/* Primary Button — CTA duy nhất dùng --accent */
 .btn-primary {
-  background: #D97706;
-  color: white;
+  background: var(--accent);      /* #BE185D, gốc ghi #D97706 */
+  color: var(--on-accent);
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -164,11 +228,11 @@ nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
   transform: translateY(-1px);
 }
 
-/* Secondary Button */
+/* Secondary Button — outline editorial black */
 .btn-secondary {
   background: transparent;
-  color: #1E40AF;
-  border: 2px solid #1E40AF;
+  color: var(--primary);          /* #18181B, gốc ghi #1E40AF */
+  border: 2px solid var(--primary);
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -181,7 +245,9 @@ nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
 
 ```css
 .card {
-  background: #F8FAFC;
+  /* Gốc ghi #F8FAFC — TRÙNG HỆT --background nên card vô hình.
+     Dùng Card role của palette: #FFFFFF. */
+  background: var(--card);
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
@@ -200,16 +266,18 @@ nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #E2E8F0;
+  /* Gốc ghi #E2E8F0 — quá nhạt, không đạt 3:1 nên không chỉ ra được ranh giới
+     vùng nhập liệu. Dùng --input (#71717A), KHÔNG dùng --border. */
+  border: 1px solid var(--input);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 200ms ease;
 }
 
 .input:focus {
-  border-color: #1E40AF;
+  border-color: var(--ring);      /* #18181B, gốc ghi #1E40AF */
   outline: none;
-  box-shadow: 0 0 0 3px #1E40AF20;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 12%, transparent);
 }
 ```
 

@@ -8,7 +8,7 @@ import { clickTtlDays } from "@/lib/env";
 export const metadata: Metadata = {
   title: "Chính sách quyền riêng tư",
   description:
-    "Dữ liệu chúng tôi thu thập khi bạn đọc bài, khi bạn bấm liên kết theo dõi, và khi bạn gửi form liên hệ — kèm thời gian lưu trữ cụ thể.",
+    "Dữ liệu tôi thu thập khi bạn đọc bài, khi bạn bấm liên kết theo dõi, và khi bạn gửi form liên hệ — kèm thời gian lưu trữ cụ thể.",
   alternates: { canonical: "/chinh-sach-bao-mat" },
   openGraph: { title: `Chính sách quyền riêng tư · ${SITE.name}`, url: "/chinh-sach-bao-mat" },
 };
@@ -28,6 +28,7 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <PageHeader
+        eyebrow="Pháp lý"
         title="Chính sách quyền riêng tư"
         intro={`Cập nhật ${formatDate(SITE.policyUpdatedAt)}`}
       />
@@ -40,16 +41,16 @@ export default function PrivacyPage() {
         <Prose>
           <h2>Nói ngắn trước</h2>
           <ul>
-            <li>Đọc bài trên site này: chúng tôi không thu thập gì về bạn.</li>
+            <li>Đọc bài trên site này: tôi không thu thập gì về bạn.</li>
             <li>
-              Bấm một liên kết theo dõi: chúng tôi ghi lượt bấm đó, có kèm{" "}
+              Bấm một liên kết theo dõi: tôi ghi lượt bấm đó, có kèm{" "}
               <strong>bản băm</strong> của địa chỉ IP — không phải IP thật.
             </li>
             <li>
-              Gửi form liên hệ: chúng tôi lưu tên, email và nội dung để trả lời bạn.
+              Gửi form liên hệ: tôi lưu tên, email và nội dung để trả lời bạn.
             </li>
-            <li>Chúng tôi không dùng cookie theo dõi, không chạy Google Analytics.</li>
-            <li>Chúng tôi không bán dữ liệu của bạn cho bất kỳ ai.</li>
+            <li>Tôi không dùng cookie theo dõi, không chạy Google Analytics.</li>
+            <li>Tôi không bán dữ liệu của bạn cho bất kỳ ai.</li>
           </ul>
 
           <h2>1. Ai chịu trách nhiệm dữ liệu</h2>
@@ -68,14 +69,14 @@ export default function PrivacyPage() {
             chủ bên ngoài (font được đóng gói cùng website).
           </p>
           <p>
-            Nhà cung cấp hạ tầng của chúng tôi có log máy chủ ở mức kỹ thuật để chống
-            lạm dụng. Chúng tôi không truy cập log đó để phân tích hành vi người đọc.
+            Nhà cung cấp hạ tầng của tôi có log máy chủ ở mức kỹ thuật để chống
+            lạm dụng. Tôi không truy cập log đó để phân tích hành vi người đọc.
           </p>
 
           <h2>3. Khi bạn bấm một liên kết theo dõi</h2>
           <p>
-            Liên kết tài trợ đi qua một địa chỉ trung gian trên tên miền của chúng tôi
-            trước khi chuyển bạn tới trang của bên bán. Tại bước đó chúng tôi ghi lại:
+            Liên kết tài trợ đi qua một địa chỉ trung gian trên tên miền của tôi
+            trước khi chuyển bạn tới trang của bên bán. Tại bước đó tôi ghi lại:
           </p>
           <ul>
             <li>Thời điểm bấm.</li>
@@ -94,33 +95,37 @@ export default function PrivacyPage() {
 
           <h3>Về địa chỉ IP</h3>
           <p>
-            Chúng tôi <strong>không lưu địa chỉ IP dạng thô</strong>. IP được băm bằng
+            Tôi <strong>không lưu địa chỉ IP dạng thô</strong>. IP được băm bằng
             SHA-256 cùng một khoá bí mật rồi mới lưu; giá trị lưu lại không thể quy về
             IP gốc.
           </p>
           <p>
             Mục đích duy nhất: đếm số khách truy cập duy nhất và phát hiện lượt bấm
-            gian lận. Chúng tôi không dùng nó để nhận diện bạn giữa các lần truy cập
+            gian lận. Tôi không dùng nó để nhận diện bạn giữa các lần truy cập
             khác nhau ngoài mục đích thống kê đó.
           </p>
 
           <h3>Mã lượt bấm gửi sang bên bán</h3>
           <p>
-            Khi chuyển bạn sang trang của bên bán, chúng tôi truyền kèm một mã ngẫu
+            Khi chuyển bạn sang trang của bên bán, tôi truyền kèm một mã ngẫu
             nhiên để sau này đối chiếu giao dịch. Mã này{" "}
             <strong>không chứa và không suy ra được</strong> thông tin cá nhân của
             bạn — nó chỉ là một chuỗi ngẫu nhiên.
           </p>
 
           <h2>4. Khi bạn gửi form liên hệ</h2>
-          <p>Chúng tôi lưu tên, email, tiêu đề và nội dung bạn nhập, cùng với:</p>
+          <p>
+            Form liên hệ là <strong>chỗ duy nhất</strong> trên site này thu thập thông
+            tin nhận diện được bạn, và chỉ khi bạn tự nhập. Tôi lưu tên, email,
+            tiêu đề và nội dung bạn nhập, cùng với:
+          </p>
           <ul>
             <li>Bản băm địa chỉ IP — dùng để hạn chế spam, cùng cách như trên.</li>
             <li>Chuỗi nhận dạng trình duyệt (user agent).</li>
           </ul>
           <p>
-            Email của bạn <strong>chỉ</strong> dùng để trả lời tin nhắn đó. Chúng tôi
-            không thêm bạn vào danh sách gửi thư, và hiện tại chúng tôi không có hệ
+            Email của bạn <strong>chỉ</strong> dùng để trả lời tin nhắn đó. Tôi
+            không thêm bạn vào danh sách gửi thư, và hiện tại tôi không có hệ
             thống gửi thư tự động nào.
           </p>
 
@@ -159,12 +164,11 @@ export default function PrivacyPage() {
           </p>
 
           <h2>6. Chia sẻ với bên thứ ba</h2>
-          <p>Chúng tôi chia sẻ dữ liệu trong đúng ba trường hợp:</p>
+          <p>Tôi chia sẻ dữ liệu trong đúng ba trường hợp:</p>
           <ul>
             <li>
               <strong>Bên bán / mạng affiliate</strong> — nhận mã lượt bấm ngẫu nhiên
-              để đối chiếu giao dịch. Họ không nhận email, tên hay IP của bạn từ chúng
-              tôi.
+              để đối chiếu giao dịch. Họ không nhận email, tên hay IP của bạn từ tôi.
             </li>
             <li>
               <strong>Nhà cung cấp hạ tầng</strong> — nơi đặt website và cơ sở dữ liệu.
@@ -175,27 +179,27 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            Chúng tôi <strong>không bán</strong> và không cho thuê dữ liệu cá nhân.
+            Tôi <strong>không bán</strong> và không cho thuê dữ liệu cá nhân.
           </p>
           <p>
             Lưu ý: sau khi bạn sang trang của bên bán, chính sách của họ áp dụng, không
-            phải chính sách này. Họ có thể đặt cookie riêng mà chúng tôi không kiểm soát.
+            phải chính sách này. Họ có thể đặt cookie riêng mà tôi không kiểm soát.
           </p>
 
           <h2>7. Quyền của bạn</h2>
-          <p>Bạn có quyền yêu cầu chúng tôi:</p>
+          <p>Bạn có quyền yêu cầu tôi:</p>
           <ul>
-            <li>Cho biết chúng tôi đang giữ dữ liệu gì về bạn.</li>
+            <li>Cho biết tôi đang giữ dữ liệu gì về bạn.</li>
             <li>Sửa dữ liệu sai.</li>
             <li>Xóa dữ liệu.</li>
           </ul>
           <p>
             Gửi yêu cầu tới{" "}
-            <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>. Chúng tôi
+            <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>. Tôi
             phản hồi trong vòng 30 ngày.
           </p>
           <p>
-            Một giới hạn cần nói thẳng: với dữ liệu lượt bấm, chúng tôi{" "}
+            Một giới hạn cần nói thẳng: với dữ liệu lượt bấm, tôi{" "}
             <strong>không có cách nào tìm ra bản ghi nào là của bạn</strong> — vì chúng
             tôi chỉ lưu bản băm IP, không lưu IP. Đó chính là điều làm dữ liệu đó an
             toàn hơn, nhưng cũng có nghĩa là không thể tra cứu theo yêu cầu cá nhân.
@@ -205,21 +209,21 @@ export default function PrivacyPage() {
 
           <h2>8. Trẻ em</h2>
           <p>
-            Website không hướng tới người dưới 16 tuổi và chúng tôi không cố ý thu thập
+            Website không hướng tới người dưới 16 tuổi và tôi không cố ý thu thập
             dữ liệu của họ.
           </p>
 
           <h2>9. Thay đổi chính sách</h2>
           <p>
             Ngày cập nhật gần nhất hiện ở đầu trang. Nếu cách thu thập dữ liệu thay
-            đổi, chúng tôi sẽ ghi rõ thay đổi đó, không chỉ đổi ngày.
+            đổi, tôi sẽ ghi rõ thay đổi đó, không chỉ đổi ngày.
           </p>
 
           <h2>10. Liên hệ</h2>
           <p>
             <Link href="/lien-he">Gửi tin nhắn</Link> hoặc email{" "}
             <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>. Xem thêm{" "}
-            <Link href="/tiet-lo-lien-ket">cách chúng tôi kiếm tiền</Link> và{" "}
+            <Link href="/tiet-lo-lien-ket">cách tôi kiếm tiền</Link> và{" "}
             <Link href="/dieu-khoan">điều khoản sử dụng</Link>.
           </p>
         </Prose>

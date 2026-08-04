@@ -9,20 +9,20 @@ import { usePathname } from "next/navigation";
  * ngoặc để đối chiếu với tài liệu ad network (postback, offer, destination…).
  */
 const NAV = [
-  { href: "/admin", label: "Tổng quan" },
   { href: "/admin/campaigns", label: "Chiến dịch" },
+  { href: "/admin/tong-quan", label: "Tổng quan" },
   { href: "/admin/destinations", label: "URL đích" },
   { href: "/admin/advertisers", label: "Đối tác" },
   { href: "/admin/lien-he", label: "Hộp thư" },
 ];
 
 /**
- * "/admin" là prefix của MỌI route con, nên nếu dùng startsWith cho nó thì tab
- * "Tổng quan" sẽ sáng ở khắp nơi — nó phải khớp tuyệt đối. Các tab còn lại dùng
- * prefix để route con vẫn giữ tab cha sáng (vd /admin/campaigns/new → "Chiến dịch").
+ * "/admin" (không có route con) chỉ còn là redirect sang /admin/campaigns
+ * (xem app/admin/page.tsx) nên không có tab nào cần khớp tuyệt đối nữa — mọi
+ * tab dùng prefix để route con vẫn giữ tab cha sáng (vd /admin/campaigns/new
+ * → "Chiến dịch").
  */
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

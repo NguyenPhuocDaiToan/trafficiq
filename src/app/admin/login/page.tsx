@@ -16,7 +16,7 @@ export default async function LoginPage({
   async function login(formData: FormData) {
     "use server";
     const provided = String(formData.get("password") ?? "");
-    const target = String(formData.get("next") ?? "/admin");
+    const target = String(formData.get("next") ?? "/admin/campaigns");
 
     const expected = adminPassword();
     if (provided !== expected) {
@@ -33,7 +33,7 @@ export default async function LoginPage({
     });
 
     // Chỉ nhận đường dẫn nội bộ — chặn open-redirect qua ?next=
-    redirect(target.startsWith("/admin") ? target : "/admin");
+    redirect(target.startsWith("/admin") ? target : "/admin/campaigns");
   }
 
   return (
@@ -44,7 +44,7 @@ export default async function LoginPage({
       </p>
 
       <form action={login} className="mt-6 flex flex-col gap-3">
-        <input type="hidden" name="next" value={next ?? "/admin"} />
+        <input type="hidden" name="next" value={next ?? "/admin/campaigns"} />
         <input
           type="password"
           name="password"

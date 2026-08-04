@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  getCampaignBreakdown,
-  getClicksTimeseries,
-  getDimensionBreakdown,
-  getOverview,
-  rangeForDays,
-} from "@/lib/analytics/queries";
+import { getDashboardSnapshot } from "@/lib/analytics/queries";
 import { publicBaseUrl } from "@/lib/env";
 import { countryLabel, deviceLabel, sourceLabel } from "@/lib/labels";
 import {
@@ -22,7 +16,10 @@ import {
 
 /**
  * Dashboard tính ON-DEMAND (Gotcha 4.4): không rollup job, không cron.
- * `force-dynamic` vì mọi số liệu phải là realtime — cache trang ở đây là sai.
+ * Chủ dự án xác nhận dashboard không cần realtime, nên số liệu được cache 30s
+ * ở tầng data (`getDashboardSnapshot`, xem lib/analytics/queries.ts) để chuyển
+ * tab qua lại không chạy lại 6 aggregation mỗi lần. Trang vẫn render mỗi
+ * request vì đọc `searchParams` (đổi khoảng ngày), chỉ query Mongo là được cache.
  *
  * UI theo design-system/trafficiq/pages/dashboard.md.
  * Ngôn ngữ: tiếng Việt. Viết tắt của ngành (CR) giữ nguyên vì tài liệu ad
@@ -30,7 +27,6 @@ import {
  *
  * KHÔNG có cột doanh thu/EPC — lý do ghi ở lib/analytics/queries.ts § Overview.
  */
-export const dynamic = "force-dynamic";
 
 const RANGES = [1, 7, 30] as const;
 
@@ -47,17 +43,8 @@ export default async function DashboardPage({
   const days = RANGES.includes(Number(daysParam) as (typeof RANGES)[number])
     ? Number(daysParam)
     : 7;
-  const range = rangeForDays(days);
-
-  const [overview, campaignRows, sources, countries, devices, series] =
-    await Promise.all([
-      getOverview(range),
-      getCampaignBreakdown(range),
-      getDimensionBreakdown(range, "source"),
-      getDimensionBreakdown(range, "country"),
-      getDimensionBreakdown(range, "device"),
-      getClicksTimeseries(range, days === 1 ? "hour" : "day"),
-    ]);
+  const { overview, campaignRows, sources, countries, devices, series } =
+    await getDashboardSnapshot(days);
 
   const baseUrl = publicBaseUrl();
   const peak = Math.max(1, ...series.map((point) => point.clicks));

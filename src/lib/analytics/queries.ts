@@ -1,4 +1,5 @@
 import type { ObjectId } from "mongodb";
+import { unstable_cache } from "next/cache";
 import { campaigns, clickEvents, conversions } from "@/lib/db/collections";
 
 /**
@@ -235,3 +236,39 @@ export async function getClicksTimeseries(
 
   return rows.map((r) => ({ bucket: r._id, clicks: r.clicks }));
 }
+
+export interface DashboardSnapshot {
+  overview: Overview;
+  campaignRows: CampaignRow[];
+  sources: DimensionRow[];
+  countries: DimensionRow[];
+  devices: DimensionRow[];
+  series: TimeseriesPoint[];
+}
+
+/**
+ * Dashboard không cần realtime (quyết định chủ dự án) — cache 30s để chuyển
+ * tab qua lại không chạy lại 6 aggregation mỗi lần.
+ *
+ * Cache theo `days`, KHÔNG theo `range`: `range.to` là `new Date()` tại thời
+ * điểm gọi nên nếu đưa `range` vào key thì mỗi lần gọi ra key khác, cache không
+ * bao giờ trúng. `rangeForDays(days)` chạy lại bên trong hàm được cache, nên
+ * `to` cố định theo đúng lúc cache được ghi, không phải lúc đọc.
+ */
+export const getDashboardSnapshot = unstable_cache(
+  async (days: number): Promise<DashboardSnapshot> => {
+    const range = rangeForDays(days);
+    const [overview, campaignRows, sources, countries, devices, series] =
+      await Promise.all([
+        getOverview(range),
+        getCampaignBreakdown(range),
+        getDimensionBreakdown(range, "source"),
+        getDimensionBreakdown(range, "country"),
+        getDimensionBreakdown(range, "device"),
+        getClicksTimeseries(range, days === 1 ? "hour" : "day"),
+      ]);
+    return { overview, campaignRows, sources, countries, devices, series };
+  },
+  ["dashboard-snapshot"],
+  { revalidate: 30 },
+);

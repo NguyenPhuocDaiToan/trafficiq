@@ -231,14 +231,14 @@ Thứ tự khối (5 khối, không còn ghi chú affiliate ở cuối — xem "
    chủ dùng bìa ở dạng lưới nhiều cột cạnh nhau — chủ ý, để một trang toàn chữ có
    một điểm nhìn có hình, không rải bìa ở mọi dải.
 4. **Mới nhất** — `LatestList`: danh sách theo thời gian, rail ngày 3/12 (không
-   mono) + nội dung 9/12, `divide-y`. KHÔNG có bìa: đây là danh sách quét nhanh
-   theo thời gian, không phải nơi "khoe" bài — thêm bìa vào đây làm nó nặng hơn
-   cần và cạnh tranh sự chú ý với dải Chọn mua ngay phía trên.
+   mono) + nội dung 9/12, `divide-y`. Có **thumbnail 80×45** (`PostThumb`) đứng
+   trong cột nội dung, không thành cột thứ ba: rail ngày là thứ để mắt quét dọc,
+   chen ảnh vào giữa sẽ phá nhịp đó.
 5. **Theo chuyên mục** — `SectionHeading` + 7 cột `CategoryColumn`, mỗi cột:
    nhan đề chuyên mục (sans, uppercase, `border-b`, kèm tổng số bài mono) →
-   danh sách ≤3 bài (`divide-y`, tiêu đề `font-display text-base`) → mô tả chuyên
-   mục → link "Cả chuyên mục". `gap-x-10` là bắt buộc: gạch dưới nhan đề hai cột
-   cạnh nhau sẽ đọc thành một đường liền nếu khe hẹp.
+   danh sách ≤3 bài (`divide-y`, **thumbnail 80×45** + tiêu đề `font-display
+   text-base`) → mô tả chuyên mục → link "Cả chuyên mục". `gap-x-10` là bắt buộc:
+   gạch dưới nhan đề hai cột cạnh nhau sẽ đọc thành một đường liền nếu khe hẹp.
 
 **Vì sao có cả dải "Mới nhất" VÀ dải "Theo chuyên mục"**, dù một bài có thể xuất
 hiện ở cả hai: hai dải trả lời hai câu khác nhau. "Mới nhất" trả lời *có gì mới*
@@ -246,12 +246,18 @@ hiện ở cả hai: hai dải trả lời hai câu khác nhau. "Mới nhất" t
 mảng gì* (người vào lần đầu cần đúng câu đó). Báo in cũng in mục lục hai cách như
 vậy — không phải trùng lặp, là hai lối vào khác nhau cho cùng nội dung.
 
-**Vì sao chỉ dải "Chọn mua" có bìa dạng lưới, không phải mọi dải**: bìa là hình,
-và quá nhiều hình cạnh nhau lại triệt tiêu tác dụng — mắt không còn phân biệt được
-đâu là điểm nhấn. `LeadStory` có một bìa lớn vì nó là điểm mở đầu trang; "Chọn mua"
-có bìa vì nó là dải sản phẩm — hình đúng vai trò minh hoạ món đồ; "Mới nhất" và
-`CategoryColumn` không có bìa vì chúng là danh sách quét nhanh, hình sẽ làm chậm
-việc quét.
+**Ba cỡ hình trên trang chủ, ba vai khác nhau** — không phải "chỗ nào cũng có bìa":
+
+| Cỡ | Ở đâu | Vai |
+|---|---|---|
+| Bìa lớn (`aspect-video`, ảnh gốc) | `LeadStory` | điểm mở đầu trang, `loading="eager"` |
+| Bìa thẻ (`PostCard`, ảnh gốc) | dải "Chọn mua" | minh hoạ món đồ — đây là dải sản phẩm |
+| Thumbnail 80×45 (`PostThumb`, file sinh sẵn) | "Mới nhất", `CategoryColumn` | **dấu nhận diện**, không phải minh hoạ |
+
+Bản trước hai dải danh sách **không có hình gì** với lý do "hình làm chậm việc
+quét". Lý do đó chỉ đúng với hình cỡ bìa: một ô 80×45 cạnh tiêu đề là mốc để mắt
+nhận ra bài đã đọc, không cạnh tranh với tiêu đề. Nhưng nó chỉ đúng khi dùng
+**file thumbnail riêng** — xem ràng buộc `PostThumb` bên dưới, đó là phần bắt buộc.
 
 **`<h1>` của trang chủ là tiêu đề bài dẫn, cố ý.** Trang nhất một tờ báo không có
 khẩu hiệu cỡ lớn, nó có một tin dẫn. Câu định vị của site nằm ở `Dateline` và ở
@@ -294,6 +300,28 @@ kẻ ngang — hai vai trò khác nhau nên không cần trùng hình.
   ảnh. Ảnh thật phải qua đúng ràng buộc ≤200KB/WebP/lazy đã ghi trong AGENTS.md —
   `PostCover` không tự miễn ràng buộc đó.
 
+  **Ảnh thật ĐÃ CÓ** (12/12 bài, WebP 1200×675, 54–181KB). Vì vậy có thêm một tầng
+  thứ hai, và đây là ràng buộc bắt buộc:
+
+  **Thumbnail trong danh sách phải là FILE RIÊNG, không phải ảnh bìa co bằng CSS.**
+  AGENTS.md cấm đi qua Image Optimization, nên `<img>` trỏ ảnh gốc sẽ tải đủ
+  1200×675 rồi mới co xuống 80px. Dải "Theo chuyên mục" có tới 21 dòng → trang chủ
+  từ 282KB lên 1,2MB để hiện những ô 80px. Đo thật sau khi làm đúng cách: **+35,1KB
+  cho cả 16 thẻ img** (12 file khác nhau), tổng ảnh trang chủ 317KB.
+
+  Quy ước ở `src/lib/thumb.ts` (**nguồn duy nhất** cho cả ba chỗ: script sinh,
+  component đọc, gate kiểm): `/images/blog/thumb/<tên>.webp`, 160×90 — đúng 2× cỡ
+  hiển thị 80×45 để màn 2x không nhoè, và là thu nhỏ thuần vì ảnh gốc đã 16:9 chằn.
+
+  - Thêm bài có ảnh bìa, hoặc thay ảnh bìa cũ → **chạy `npm run gen:thumbs`**.
+  - `npm run check:content` chặn ba kiểu sai: thiếu file, file >20KB (dấu hiệu ai đó
+    copy ảnh gốc vào thư mục thumb), và cỡ khác 160×90. Đã thử ngược cả ba.
+  - `alt=""` + `aria-hidden` ở `PostThumb` là CỐ Ý, khác `cover.alt` ở bìa lớn: ô
+    này nằm ngay cạnh tiêu đề, mà tiêu đề chính là nội dung của link — đặt alt mô tả
+    làm screen reader đọc hai lần cùng một bài.
+  - Khai `width`/`height` tường minh: ảnh lazy không có kích thước sẽ làm nhảy layout
+    khi tải xong, và 21 dòng nhảy cùng lúc là CLS thật, không phải lý thuyết.
+
   Cấu trúc `PostCard` / `LeadStory` / `SidePost` / `CategoryColumn` /
   `LatestList` (`components/site.tsx`):
 
@@ -303,8 +331,9 @@ kẻ ngang — hai vai trò khác nhau nên không cần trùng hình.
   | `LeadStory` | trang chủ, 1 bài | 7/12: nhãn + `KindTag` → bìa lớn (`size="lg"`) → `<h1>` `font-display` cỡ `lg:text-[3.25rem]` → mô tả → byline → CTA accent + link |
   | `SidePost` | trang chủ, 2 bài | 5/12 (`lg:border-l`): nhãn → tiêu đề `sm:text-xl` → mô tả → meta. Không có bìa — xem lý do ở "Chọn mua" dưới. `divide-y` do container cấp |
   | `PostCard` | `/blog`, `/chuyen-muc/[slug]`, dải "Chọn mua" | cột báo: `border-t-2 border-rule` → nhãn → **bìa** (`withCover`, mặc định bật) → tiêu đề `font-display text-xl` → mô tả → meta |
-  | `LatestList` | trang chủ, dải "Mới nhất" | rail ngày (3/12, không mono) + nhãn/tiêu đề/mô tả (9/12), `divide-y`. Không có bìa — đây là danh sách quét nhanh, bìa sẽ làm nó nặng hơn cần thiết |
-  | `CategoryColumn` | trang chủ, 7 cột | nhan đề chuyên mục (sans, `border-b`, kèm tổng số bài mono) → ≤3 bài (`divide-y`) → mô tả mục → link "Cả chuyên mục" |
+  | `LatestList` | trang chủ, dải "Mới nhất" | rail ngày (3/12, không mono) + `PostThumb` 80×45 & nhãn/tiêu đề/mô tả (9/12), `divide-y` |
+  | `CategoryColumn` | trang chủ, 7 cột | nhan đề chuyên mục (sans, `border-b`, kèm tổng số bài mono) → ≤3 bài (`divide-y`, `PostThumb` + tiêu đề) → mô tả mục → link "Cả chuyên mục" |
+  | `PostThumb` | `LatestList`, `CategoryColumn` | ô 80×45 dùng file thumbnail sinh sẵn, `alt=""` + `aria-hidden`, `loading="lazy"`, khai `width`/`height`. Bài không có `cover` rơi về SVG của `PostCover` |
   | `KindTag` | mọi nơi hiện `CategoryTag` | nhãn "Chọn mua" cho `post.kind === "review"`, đứng cạnh `CategoryTag` |
 
   `PostRow`, `FeaturedCard`, `CategoryCard`, `AffiliateNote` của các bản trước đã
@@ -372,9 +401,10 @@ kẻ ngang — hai vai trò khác nhau nên không cần trùng hình.
 - **`npm run check:content` là gate thứ hai của surface này**, cạnh
   `check:contrast`. Nó đọc thẳng `src/content` bằng `tsx` (không regex trên chuỗi TSX)
   và chặn: mô tả ngoài khoảng 120–165 ký tự, `cover.src` trỏ vào file không tồn tại,
-  `cover.alt` rỗng, bài không có `<h2>`, anchor trùng nhau, link nội bộ tới slug không
-  tồn tại, và orphan. Cảnh báo (không chặn): tiêu đề từ 72 ký tự, link ra ngoài thiếu
-  `rel="nofollow"`.
+  `cover.alt` rỗng, thumbnail thiếu/sai cỡ/quá nặng, bài không có `<h2>`, anchor trùng
+  nhau, link nội bộ tới slug không tồn tại, orphan, và ngày sai (`updatedAt` sớm hơn
+  `publishedAt` hoặc ở tương lai). Cảnh báo (không chặn): tiêu đề từ 72 ký tự, link ra
+  ngoài thiếu `rel="nofollow"`.
 - **Mọi link ra ngoài có tính chất affiliate phải `rel="nofollow sponsored"`** và
   bài đó phải hiện nhãn tiết lộ tại chỗ qua `PromoBox`
   (`components/content.tsx`). Không có ngoại lệ — đây là yêu cầu pháp lý, không

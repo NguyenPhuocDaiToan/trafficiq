@@ -4,6 +4,11 @@ import { categoryName, getAuthor } from "@/content/taxonomy";
 import { formatDate } from "@/lib/labels";
 import type { TocEntry } from "@/content/headings";
 import type { Post } from "@/content/types";
+import {
+  THUMB_DISPLAY_HEIGHT,
+  THUMB_DISPLAY_WIDTH,
+  thumbSrc,
+} from "@/lib/thumb";
 /* Chỉ lấy KIỂU từ `lib/seo`: file đó đọc env qua `publicBaseUrl()`, và import giá
    trị từ nó sẽ kéo cả nhánh đó vào mọi chỗ dùng component này. */
 import type { Crumb } from "@/lib/seo";
@@ -575,6 +580,50 @@ export function PostCover({
   );
 }
 
+/**
+ * Thumbnail 80×45 cho các danh sách gọn ở trang chủ (`LatestList`, `CategoryColumn`).
+ *
+ * VÌ SAO KHÔNG DÙNG `PostCover` co nhỏ: `PostCover` trỏ vào ảnh bìa gốc 1200×675
+ * (54–181KB). Bất biến trong AGENTS.md cấm đi qua Image Optimization, nên co bằng
+ * CSS vẫn tải đủ file gốc — dải chuyên mục có 21 dòng, tức trang chủ từ 282KB thành
+ * 1,2MB để hiện những ô 80px. Bộ thumbnail sinh sẵn (`npm run gen:thumbs`) tốn 35KB
+ * cho cả 12 ảnh.
+ *
+ * `alt=""` + `aria-hidden`: ảnh này nằm ngay cạnh tiêu đề bài, và tiêu đề chính là
+ * nội dung của link. Đặt alt mô tả ở đây làm screen reader đọc hai lần cùng một bài.
+ * Đây là ngoại lệ có lý do so với `cover.alt` ở bìa lớn — bìa lớn đứng một mình.
+ *
+ * `width`/`height` khai tường minh để không có nhảy layout khi ảnh lazy tải xong.
+ *
+ * Bài chưa có ảnh bìa rơi về đúng hình SVG của `PostCover` — hiện cả 12 bài đều có
+ * ảnh, nhưng hàng phải giữ đúng chiều cao nếu về sau có bài không ảnh.
+ */
+export function PostThumb({ post }: { post: Post }) {
+  const src = post.cover ? thumbSrc(post.cover.src) : null;
+
+  return (
+    <div
+      className="shrink-0 overflow-hidden bg-muted"
+      style={{ width: THUMB_DISPLAY_WIDTH, height: THUMB_DISPLAY_HEIGHT }}
+    >
+      {src ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={src}
+          alt=""
+          aria-hidden="true"
+          width={THUMB_DISPLAY_WIDTH}
+          height={THUMB_DISPLAY_HEIGHT}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <PostCover post={post} />
+      )}
+    </div>
+  );
+}
+
 /** Nhãn chuyên mục, dẫn tới trang chuyên mục. */
 export function CategoryTag({ category }: { category: Post["category"] }) {
   return (
@@ -900,24 +949,30 @@ export function LatestList({ posts }: { posts: Post[] }) {
             <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
           </p>
 
-          <div className="mt-1.5 sm:col-span-9 sm:mt-0">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <CategoryTag category={post.category} />
-              <KindTag kind={post.kind} />
+          {/* Thumbnail đứng cùng cột với chữ, không thành cột thứ ba: rail ngày bên
+              trái là thứ để mắt quét dọc, chen ảnh vào giữa sẽ phá nhịp đó. */}
+          <div className="mt-1.5 flex items-start gap-3 sm:col-span-9 sm:mt-0">
+            <PostThumb post={post} />
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <CategoryTag category={post.category} />
+                <KindTag kind={post.kind} />
+              </div>
+
+              <h3 className="mt-2 font-display text-lg leading-snug font-bold tracking-tight sm:text-xl">
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="cursor-pointer hover:text-accent"
+                >
+                  {post.title}
+                </Link>
+              </h3>
+
+              <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
+                {post.description}
+              </p>
             </div>
-
-            <h3 className="mt-2 font-display text-lg leading-snug font-bold tracking-tight sm:text-xl">
-              <Link
-                href={`/blog/${post.slug}`}
-                className="cursor-pointer hover:text-accent"
-              >
-                {post.title}
-              </Link>
-            </h3>
-
-            <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
-              {post.description}
-            </p>
           </div>
         </li>
       ))}
@@ -968,17 +1023,24 @@ export function CategoryColumn({
       {posts.length > 0 ? (
         <ul className="divide-y divide-border">
           {posts.map((post) => (
-            <li key={post.slug} className="py-3.5">
-              <h4 className="font-display text-base leading-snug font-bold tracking-tight">
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="cursor-pointer hover:text-accent"
-                >
-                  {post.title}
-                </Link>
-              </h4>
-              <div className="mt-1.5">
-                <PostMetaLine post={post} />
+            /* Thumbnail bên trái, chữ bên phải. `items-start` chứ không `items-center`:
+               tiêu đề hai dòng thì ảnh phải thẳng hàng với dòng đầu, không trôi xuống
+               giữa khối chữ. */
+            <li key={post.slug} className="flex items-start gap-3 py-3.5">
+              <PostThumb post={post} />
+
+              <div className="min-w-0">
+                <h4 className="font-display text-base leading-snug font-bold tracking-tight">
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="cursor-pointer hover:text-accent"
+                  >
+                    {post.title}
+                  </Link>
+                </h4>
+                <div className="mt-1.5">
+                  <PostMetaLine post={post} />
+                </div>
               </div>
             </li>
           ))}

@@ -340,7 +340,8 @@ npm run build            # production build (đã bao gồm typecheck)
 npm run typecheck        # tsc --noEmit
 npm run lint
 npm run check:contrast   # gate WCAG cho design token
-npm run check:content    # gate nội dung blog (metadata, ảnh bìa, anchor, link nội bộ)
+npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
+npm run gen:thumbs       # sinh thumbnail 160×90 — chạy khi thêm/đổi ảnh bìa bài viết
 
 npm run setup:indexes    # BẮT BUỘC chạy 1 lần sau khi tạo cluster
 npm run seed             # seed 1 campaign demo active để test end-to-end

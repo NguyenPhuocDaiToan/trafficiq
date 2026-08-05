@@ -17,13 +17,15 @@
  * tưởng tượng của nội dung.
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { isValidElement, Children } from "react";
 import type { ReactElement, ReactNode } from "react";
+import sharp from "sharp";
 import { allPosts } from "../src/content";
 import { withHeadingAnchors } from "../src/content/headings";
 import { CATEGORIES } from "../src/content/taxonomy";
 import type { Post } from "../src/content/types";
+import { THUMB_HEIGHT, THUMB_WIDTH, thumbSrc } from "../src/lib/thumb";
 
 /**
  * Khoảng độ dài mô tả. Không phải con số của Google (Google cắt theo pixel, không
@@ -85,6 +87,8 @@ function collectLinks(node: ReactNode, out: { href: string; rel?: string }[]): v
 
 const posts = allPosts();
 const slugs = new Set(posts.map((post) => post.slug));
+/** Bài có ảnh bìa — kiểm thumbnail sau vòng lặp vì việc đó cần `await`. */
+const thumbChecks: Post[] = [];
 /* `Set<string>` tường minh: `CATEGORIES` cho ra `CategorySlug`, và `.has()` với một
    chuỗi bắt từ href sẽ không typecheck — đúng chỗ này cần so chuỗi thô. */
 const categorySlugs = new Set<string>(CATEGORIES.map((category) => category.slug));
@@ -131,6 +135,7 @@ for (const post of posts) {
     if (post.cover.alt.trim().length === 0) {
       fail(post, "cover.alt rỗng — ảnh không có mô tả cho screen reader");
     }
+    thumbChecks.push(post);
   }
 
   // --- Heading và mục lục ---
@@ -197,19 +202,79 @@ for (const [slug, count] of incoming) {
   }
 }
 
-console.log(`Đã kiểm ${posts.length} bài.\n`);
+/*
+ * Thumbnail: file sinh sẵn bởi `npm run gen:thumbs`, dùng ở `PostThumb` trong hai dải
+ * danh sách của trang chủ. Đây là loại sai lặng điển hình — thêm bài có ảnh bìa mà
+ * quên chạy `gen:thumbs` thì trang chủ hiện một ô xám, build vẫn xanh.
+ *
+ * Kiểm cả KÍCH THƯỚC, không chỉ sự tồn tại: cách "sửa" sai nhất là copy ảnh gốc vào
+ * thư mục thumb — file có, trang hiện đúng, và trang chủ âm thầm tải 1,2MB.
+ */
+const THUMB_MAX_BYTES = 20 * 1024;
 
-if (warnings.length > 0) {
-  console.log("CẢNH BÁO (không chặn):");
-  for (const line of warnings) console.log(`  ! ${line}`);
-  console.log("");
+/**
+ * Phần duy nhất cần `await` (đọc metadata ảnh), nên nó nằm trong hàm: `tsx` biên dịch
+ * ra CJS, top-level await là lỗi transform — cùng lý do như `scripts/seed.ts`.
+ */
+async function checkThumbs(): Promise<void> {
+  for (const post of thumbChecks) {
+    const rel = thumbSrc(post.cover!.src);
+    if (!rel) {
+      warn(post, `ảnh bìa ngoài /images/blog nên không có thumbnail: ${post.cover!.src}`);
+      continue;
+    }
+
+    const file = `public${rel}`;
+    if (!existsSync(file)) {
+      fail(post, `thiếu thumbnail ${rel} — chạy \`npm run gen:thumbs\``);
+      continue;
+    }
+
+    const { size } = statSync(file);
+    if (size > THUMB_MAX_BYTES) {
+      fail(
+        post,
+        `thumbnail ${rel} nặng ${(size / 1024).toFixed(1)}KB (trần ${THUMB_MAX_BYTES / 1024}KB) — ` +
+          "có phải đã copy ảnh gốc vào đây?",
+      );
+      continue;
+    }
+
+    const meta = await sharp(file).metadata();
+    if (meta.width !== THUMB_WIDTH || meta.height !== THUMB_HEIGHT) {
+      fail(
+        post,
+        `thumbnail ${rel} cỡ ${meta.width}×${meta.height}, cần ${THUMB_WIDTH}×${THUMB_HEIGHT} — ` +
+          "chạy lại `npm run gen:thumbs` (ảnh bìa lệch 16:9 thì sửa ảnh gốc)",
+      );
+    }
+  }
 }
 
-if (errors.length > 0) {
-  console.log("LỖI:");
-  for (const line of errors) console.log(`  ✗ ${line}`);
-  console.log(`\n${errors.length} lỗi. Sửa trước khi coi là xong.`);
-  process.exit(1);
+function report(): void {
+  console.log(`Đã kiểm ${posts.length} bài.\n`);
+
+  if (warnings.length > 0) {
+    console.log("CẢNH BÁO (không chặn):");
+    for (const line of warnings) console.log(`  ! ${line}`);
+    console.log("");
+  }
+
+  if (errors.length > 0) {
+    console.log("LỖI:");
+    for (const line of errors) console.log(`  ✗ ${line}`);
+    console.log(`\n${errors.length} lỗi. Sửa trước khi coi là xong.`);
+    process.exit(1);
+  }
+
+  console.log(
+    "Toàn bộ bài đạt: metadata, ảnh bìa, thumbnail, anchor, và liên kết nội bộ.",
+  );
 }
 
-console.log("Toàn bộ bài đạt: metadata, ảnh bìa, anchor, và liên kết nội bộ.");
+checkThumbs()
+  .then(report)
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

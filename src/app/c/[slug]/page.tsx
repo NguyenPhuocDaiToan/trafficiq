@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LandingView } from "@/components/landing-view";
 import { publicBaseUrl } from "@/lib/env";
 import { getLandingCampaign } from "@/lib/landing/get-campaign";
+import { buildOgCard, ogCardMetadata } from "@/lib/landing/og-card";
 import { SUB_ID_PARAMS } from "@/lib/tracking/request-context";
 
 type Props = {
@@ -25,33 +26,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Không tìm thấy", robots: { index: false, follow: false } };
   }
 
-  const baseUrl = publicBaseUrl();
-  const url = `${baseUrl}/c/${campaign.slug}`;
-  const images = campaign.og.imageUrl ? [{ url: campaign.og.imageUrl }] : undefined;
-
-  return {
-    title: campaign.og.title,
-    description: campaign.og.description,
-    alternates: { canonical: url },
-    // Campaign chưa active = bản preview, không cho index.
-    robots:
-      campaign.status === "active"
-        ? undefined
-        : { index: false, follow: false },
-    openGraph: {
-      type: "website",
-      url,
-      title: campaign.og.title,
-      description: campaign.og.description,
-      images,
-    },
-    twitter: {
-      card: images ? "summary_large_image" : "summary",
-      title: campaign.og.title,
-      description: campaign.og.description,
-      images: campaign.og.imageUrl ? [campaign.og.imageUrl] : undefined,
-    },
-  };
+  // Thẻ card dựng ở lib/landing/og-card.ts — dùng chung với `/go/[token]`, nơi
+  // cùng card đó được trả bằng HTML thô. Đừng dựng thẻ trực tiếp ở đây.
+  return ogCardMetadata(
+    buildOgCard({
+      og: campaign.og,
+      slug: campaign.slug,
+      baseUrl: publicBaseUrl(),
+      // Campaign chưa active = bản preview, không cho index.
+      index: campaign.status === "active",
+    }),
+  );
 }
 
 /**

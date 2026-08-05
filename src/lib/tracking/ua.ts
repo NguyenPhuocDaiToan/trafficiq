@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import type { ClickEvent } from "@/lib/types";
+import type { BotReason, ClickEvent, WeakSignal } from "@/lib/types";
 
 type Device = ClickEvent["device"];
 
@@ -7,21 +7,42 @@ const BOT_UA_REGEX =
   /bot|crawler|spider|crawling|twitterbot|twittercardservice|facebookexternalhit|facebot|facebookcatalog|telegrambot|whatsapp|linkedinbot|pinterest|discordbot|slackbot|quora link preview|yahoo! slurp|bingbot|googlebot|duckduckgo|baiduspider|yandexbot|applebot|curl|wget|python|node-fetch|axios|go-http-client|headless/i;
 
 /**
- * Kiểm tra đa tầng xem Request có phải từ Bot/Crawler hay không.
+ * Vì sao request này bị coi là crawler — `null` nghĩa là cho đi tiếp.
+ *
+ * CHỈ chứa tín hiệu đủ mạnh để chặn, tức những thứ crawler TỰ KHAI hoặc xác
+ * minh được ở tầng mạng. Chặn nhầm ở đây tốn đúng một click thật của người
+ * dùng (họ bị đẩy về `/c/[slug]`, không tới được trang advertiser, không có
+ * conversion, không có hoa hồng) — nên ngưỡng phải cao.
+ *
+ * `accept-language` từng nằm ở đây và ĐÃ ĐƯỢC GỠ: nó là suy đoán, không phải
+ * xác minh. Header đó vắng mặt ở một số webview trong app và trình duyệt chặn
+ * header, mà đó lại đúng là nguồn traffic chính của dự án. Tệ hơn: CTA trên
+ * landing trỏ `/go/[token]`, nên người bị chặn sẽ bị 302 ngược về đúng trang
+ * họ vừa bấm — một vòng lặp không lối ra, không log, không đếm. Giờ nó là
+ * `WeakSignal`: vẫn ghi lại để đo, nhưng không chặn ai cả.
  */
-export function isBotRequest(req: NextRequest): boolean {
+export function botReason(req: NextRequest): BotReason | null {
   const ua = req.headers.get("user-agent") ?? "";
-  if (BOT_UA_REGEX.test(ua)) return true;
+  if (BOT_UA_REGEX.test(ua)) return "ua-regex";
 
-  // Trình duyệt người dùng thật luôn gửi accept-language
+  // Header Vercel Edge: ASN 13414 = Twitter/X.
+  if (req.headers.get("x-vercel-ip-as-number") === "13414") return "twitter-asn";
+
+  return null;
+}
+
+/**
+ * Tín hiệu đáng ngờ nhưng KHÔNG chặn. Ghi kèm clickEvent để về sau đo được
+ * "nhóm này có convert không" rồi mới quyết định có nâng lên thành tín hiệu
+ * chặn hay không — thay vì chặn trước rồi đoán.
+ */
+export function weakSignals(req: NextRequest): WeakSignal[] {
+  const signals: WeakSignal[] = [];
+
   const acceptLang = req.headers.get("accept-language");
-  if (!acceptLang || acceptLang.trim() === "") return true;
+  if (!acceptLang || acceptLang.trim() === "") signals.push("no-accept-language");
 
-  // Vercel Edge Header: Twitter ASN 13414
-  const asn = req.headers.get("x-vercel-ip-as-number");
-  if (asn === "13414") return true;
-
-  return false;
+  return signals;
 }
 
 /**

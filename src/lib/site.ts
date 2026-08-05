@@ -124,3 +124,18 @@ export const FOOTER_NAV = [
     ],
   },
 ] as const;
+
+/**
+ * Template tiêu đề trang, dùng ở HAI nơi phải khớp nhau:
+ *   - `metadata.title.template` của root layout — Next tự thay `%s`.
+ *   - `ogCardHeadHtml()` (lib/landing/og-card.ts) — dựng `<title>` bằng HTML
+ *     thô cho `/go/[token]`, không có Next thay hộ nên phải tự gọi `pageTitle()`.
+ *
+ * Giữ chuỗi ở một chỗ vì hai đường đó từng lệch nhau: `/c/[slug]` ra
+ * "… · InsightDaily" còn `/go` ra tiêu đề trần.
+ */
+export const TITLE_TEMPLATE = `%s · ${SITE.name}` as const;
+
+export function pageTitle(title: string): string {
+  return TITLE_TEMPLATE.replace("%s", title);
+}

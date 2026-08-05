@@ -32,7 +32,7 @@ export default function robots(): MetadataRoute.Robots {
       /*
        * Crawler tạo Social Card (Twitterbot…) TÔN TRỌNG robots.txt — nếu
        * `/go/` bị chặn ở rule "*", nó từ chối fetch link luôn, không bao giờ
-       * chạm tới bước `isBotRequest()` redirect sang `/c/[slug]` trong
+       * chạm tới nhánh `botReason()` trả thẳng Social Card (200 HTML) trong
        * `app/go/[token]/route.ts`. Route đó đã tự lo việc không tính click
        * giả cho các UA này, nên mở lại `/go/` riêng cho chúng ở đây — không
        * mở cho `Googlebot`/`Bingbot`: hai bot đó không cần Card preview và

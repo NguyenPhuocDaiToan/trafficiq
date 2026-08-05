@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { publicBaseUrl } from "@/lib/env";
-import { SITE } from "@/lib/site";
+import { SITE, TITLE_TEMPLATE } from "@/lib/site";
 
 /*
  * Typography — chốt trong design-system/trafficiq/MASTER.md § Typography.
@@ -72,7 +72,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicBaseUrl()),
-  title: { default: `${SITE.name} — ${SITE.tagline}`, template: `%s · ${SITE.name}` },
+  title: { default: `${SITE.name} — ${SITE.tagline}`, template: TITLE_TEMPLATE },
   description: SITE.description,
   applicationName: SITE.name,
   authors: [{ name: SITE.name }],

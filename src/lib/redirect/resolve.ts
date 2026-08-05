@@ -1,5 +1,6 @@
 import type { ObjectId } from "mongodb";
 import { campaigns } from "@/lib/db/collections";
+import type { CampaignOg } from "@/lib/types";
 
 export interface RouteCandidate {
   offerId: ObjectId;
@@ -12,6 +13,11 @@ export interface RouteCandidate {
 export interface ResolvedRoute {
   campaignId: ObjectId;
   slug: string;
+  /**
+   * Đủ để `/go/[token]` tự trả Social Card cho crawler mà KHÔNG cần query thêm —
+   * nó đi kèm trong chính aggregation resolve token, và nằm trong cùng cache 60s.
+   */
+  og: CampaignOg;
   candidates: RouteCandidate[];
 }
 
@@ -79,6 +85,7 @@ async function queryRoute(token: string): Promise<ResolvedRoute | null> {
     .aggregate<{
       _id: ObjectId;
       slug: string;
+      og: CampaignOg;
       offers: { _id: ObjectId; destinationId: ObjectId; weight: number }[];
       destinations: { _id: ObjectId; url: string }[];
     }>([
@@ -107,7 +114,7 @@ async function queryRoute(token: string): Promise<ResolvedRoute | null> {
           as: "destinations",
         },
       },
-      { $project: { slug: 1, offers: 1, destinations: 1 } },
+      { $project: { slug: 1, og: 1, offers: 1, destinations: 1 } },
     ])
     .toArray();
 
@@ -131,7 +138,7 @@ async function queryRoute(token: string): Promise<ResolvedRoute | null> {
 
   if (candidates.length === 0) return null;
 
-  return { campaignId: doc._id, slug: doc.slug, candidates };
+  return { campaignId: doc._id, slug: doc.slug, og: doc.og, candidates };
 }
 
 /** Weighted random pick. Với 1 candidate thì trả luôn — không tốn random. */

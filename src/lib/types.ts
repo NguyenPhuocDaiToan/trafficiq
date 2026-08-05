@@ -92,14 +92,31 @@ export interface ClickGeo {
 }
 
 /** Append-only. Có TTL index trên `ts`. */
+/**
+ * Lý do một request bị CHẶN ở `/go/[token]` — chỉ những tín hiệu đủ mạnh để
+ * coi là crawler thật. Xem `lib/tracking/ua.ts`.
+ */
+export type BotReason = "ua-regex" | "twitter-asn";
+
+/**
+ * Tín hiệu đáng ngờ nhưng KHÔNG đủ để chặn: được ghi lại để đo, request vẫn
+ * đi tiếp bình thường. Xem comment ở `botReason()`/`weakSignals()`.
+ */
+export type WeakSignal = "no-accept-language";
+
 export interface ClickEvent {
   _id?: ObjectId;
   /** UUID — khóa nối clickEvents ↔ conversions. */
   clickId: string;
   ts: Date;
   campaignId: ObjectId;
-  offerId: ObjectId;
-  destinationId: ObjectId;
+  /**
+   * Vắng mặt ở bản ghi bot: request bị chặn trước bước `pickCandidate()` nên
+   * không có offer/destination nào được chọn. Đừng điền giá trị giả để cho
+   * "đủ field" — bot không đi tới destination nào cả.
+   */
+  offerId?: ObjectId;
+  destinationId?: ObjectId;
   source: string;
   subId1?: string;
   subId2?: string;
@@ -114,6 +131,14 @@ export interface ClickEvent {
   /** sha256(ip + salt) — không lưu IP thô. */
   ipHash?: string;
   userAgent?: string;
+  /**
+   * Chỉ có ở bản ghi `device: "bot"` — vì sao request bị chặn. Không có field
+   * này thì traffic bị chặn biến mất im lặng và không ai trả lời được câu
+   * "click của tôi đi đâu mất".
+   */
+  botReason?: BotReason;
+  /** Ghi để đo, KHÔNG dùng để lọc. Rỗng thì bỏ trắng cho nhẹ doc. */
+  weakSignals?: WeakSignal[];
 }
 
 export interface Conversion {

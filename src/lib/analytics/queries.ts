@@ -17,9 +17,42 @@ export interface DateRange {
   to: Date;
 }
 
+/**
+ * Múi giờ báo cáo — dashboard là công cụ nội bộ của người ngồi ở VN, nên
+ * "hôm nay" và nhãn giờ trên biểu đồ phải theo giờ VN.
+ *
+ * Dùng offset cố định `+07:00` chứ KHÔNG dùng Olson id "Asia/Ho_Chi_Minh":
+ * `$dateToString` với Olson id cần tzdata trong server Mongo, còn VN không có
+ * DST từ 1975 nên offset cố định luôn cho cùng kết quả mà không phụ thuộc gì.
+ */
+export const REPORT_TZ = "+07:00";
+const TZ_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/**
+ * 00:00 giờ VN của ngày chứa `now`, trả về dưới dạng Date (mốc UTC thật).
+ *
+ * Cố tình chỉ dùng accessor UTC + offset tường minh, KHÔNG dùng `getHours()`:
+ * giờ local của process không liên quan gì ở đây — Vercel chạy UTC, máy dev có
+ * thể là múi bất kỳ, và kết quả phải giống nhau ở mọi nơi.
+ */
+function startOfDayInReportTz(now: Date): Date {
+  const shifted = new Date(now.getTime() + TZ_OFFSET_MS);
+  shifted.setUTCHours(0, 0, 0, 0);
+  return new Date(shifted.getTime() - TZ_OFFSET_MS);
+}
+
+/**
+ * Khoảng báo cáo theo NGÀY LỊCH giờ VN, không phải cửa sổ trượt.
+ *
+ * `days = 1` là "từ 00:00 hôm nay tới bây giờ" — đúng nghĩa "hôm nay" mà người
+ * dùng mong đợi khi mở dashboard, thay vì "24 giờ gần nhất" (bản cũ) vốn gộp
+ * cả nửa ngày hôm qua và làm số "hôm nay" không bao giờ khớp với báo cáo của
+ * advertiser. `days = 7` gồm hôm nay + 6 ngày trước đó.
+ */
 export function rangeForDays(days: number): DateRange {
   const to = new Date();
-  const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
+  const startToday = startOfDayInReportTz(to);
+  const from = new Date(startToday.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
   return { from, to };
 }
 
@@ -226,7 +259,7 @@ export async function getClicksTimeseries(
       { $match: clickMatch(range) },
       {
         $group: {
-          _id: { $dateToString: { format, date: "$ts", timezone: "UTC" } },
+          _id: { $dateToString: { format, date: "$ts", timezone: REPORT_TZ } },
           clicks: { $sum: 1 },
         },
       },

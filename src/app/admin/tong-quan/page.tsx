@@ -36,6 +36,18 @@ export const metadata = { title: "Tổng quan" };
 
 const RANGES = [1, 7, 30] as const;
 
+/**
+ * Mặc định hôm nay, KHÔNG phải 7 ngày.
+ *
+ * Mở "Tổng quan" là thao tác xem nhanh "hôm nay chạy thế nào", nên khoảng mặc
+ * định phải là khoảng rẻ nhất. Query đắt nhất trong snapshot là `uniqueVisitors`
+ * ($group theo ipHash, xem queries.ts § getOverview) — nó quét toàn bộ click
+ * trong range và không dùng được allowDiskUse trên Atlas shared tier. Để mặc
+ * định 7 ngày là mỗi lần mở trang phải trả giá cho 7 ngày dữ liệu trong khi
+ * gần như lần nào cũng bấm ngay sang khoảng ngắn hơn.
+ */
+const DEFAULT_DAYS = 1;
+
 function pct(value: number): string {
   return `${(value * 100).toFixed(2)}%`;
 }
@@ -48,7 +60,7 @@ export default async function DashboardPage({
   const { days: daysParam } = await searchParams;
   const days = RANGES.includes(Number(daysParam) as (typeof RANGES)[number])
     ? Number(daysParam)
-    : 7;
+    : DEFAULT_DAYS;
   const { overview, campaignRows, sources, countries, devices, series } =
     await getDashboardSnapshot(days);
 
@@ -71,7 +83,7 @@ export default async function DashboardPage({
                   : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {option === 1 ? "24 giờ" : `${option} ngày`}
+              {option === 1 ? "Hôm nay" : `${option} ngày`}
             </Link>
           ))}
         </div>
@@ -99,7 +111,9 @@ export default async function DashboardPage({
 
       <Card
         title="Lượt click theo thời gian"
-        description={days === 1 ? "Theo giờ (giờ UTC)" : "Theo ngày (giờ UTC)"}
+        description={
+          days === 1 ? "Theo giờ (giờ VN, UTC+7)" : "Theo ngày (giờ VN, UTC+7)"
+        }
       >
         {series.length === 0 ? (
           <p className="text-sm text-muted-foreground">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
 import {
   CategoryColumn,
   Dateline,
@@ -8,8 +9,9 @@ import {
   SectionHeading,
   SidePost,
 } from "@/components/site";
-import { allPosts, featuredPost, postsByCategory } from "@/content";
+import { allPosts, featuredPost, lastContentUpdate, postsByCategory } from "@/content";
 import { CATEGORIES } from "@/content/taxonomy";
+import { graph, personNode, publicAlternates, webSiteNode } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
    */
   title: { absolute: `${SITE.name} — ${SITE.tagline}` },
   description: SITE.description,
-  alternates: { canonical: "/" },
+  alternates: publicAlternates("/"),
   openGraph: {
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
@@ -87,11 +89,22 @@ export default function HomePage() {
     .filter((post) => !featuredSlugs.has(post.slug))
     .slice(0, LATEST_COUNT);
 
-  /** Ngày của bài mới nhất — cho dải Dateline biết site còn được cập nhật. */
-  const newestDate = posts[0]?.updatedAt ?? posts[0]?.publishedAt;
+  /* Lần nội dung đổi gần nhất — cho dải Dateline biết site còn được cập nhật. MAX qua
+     mọi bài, không phải `posts[0]`: xem `lastContentUpdate()`. */
+  const newestDate = lastContentUpdate();
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      {/*
+        Trang chủ là chỗ khai hai node gốc của cả graph: site và người chịu trách
+        nhiệm. Mọi trang khác trỏ về hai `@id` này. Đây là trang Google gần như luôn
+        crawl trước, nên khai ở đây là để phần còn lại có thứ tham chiếu tới.
+
+        KHÔNG khai `SearchAction`: site chưa có trang kết quả tìm kiếm — xem
+        `webSiteNode()` trong `lib/seo.ts`.
+      */}
+      <JsonLd data={graph(webSiteNode(), personNode())} />
+
       {/* 1. Dateline */}
       <div className="pt-6">
         <Dateline

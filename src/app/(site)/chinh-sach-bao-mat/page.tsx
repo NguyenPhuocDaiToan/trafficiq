@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalGapNotice, PageHeader, Prose } from "@/components/site";
+import { PageHeader, Prose } from "@/components/site";
 import { formatDate } from "@/lib/labels";
 import { SITE } from "@/lib/site";
 import { clickTtlDays } from "@/lib/env";
+import { publicAlternates } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Chính sách quyền riêng tư",
   description:
     "Dữ liệu tôi thu thập khi bạn đọc bài, khi bạn bấm liên kết theo dõi, và khi bạn gửi form liên hệ — kèm thời gian lưu trữ cụ thể.",
-  alternates: { canonical: "/chinh-sach-bao-mat" },
+  alternates: publicAlternates("/chinh-sach-bao-mat"),
   openGraph: { title: `Chính sách quyền riêng tư · ${SITE.name}`, url: "/chinh-sach-bao-mat" },
 };
 
@@ -32,10 +33,6 @@ export default function PrivacyPage() {
         title="Chính sách quyền riêng tư"
         intro={`Cập nhật ${formatDate(SITE.policyUpdatedAt)}`}
       />
-
-      <div className="mt-8 max-w-2xl">
-        <LegalGapNotice />
-      </div>
 
       <div className="mt-10">
         <Prose>

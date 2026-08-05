@@ -200,6 +200,21 @@ tại chỗ trước.
    phải thêm `import` tường minh vào `REGISTRY` trong `src/content/index.ts` —
    quét thư mục động sẽ làm `generateStaticParams` không thấy bài.
 
+   Hệ quả: hai thứ của mỗi bài được **sinh từ chính cây JSX**, đừng đặt tay.
+   `withHeadingAnchors()` (`src/content/headings.tsx`) gắn `id` vào h2/h3 và trả về
+   mục lục của đúng những `id` đó trong một lần đi cây — nên không có mục lục nào trỏ
+   vào anchor không tồn tại. Anchor bỏ dấu bằng `slugify()` dùng chung với slug chiến
+   dịch: hai hàm bỏ dấu khác nhau sẽ cho hai anchor khác nhau cho cùng một tiêu đề, và
+   link đã chia sẻ trỏ vào chỗ trống.
+
+   **Structured data (JSON-LD) chỉ sinh từ `src/lib/seo.ts`.** Các node trỏ nhau bằng
+   `@id` (`#website`, `#person`), nên trang nào tự viết JSON-LD là trang có tham chiếu
+   treo — build vẫn xanh và không gate nào bắt được. Cùng lý do, `canonical` + link RSS
+   đi qua `publicAlternates()`: Next **thay thế** cả field `alternates` khi trang con
+   khai lại nó, nên đặt `types` một lần ở layout sẽ bị xoá đúng ở những trang cần nó.
+   Danh sách node theo từng trang, và ba loại schema cố ý KHÔNG khai (`SearchAction`,
+   `FAQPage`/`HowTo`, `aggregateRating`), ở `design-system/trafficiq/pages/blog.md`.
+
 10. **Form liên hệ ghi vào `contactMessages`, KHÔNG gửi email.** Dự án không có
     hạ tầng mail. Vì vậy `/admin/lien-he` là bắt buộc phải tồn tại — bỏ trang đó
     là thư của người thật rơi vào chỗ không ai đọc. Đừng thêm câu "chúng tôi sẽ
@@ -325,6 +340,7 @@ npm run build            # production build (đã bao gồm typecheck)
 npm run typecheck        # tsc --noEmit
 npm run lint
 npm run check:contrast   # gate WCAG cho design token
+npm run check:content    # gate nội dung blog (metadata, ảnh bìa, anchor, link nội bộ)
 
 npm run setup:indexes    # BẮT BUỘC chạy 1 lần sau khi tạo cluster
 npm run seed             # seed 1 campaign demo active để test end-to-end

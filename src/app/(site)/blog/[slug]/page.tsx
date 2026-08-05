@@ -1,10 +1,28 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CategoryTag, PostCard, PostCover, PostMetaLine, Prose } from "@/components/site";
+import { JsonLd } from "@/components/json-ld";
+import {
+  AuthorCard,
+  Breadcrumb,
+  CategoryTag,
+  PostCard,
+  PostCover,
+  PostMetaLine,
+  Prose,
+  TableOfContents,
+} from "@/components/site";
 import { allPosts, getPost, relatedPosts } from "@/content";
+import { withHeadingAnchors } from "@/content/headings";
 import { categoryName, getAuthor } from "@/content/taxonomy";
-import { publicBaseUrl } from "@/lib/env";
+import {
+  blogPostingNode,
+  breadcrumbNode,
+  graph,
+  personNode,
+  publicAlternates,
+  webSiteNode,
+  type Crumb,
+} from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -32,7 +50,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.title,
     description: post.description,
     keywords: post.tags,
-    alternates: { canonical: url },
+    /* Byline ở metadata phải là NGƯỜI viết bài, không phải tên site — cùng lý do
+       như `author` trong JSON-LD (bất biến #13). */
+    authors: [{ name: getAuthor(post.authorId)?.name ?? SITE.owner, url: "/gioi-thieu" }],
+    alternates: publicAlternates(url),
     openGraph: {
       type: "article",
       title: post.title,
@@ -58,70 +79,43 @@ export default async function PostPage({ params }: Props) {
   const post = getPost(slug);
   if (!post) notFound();
 
-  const author = getAuthor(post.authorId);
   const related = relatedPosts(post);
-  const baseUrl = publicBaseUrl();
 
   /*
-   * JSON-LD BlogPosting — yêu cầu trong checklist của pages/blog.md.
-   * Đặt trong HTML server-render để crawler không cần chạy JS mới thấy.
-   * `dangerouslySetInnerHTML` ở đây an toàn: dữ liệu là hằng số trong repo, không
-   * phải input của người dùng.
+   * Thân bài đi qua `withHeadingAnchors()` một lần: nó gắn `id` vào từng h2/h3 và
+   * trả về mục lục của chính những `id` đó. Chạy lúc build (trang này static).
    */
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.description,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt ?? post.publishedAt,
-    inLanguage: SITE.locale,
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${baseUrl}/blog/${post.slug}` },
-    ...(post.cover ? { image: [`${baseUrl}${post.cover.src}`] } : {}),
-    /*
-     * `Person`, không phải `Organization`: site chạy dưới thương hiệu cá nhân
-     * (`SITE.owner`) và mục tác giả trong JSON-LD phải khớp với byline hiện trên
-     * trang — khai một tổ chức không tồn tại là dữ liệu có cấu trúc sai sự thật,
-     * đúng thứ Google hạ tín nhiệm ở nội dung review/affiliate.
-     */
-    author: { "@type": "Person", name: author?.name ?? SITE.owner },
-    publisher: { "@type": "Person", name: SITE.owner },
-    articleSection: categoryName(post.category),
-    keywords: post.tags.join(", "),
-  };
+  const { content, toc } = withHeadingAnchors(post.body());
+
+  /*
+   * Breadcrumb: một mảng, hai đích — khối hiện trên trang và `BreadcrumbList`
+   * trong JSON-LD. Mục cuối là bài đang mở, `Breadcrumb` in nó thành chữ thường.
+   */
+  const trail: Crumb[] = [
+    { name: "Trang chủ", path: "/" },
+    { name: "Bài viết", path: "/blog" },
+    { name: categoryName(post.category), path: `/chuyen-muc/${post.category}` },
+    { name: post.title, path: `/blog/${post.slug}` },
+  ];
+
+  /*
+   * Một graph cho cả trang thay vì nhiều thẻ script rời: `BlogPosting` trỏ tới
+   * `#person` và `#website` bằng `@id`, nên hai node đó phải có mặt trong cùng
+   * graph — thiếu chúng thì tham chiếu treo và Google chỉ thấy một bài viết không
+   * biết ai viết. Chi tiết ở `lib/seo.ts`.
+   */
+  const jsonLd = graph(
+    webSiteNode(),
+    personNode(),
+    blogPostingNode(post),
+    breadcrumbNode(trail),
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
-      {/* Breadcrumb: người đọc tới từ Google cần biết mình đang ở đâu. */}
-      <nav aria-label="Đường dẫn" className="text-sm text-muted-foreground">
-        <ol className="flex flex-wrap items-center gap-2">
-          <li>
-            <Link href="/" className="cursor-pointer hover:text-foreground">
-              Trang chủ
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link href="/blog" className="cursor-pointer hover:text-foreground">
-              Bài viết
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link
-              href={`/chuyen-muc/${post.category}`}
-              className="cursor-pointer hover:text-foreground"
-            >
-              {categoryName(post.category)}
-            </Link>
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumb trail={trail} />
 
       <article className="mt-8">
         <header className="border-b border-border pb-8">
@@ -138,17 +132,36 @@ export default async function PostPage({ params }: Props) {
               rời: bản trước để tên người viết ở thẻ riêng nên dấu "·" phải viết tay
               và khi tắt CSS thì thứ tự đọc ra là "ngày · phút · · tên". */}
           <div className="mt-5">
-            <PostMetaLine post={post} withByline />
+            <PostMetaLine post={post} withByline withUpdated />
           </div>
           <div className="mt-6">
             <PostCover post={post} size="lg" />
           </div>
         </header>
 
-        <div className="mt-10">
-          <Prose>{post.body()}</Prose>
+        {/* Mục lục đứng TRƯỚC thân bài và tự ẩn khi bài ít mục — xem ngưỡng ở
+            `TableOfContents`. */}
+        <div className="mt-8">
+          <TableOfContents entries={toc} />
         </div>
 
+        <div className="mt-10">
+          <Prose>{content}</Prose>
+        </div>
+
+        <div className="mt-12">
+          <AuthorCard authorId={post.authorId} />
+        </div>
+
+        {/*
+          Tag là NHÃN, cố ý không phải link — và cố ý không có trang `/the/[tag]`.
+          Với 12 bài, mỗi tag sẽ ra một trang một-hai bài: đó là thin content, và
+          một site nội dung mới bị đánh giá bằng tỉ lệ trang mỏng của nó. Chức năng
+          "đọc thêm bài cùng mảng" đã có hai đường thật: `relatedPosts()` bên dưới
+          và trang chuyên mục. Có đủ bài cho mỗi tag (khoảng 5+) thì mới mở trang
+          tag, và lúc đó nhớ chuẩn hoá tag về một danh sách cố định như `CATEGORIES`
+          — hiện `tags` là chuỗi tự do nên "điện thoại" và "dien thoai" là hai tag.
+        */}
         {post.tags.length > 0 ? (
           <footer className="mt-12 border-t border-border pt-6">
             <h2 className="text-[0.6875rem] font-bold tracking-[0.18em] uppercase">

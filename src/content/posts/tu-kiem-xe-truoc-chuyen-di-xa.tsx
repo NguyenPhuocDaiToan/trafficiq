@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Năm điểm gây hỏng giữa đường nhiều nhất đều tự kiểm được trong mười lăm phút bằng mắt và tay. Cách kiểm từng điểm, và khi nào bắt buộc phải ra tiệm.",
   category: "di-chuyen",
   publishedAt: "2026-07-13",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 7,
   cover: {
@@ -96,6 +98,19 @@ export const post: Post = {
         chúng là những thứ mòn dần theo thời gian, không phải hỏng bất ngờ. Làm đủ năm
         điểm trước mỗi chuyến đi xa mất khoảng mười lăm phút — ngắn hơn rất nhiều so với
         thời gian đứng chờ cứu hộ giữa đường.
+      </p>
+
+      <p>
+        Hai việc đi kèm, cùng một lần chuẩn bị. Thứ nhất: cùng danh sách này dùng được
+        khi đi xem một chiếc xe cũ — lốp, phanh, rò dầu là ba chỗ nói nhiều nhất về cách
+        xe đã được dùng, và phép tính tiền thì ở bài{" "}
+        <Link href="/blog/mua-do-cu-hay-do-moi">mua đồ cũ hay đồ mới</Link>. Thứ hai:
+        kiểm giấy tờ xe và bảo hiểm còn hạn không, vì đó là thứ không sửa được giữa
+        đường —{" "}
+        <Link href="/blog/giu-giay-to-quan-trong-trong-nha">
+          chỗ giữ và cách biết giấy nào sắp hết hạn
+        </Link>{" "}
+        là một buổi tối làm một lần.
       </p>
     </>
   ),

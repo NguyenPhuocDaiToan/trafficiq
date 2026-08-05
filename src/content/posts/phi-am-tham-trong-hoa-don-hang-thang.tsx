@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Những khoản nhỏ tự động trừ mỗi tháng thường tốn hơn tổng số tiền người ta cố tiết kiệm bằng cách sống tiết kiệm. Cách rà chúng trong một buổi tối.",
   category: "tai-chinh",
   publishedAt: "2026-07-16",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 7,
   cover: {
@@ -129,7 +131,9 @@ export const post: Post = {
         quyết định giữ hay bỏ. Một gói &ldquo;chỉ vài chục nghìn một tháng&rdquo; nghe
         như tiền lẻ; cùng khoản đó viết theo năm thì nằm cùng hạng với những thứ bạn
         phải suy nghĩ kỹ mới mua. Ba gói như vậy là một khoản chi đáng kể mỗi năm mà
-        chưa từng ai trong nhà bàn tới.
+        chưa từng ai trong nhà bàn tới. Đây cũng đúng là phép quy đổi dùng để quyết{" "}
+        <Link href="/blog/mua-do-cu-hay-do-moi">mua đồ cũ hay đồ mới</Link>: so chi phí
+        mỗi năm, không so con số trên nhãn giá.
       </Callout>
 
       <h2>4. Dịch vụ mua kèm mà bạn không chọn</h2>

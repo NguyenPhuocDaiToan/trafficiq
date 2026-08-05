@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -5,9 +6,10 @@ export const post: Post = {
   slug: "sao-luu-du-lieu-quy-tac-3-2-1",
   title: "Sao lưu dữ liệu theo quy tắc 3-2-1, bản dành cho người không làm IT",
   description:
-    "Vì sao ảnh đang ở trên mây vẫn có thể mất sạch, và cách dựng ba bản sao lưu bằng những thứ bạn đã có trong nhà.",
+    "Vì sao ảnh đang ở trên mây vẫn có thể mất sạch, cách dựng ba bản sao lưu bằng những thứ đã có trong nhà, và bài kiểm năm phút xem bản sao lưu của bạn có thật không.",
   category: "cong-nghe",
   publishedAt: "2026-07-22",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 7,
   cover: {
@@ -66,8 +68,9 @@ export const post: Post = {
           <strong>3 bản</strong> của dữ liệu quan trọng — bản đang dùng tính là một.
         </li>
         <li>
-          <strong>2 loại phương tiện khác nhau</strong> — ví dụ ổ cứng rời và dịch vụ
-          đám mây, không phải hai ổ cứng cùng loại mua cùng ngày.
+          <strong>2 loại phương tiện khác nhau</strong> — ví dụ{" "}
+          <Link href="/blog/chon-o-cung-di-dong">một ổ rời</Link> và dịch vụ đám mây,
+          không phải hai ổ cứng cùng loại mua cùng ngày.
         </li>
         <li>
           <strong>1 bản ở nơi khác</strong> — không cùng địa chỉ với máy của bạn. Cháy,
@@ -121,13 +124,18 @@ export const post: Post = {
 
       <ul>
         <li>
-          <strong>Đặt lịch cố định</strong> — ví dụ ngày đầu tháng, cùng lúc với việc
-          xem lại hoá đơn. Việc gắn vào một việc đã có thói quen thì dễ giữ hơn việc
-          đứng riêng.
+          <strong>Đặt lịch cố định</strong> — ví dụ ngày đầu tháng, cùng lúc với việc{" "}
+          <Link href="/blog/phi-am-tham-trong-hoa-don-hang-thang">
+            rà lại hoá đơn hằng tháng
+          </Link>
+          . Việc gắn vào một việc đã có thói quen thì dễ giữ hơn việc đứng riêng.
         </li>
         <li>
           <strong>Chép cả thư mục, đừng chọn tệp.</strong> Chọn tệp là chỗ sinh ra sai
-          sót. Cứ chép cả thư mục ảnh và cả thư mục tài liệu.
+          sót. Cứ chép cả thư mục ảnh và cả thư mục tài liệu — và nếu chỗ chứa hiện tại
+          là một đống không có tên rõ ràng thì{" "}
+          <Link href="/blog/dung-lai-thu-muc-may-tinh">dựng lại cây thư mục</Link> trước
+          sẽ tiết kiệm cho bạn cả việc chép lẫn việc tìm lại sau này.
         </li>
         <li>
           <strong>Rút ổ ra khỏi máy sau khi chép.</strong> Ổ cắm thường trực vào máy
@@ -173,8 +181,9 @@ export const post: Post = {
 
       <ul>
         <li>
-          <strong>Không thể tạo lại:</strong> ảnh và video gia đình, giấy tờ đã chụp,
-          bản ghi âm. Nhóm này cần đủ 3-2-1.
+          <strong>Không thể tạo lại:</strong> ảnh và video gia đình,{" "}
+          <Link href="/blog/giu-giay-to-quan-trong-trong-nha">giấy tờ đã chụp</Link>, bản
+          ghi âm. Nhóm này cần đủ 3-2-1.
         </li>
         <li>
           <strong>Tạo lại được nhưng rất mất công:</strong> tài liệu công việc, thư từ

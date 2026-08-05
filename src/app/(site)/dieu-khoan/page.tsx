@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalGapNotice, PageHeader, Prose } from "@/components/site";
+import { PageHeader, Prose } from "@/components/site";
 import { formatDate } from "@/lib/labels";
 import { SITE } from "@/lib/site";
+import { publicAlternates } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Điều khoản sử dụng",
   description: `Điều kiện sử dụng ${SITE.name}: quyền nội dung, giới hạn trách nhiệm, và các hành vi không được phép.`,
-  alternates: { canonical: "/dieu-khoan" },
+  alternates: publicAlternates("/dieu-khoan"),
   openGraph: { title: `Điều khoản sử dụng · ${SITE.name}`, url: "/dieu-khoan" },
 };
 
@@ -21,10 +22,6 @@ export default function TermsPage() {
         title="Điều khoản sử dụng"
         intro={`Cập nhật ${formatDate(SITE.policyUpdatedAt)}`}
       />
-
-      <div className="mt-8 max-w-2xl">
-        <LegalGapNotice />
-      </div>
 
       <div className="mt-10">
         <Prose>

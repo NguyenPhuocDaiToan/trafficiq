@@ -1,4 +1,4 @@
-import { allPosts } from "@/content";
+import { allPosts, lastContentUpdate } from "@/content";
 import { getAuthor } from "@/content/taxonomy";
 import { publicBaseUrl } from "@/lib/env";
 import { SITE } from "@/lib/site";
@@ -55,7 +55,9 @@ ${post.tags.map((tag) => `      <category>${escapeXml(tag)}</category>`).join("\
     })
     .join("\n");
 
-  const latest = posts[0]?.updatedAt ?? posts[0]?.publishedAt;
+  /* MAX qua mọi bài, không phải `posts[0]`: một bài cũ được sửa cũng là feed có thay
+     đổi. Xem `lastContentUpdate()` trong `src/content/index.ts`. */
+  const latest = lastContentUpdate();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">

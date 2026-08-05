@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -5,9 +6,10 @@ export const post: Post = {
   slug: "xu-ly-am-moc-trong-nha",
   title: "Ẩm mốc trong nhà: tìm đúng nguồn trước khi mua máy hút ẩm",
   description:
-    "Mốc quay lại sau khi lau vì nguồn ẩm chưa được xử lý, không phải vì lau chưa sạch. Cách tìm ra nguồn ẩm thật ở bốn chỗ hay gặp nhất, và khi nào cần gọi người có chuyên môn.",
+    "Mốc quay lại sau khi lau vì nguồn ẩm chưa được xử lý, không phải vì lau chưa sạch. Cách tìm đúng nguồn trong bốn chỗ hay gặp, và khi nào phải gọi thợ.",
   category: "nha-cua",
   publishedAt: "2026-06-29",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 7,
   cover: {
@@ -99,8 +101,19 @@ export const post: Post = {
         </li>
         <li>
           <strong>Đồ đạc chặn khí:</strong> kê cách tường, không cần thêm thiết bị gì.
+          Hút sạch bụi ở đúng vùng đó khi kê lại — bụi là phần &ldquo;hữu cơ&rdquo; mà
+          mốc mọc trên, và những khe hẹp sau tủ là việc của{" "}
+          <Link href="/blog/may-hut-bui-cam-tay-co-dang-mua">máy hút bụi cầm tay</Link>{" "}
+          hơn là của máy lớn.
         </li>
       </ul>
+
+      <p>
+        Một việc nên làm cùng lúc: chuyển những thứ ẩm là mất hẳn ra khỏi vùng tường đó —
+        ảnh in, sách, và nhất là{" "}
+        <Link href="/blog/giu-giay-to-quan-trong-trong-nha">hộp giấy tờ trong nhà</Link>.
+        Giấy hút ẩm âm thầm hơn tường: tới lúc thấy vết thì tờ giấy đã dính vào nhau.
+      </p>
 
       <h2>Sau khi xử lý nguồn: dọn phần mốc đã mọc</h2>
 

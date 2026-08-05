@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeader, PostCard } from "@/components/site";
+import { JsonLd } from "@/components/json-ld";
+import { Breadcrumb, PageHeader, PostCard } from "@/components/site";
 import { postsByCategory } from "@/content";
 import { CATEGORIES, getCategory } from "@/content/taxonomy";
+import {
+  breadcrumbNode,
+  collectionPageNode,
+  graph,
+  personNode,
+  publicAlternates,
+  webSiteNode,
+  type Crumb,
+} from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -22,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: category.name,
     description: category.description,
-    alternates: { canonical: `/chuyen-muc/${category.slug}` },
+    alternates: publicAlternates(`/chuyen-muc/${category.slug}`),
     openGraph: {
       title: `${category.name} · ${SITE.name}`,
       description: category.description,
@@ -40,8 +50,35 @@ export default async function CategoryPage({ params }: Props) {
 
   const others = CATEGORIES.filter((item) => item.slug !== category.slug);
 
+  const path = `/chuyen-muc/${category.slug}`;
+  const trail: Crumb[] = [
+    { name: "Trang chủ", path: "/" },
+    { name: "Bài viết", path: "/blog" },
+    { name: category.name, path },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      {/* Hai node gốc đi kèm vì `isPartOf` trỏ tới `#website` — tham chiếu `@id` chỉ
+          phân giải trong graph của cùng một trang. Xem ghi chú ở `/blog`. */}
+      <JsonLd
+        data={graph(
+          webSiteNode(),
+          personNode(),
+          collectionPageNode({
+            path,
+            name: category.name,
+            description: category.description,
+            posts,
+          }),
+          breadcrumbNode(trail),
+        )}
+      />
+
+      <div className="mb-8">
+        <Breadcrumb trail={trail} />
+      </div>
+
       <PageHeader
         eyebrow="Chuyên mục"
         title={category.name}

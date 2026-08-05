@@ -325,6 +325,56 @@ kẻ ngang — hai vai trò khác nhau nên không cần trùng hình.
   trên. Lý do ghi trong `globals.css` ngay chỗ bỏ.
 - **Trang này ĐƯỢC index** — ngược với `/admin/**` và `/c/[slug]` preview.
   Mỗi bài phải có: `alternates.canonical`, OG đầy đủ, JSON-LD `BlogPosting`.
+
+  **Structured data sinh từ `src/lib/seo.ts`, KHÔNG viết tay tại trang.** Các node
+  trỏ nhau bằng `@id` (`#website`, `#person`), nên một trang tự viết JSON-LD là một
+  trang có tham chiếu treo mà build vẫn xanh. Bảng hiện có:
+
+  | Trang | Node |
+  |---|---|
+  | `/` | `WebSite` + `Person` |
+  | `/blog`, `/chuyen-muc/[slug]` | `WebSite` + `Person` + `CollectionPage` (kèm `ItemList`) + `BreadcrumbList` |
+  | `/blog/[slug]` | `WebSite` + `Person` + `BlogPosting` + `BreadcrumbList` |
+  | `/gioi-thieu` | `WebSite` + `Person` + `ProfilePage` |
+
+  `WebSite` + `Person` lặp ở **mọi** trang là cố ý, không phải chỗ bỏ sót cần tối ưu:
+  tham chiếu `@id` chỉ phân giải được trong graph của cùng một trang, nên trang nào có
+  node trỏ tới `#website`/`#person` thì phải mang theo hai node đó. Bỏ ra để tiết kiệm
+  vài trăm byte là đổi lấy một tham chiếu treo.
+
+  Ba thứ cố ý KHÔNG khai, đừng thêm lại mà không đọc lý do:
+  - **`SearchAction`** — site không có trang kết quả tìm kiếm. Khai một chức năng
+    không tồn tại là structured data sai sự thật.
+  - **`FAQPage` / `HowTo`** — Google đã bỏ rich result của cả hai cho site thường
+    (FAQ giới hạn cho cơ quan y tế/chính phủ từ 2023, HowTo bỏ hẳn). Nhét vào chỉ
+    thêm markup phải bảo trì mà không đổi được gì trên SERP.
+  - **`aggregateRating` / `Review`** — bài `kind: "review"` ở đây so sánh theo NHÓM
+    và không cho điểm (xem `Post.kind`). Không có điểm thì không có rating để khai.
+- **Breadcrumb: một mảng `Crumb`, hai đích.** `<Breadcrumb>` render và
+  `breadcrumbNode()` sinh JSON-LD từ cùng mảng đó. Google chỉ in đường dẫn thay URL
+  khi hai thứ khớp nhau — viết tay hai chỗ là cách chắc chắn để chúng lệch.
+- **`id` của heading và mục lục do `withHeadingAnchors()` sinh, không đặt tay.**
+  Thân bài là TSX nên `id` viết tay sẽ bị quên; ở đây anchor và mục lục ra từ cùng
+  một lần đi cây nên không thể có mục trỏ vào anchor chết. Ngưỡng hiện ở
+  `TOC_MIN_ENTRIES` (4 mục) — dưới ngưỡng thì mục lục chỉ là một khối phải bỏ qua
+  trước khi tới chữ đầu tiên.
+- **Tag là nhãn, KHÔNG phải link, và không có trang `/the/[tag]`.** 12 bài chia theo
+  tag tự do sẽ ra hàng chục trang một-hai bài — thin content, đúng thứ hạ tín nhiệm
+  một site nội dung mới. Đường "đọc thêm cùng mảng" đã có `relatedPosts()` và trang
+  chuyên mục. Mở trang tag khi mỗi tag có ~5 bài, và trước đó phải chuẩn hoá tag
+  thành danh sách cố định như `CATEGORIES` (hiện "điện thoại" và "dien thoai" là hai
+  tag khác nhau).
+- **Mỗi bài phải có ít nhất một link nội bộ trong thân bài, và ít nhất một bài khác
+  trỏ về nó.** `npm run check:content` gác cả hai chiều (bài không ai trỏ tới = orphan,
+  crawler chỉ tới được nó qua trang danh sách). Link phải nằm trong câu đang nói đúng
+  việc đó — không dựng khối "Bài liên quan" thứ hai bằng tay, `relatedPosts()` đã làm
+  việc đó ở cuối trang.
+- **`npm run check:content` là gate thứ hai của surface này**, cạnh
+  `check:contrast`. Nó đọc thẳng `src/content` bằng `tsx` (không regex trên chuỗi TSX)
+  và chặn: mô tả ngoài khoảng 120–165 ký tự, `cover.src` trỏ vào file không tồn tại,
+  `cover.alt` rỗng, bài không có `<h2>`, anchor trùng nhau, link nội bộ tới slug không
+  tồn tại, và orphan. Cảnh báo (không chặn): tiêu đề từ 72 ký tự, link ra ngoài thiếu
+  `rel="nofollow"`.
 - **Mọi link ra ngoài có tính chất affiliate phải `rel="nofollow sponsored"`** và
   bài đó phải hiện nhãn tiết lộ tại chỗ qua `PromoBox`
   (`components/content.tsx`). Không có ngoại lệ — đây là yêu cầu pháp lý, không

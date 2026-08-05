@@ -239,7 +239,9 @@ export function CampaignEditLivePreview({
                     ) : (
                       <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
                         <ImageIcon />
-                        <span className="text-xs font-medium mt-1">Chưa nhập "Ảnh khi chia sẻ" (ogImageUrl)</span>
+                        <span className="text-xs font-medium mt-1">
+                          Chưa nhập &ldquo;Ảnh khi chia sẻ&rdquo; (ogImageUrl)
+                        </span>
                         <span className="text-[10px] text-muted-foreground/70">Kích thước chuẩn: 1200 × 630 px</span>
                       </div>
                     )}

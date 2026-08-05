@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout, CriteriaTable, MethodNote } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Thứ quyết định máy có được dùng tiếp sau tháng đầu không phải lực hút, mà là chỗ cắm sạc và cách đổ rác. Bốn tiêu chí và cách tự thử ngay trong cửa hàng.",
   category: "nha-cua",
   publishedAt: "2026-07-27",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 8,
   kind: "review",
@@ -102,7 +104,9 @@ export const post: Post = {
 
       <p>
         Câu thứ ba có một cái bẫy: bộ lọc phải <strong>khô hoàn toàn</strong> mới được
-        lắp lại, nếu không nó ẩm và sinh mùi. Máy chỉ có một bộ lọc thì trong lúc chờ
+        lắp lại, nếu không nó ẩm và sinh mùi — đúng cơ chế của{" "}
+        <Link href="/blog/xu-ly-am-moc-trong-nha">mốc trên tường</Link>: bụi hữu cơ cộng
+        độ ẩm giữ lâu. Máy chỉ có một bộ lọc thì trong lúc chờ
         khô, bạn không có máy để dùng. Đó là lý do nhiều người mua thêm một bộ lọc dự
         phòng — nên hỏi luôn giá bộ lọc rời khi mua máy.
       </p>
@@ -130,7 +134,9 @@ export const post: Post = {
         Giá bộ lọc thay thế, giá cục pin thay thế (nếu thay được), và thời gian bảo
         hành cho pin — pin thường có thời gian bảo hành ngắn hơn máy. Ba con số này
         quyết định chi phí thật của máy sau hai năm, và không có con nào in trên
-        biển giá.
+        biển giá. Cách cộng chúng lại thành{" "}
+        <Link href="/blog/mua-do-cu-hay-do-moi">chi phí mỗi năm</Link> — con số duy nhất
+        so được giữa hai món khác giá — ở bài về mua đồ cũ hay đồ mới.
       </Callout>
 
       <h2>Khi nào thì đừng mua</h2>

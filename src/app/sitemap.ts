@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { allPosts } from "@/content";
+import { allPosts, lastContentUpdate } from "@/content";
 import { CATEGORIES } from "@/content/taxonomy";
 import { publicBaseUrl } from "@/lib/env";
 
@@ -16,8 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = publicBaseUrl();
   const posts = allPosts();
 
-  /** Mốc thời gian mới nhất trong toàn bộ bài — dùng cho trang danh sách. */
-  const newestPostDate = posts[0]?.updatedAt ?? posts[0]?.publishedAt;
+  /*
+   * Mốc mới nhất trong toàn bộ bài — dùng cho trang chủ và các trang danh sách.
+   * `lastContentUpdate()` lấy MAX qua mọi bài, không lấy `posts[0]`: xem ghi chú tại
+   * hàm đó trong `src/content/index.ts`.
+   */
+  const newestPostDate = lastContentUpdate();
 
   return [
     {

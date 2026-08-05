@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout, CriteriaTable, MethodNote } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Dung tích thật khác dung tích in trên hộp, và phần lớn chế độ nấu không dùng tới lần thứ hai. Bốn thứ nên cân, ba thứ nên bỏ qua.",
   category: "bep",
   publishedAt: "2026-07-24",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 8,
   kind: "review",
@@ -44,7 +46,9 @@ export const post: Post = {
         nấu được. Đa số nồi cơm điện đều có vạch mức nước tối đa in sẵn trong lòng nồi
         — nấu vượt vạch đó là dấu hiệu rõ nhất cho biết đang nấu quá tải, dễ trào và
         cơm nhão ở trên, sát ở dưới. Cách chọn thực dụng là tính theo số bát cơm một
-        bữa đông nhất của nhà bạn, rồi lấy nồi có thể tích lớn hơn mức đó khoảng một
+        bữa đông nhất của nhà bạn (nếu bạn đã{" "}
+        <Link href="/blog/di-cho-mot-lan-cho-ca-tuan">lên khung bữa cho cả tuần</Link>{" "}
+        thì con số đó có sẵn, khỏi phải ước), rồi lấy nồi có thể tích lớn hơn mức đó khoảng một
         nửa — con số &ldquo;một nửa&rdquo; là mức dư an toàn thường gặp, không phải
         quy tắc cố định cho mọi nồi; vạch mức nước trên chính nồi bạn mua luôn là mốc
         đáng tin hơn.
@@ -101,7 +105,10 @@ export const post: Post = {
           nhanh hay chậm phụ thuộc bạn có dùng muỗng kim loại và cọ nhám hay không, hơn
           là phụ thuộc hãng. Vì vậy điều đáng hỏi không phải &ldquo;lớp này bền
           không&rdquo; mà <strong>&ldquo;bán lòng nồi rời không, giá bao nhiêu&rdquo;</strong>.
-          Nồi bán lòng rời thì dùng được gấp đôi thời gian.
+          Nồi bán lòng rời thì dùng được gấp đôi thời gian. Đây là cùng một câu hỏi phụ
+          tùng quyết định{" "}
+          <Link href="/blog/mua-do-cu-hay-do-moi">một món đồ dùng được bao lâu</Link>:
+          hết phụ tùng thì lần hỏng đầu tiên là lần cuối.
         </li>
       </ul>
 

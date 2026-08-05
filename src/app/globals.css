@@ -419,6 +419,17 @@ textarea {
   font-weight: 700;
 }
 
+/*
+ * Nhảy tới anchor (từ mục lục trong bài, hoặc từ link tới từng mục mà Google in
+ * dưới kết quả tìm kiếm) phải để lại khoảng trống phía trên: không có nó thì tiêu đề
+ * mục dán sát cạnh trên viewport và gạch accent của `::before` bị cắt, đọc ra như
+ * trang đã cuộn lố. `id` do `withHeadingAnchors()` (content/headings.tsx) gắn.
+ */
+.prose h2,
+.prose h3 {
+  scroll-margin-top: 1.5rem;
+}
+
 /* Section divider kiểu editorial: gạch ngắn trên h2, không phải <hr> toàn dòng. */
 .prose h2::before {
   display: block;

@@ -68,6 +68,17 @@ export interface Post {
   category: CategorySlug;
   /** ISO date (YYYY-MM-DD). Dùng cho sitemap, RSS, JSON-LD. */
   publishedAt: string;
+  /**
+   * Ngày sửa nội dung THẬT gần nhất. Đi vào `dateModified` của JSON-LD,
+   * `lastModified` của sitemap, và hiện ra trên trang bài (`PostMetaLine`
+   * `withUpdated`) — `/gioi-thieu` hứa "không sửa lặng lẽ", nên ba chỗ đó phải khớp.
+   *
+   * ⚠️ Chỉ đặt khi nội dung người đọc thấy có đổi: thêm/sửa đoạn, đổi tiêu đề hoặc
+   * mô tả. KHÔNG đặt cho việc sửa format, đổi tên biến, hay chỉnh khoảng trắng.
+   * Bơm ngày cho một bài không đổi gì là nói với Google và với người đọc rằng bài đã
+   * được rà lại trong khi không — và đó là loại tín hiệu bị hạ giá trị chứ không được
+   * cộng điểm. Bỏ trống thì `dateModified` bằng `publishedAt`, hoàn toàn hợp lệ.
+   */
   updatedAt?: string;
   authorId: string;
   /**

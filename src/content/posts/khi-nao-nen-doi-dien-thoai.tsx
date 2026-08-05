@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Ba dấu hiệu thật cho biết máy hết đời, ba dấu hiệu giả khiến người ta đổi máy sớm hơn cần thiết, và cách tự kiểm trong mười phút.",
   category: "cong-nghe",
   publishedAt: "2026-07-30",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 8,
   featured: true,
@@ -170,7 +172,10 @@ export const post: Post = {
       <ol>
         <li>
           <strong>Sao lưu, rồi kiểm tra bản sao lưu.</strong> Mở thử vài ảnh và một
-          ghi chú từ bản sao lưu. Chưa mở được nghĩa là chưa có bản sao lưu.
+          ghi chú từ bản sao lưu. Chưa mở được nghĩa là chưa có bản sao lưu — và nếu
+          toàn bộ ảnh của bạn đang chỉ nằm trong một tài khoản đám mây thì đó vẫn chưa
+          phải bản sao lưu, xem{" "}
+          <Link href="/blog/sao-luu-du-lieu-quy-tac-3-2-1">quy tắc 3-2-1</Link>.
         </li>
         <li>
           <strong>Đăng xuất tài khoản khoá máy</strong> (tài khoản của hãng). Đây là
@@ -185,6 +190,13 @@ export const post: Post = {
           đặt gốc của máy, không phải xoá tay từng ứng dụng.
         </li>
       </ol>
+
+      <p>
+        Nếu bạn định mua lại một máy đã qua sử dụng thay vì máy mới, hai mục kiểm ở đầu
+        bài này (cập nhật bảo mật và dung lượng pin) chính là hai câu quyết định — cách
+        cân cả phép tính tiền thì ở bài{" "}
+        <Link href="/blog/mua-do-cu-hay-do-moi">mua đồ cũ hay đồ mới</Link>.
+      </p>
 
       <p>
         Máy cũ còn cập nhật bảo mật thì đừng bỏ ngăn kéo: nó là máy dự phòng tốt, là

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
 import { PageHeader } from "@/components/site";
 import { SITE } from "@/lib/site";
+import { publicAlternates } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Liên hệ",
   description: `Gửi câu hỏi, góp ý hoặc đề nghị hợp tác tới ${SITE.name}.`,
-  alternates: { canonical: "/lien-he" },
+  alternates: publicAlternates("/lien-he"),
   openGraph: { title: `Liên hệ · ${SITE.name}`, url: "/lien-he" },
 };
 

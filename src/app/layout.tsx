@@ -75,7 +75,10 @@ export const metadata: Metadata = {
   title: { default: `${SITE.name} — ${SITE.tagline}`, template: TITLE_TEMPLATE },
   description: SITE.description,
   applicationName: SITE.name,
-  authors: [{ name: SITE.name }],
+  /* Người, không phải tên site: `authors` sinh ra `<meta name="author">`, và mục đó
+     phải khớp byline hiện trên bài (bất biến #13). Trang bài khai lại `authors` của
+     riêng nó — đây là mặc định cho các trang không có tác giả riêng. */
+  authors: [{ name: SITE.owner, url: "/gioi-thieu" }],
   openGraph: {
     type: "website",
     siteName: SITE.name,

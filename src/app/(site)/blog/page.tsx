@@ -1,22 +1,66 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHeader, PostCard } from "@/components/site";
+import { JsonLd } from "@/components/json-ld";
+import { Breadcrumb, PageHeader, PostCard } from "@/components/site";
 import { allPosts, postsByCategory } from "@/content";
 import { CATEGORIES } from "@/content/taxonomy";
+import {
+  breadcrumbNode,
+  collectionPageNode,
+  graph,
+  personNode,
+  publicAlternates,
+  webSiteNode,
+  type Crumb,
+} from "@/lib/seo";
 import { SITE } from "@/lib/site";
+
+const DESCRIPTION = `Toàn bộ bài viết trên ${SITE.name} về công nghệ & thiết bị, tiền bạc & chi tiêu, đời sống & kỹ năng.`;
 
 export const metadata: Metadata = {
   title: "Tất cả bài viết",
-  description: `Toàn bộ bài viết trên ${SITE.name} về công nghệ & thiết bị, tiền bạc & chi tiêu, đời sống & kỹ năng.`,
-  alternates: { canonical: "/blog" },
+  description: DESCRIPTION,
+  alternates: publicAlternates("/blog"),
   openGraph: { title: `Tất cả bài viết · ${SITE.name}`, url: "/blog" },
 };
+
+const TRAIL: Crumb[] = [
+  { name: "Trang chủ", path: "/" },
+  { name: "Bài viết", path: "/blog" },
+];
 
 export default function BlogIndexPage() {
   const posts = allPosts();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      {/*
+        `CollectionPage` + `ItemList` nói rõ đây là trang danh sách và nó liệt kê
+        những bài nào, theo thứ tự nào. Không có nó thì trang này với crawler chỉ là
+        một trang chữ có nhiều link — cùng hình dạng với một trang tag rỗng.
+
+        `webSiteNode()`/`personNode()` phải đi kèm dù trang chủ đã khai: `isPartOf`
+        của `CollectionPage` trỏ tới `#website` bằng `@id`, và tham chiếu `@id` chỉ
+        phân giải được TRONG graph của cùng một trang. Thiếu chúng là tham chiếu treo.
+      */}
+      <JsonLd
+        data={graph(
+          webSiteNode(),
+          personNode(),
+          collectionPageNode({
+            path: "/blog",
+            name: "Tất cả bài viết",
+            description: DESCRIPTION,
+            posts,
+          }),
+          breadcrumbNode(TRAIL),
+        )}
+      />
+
+      <div className="mb-8">
+        <Breadcrumb trail={TRAIL} />
+      </div>
+
       <PageHeader
         eyebrow="Nội dung"
         title="Tất cả bài viết"

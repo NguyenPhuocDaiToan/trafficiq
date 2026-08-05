@@ -3,12 +3,13 @@ import Link from "next/link";
 import { PageHeader, Prose } from "@/components/site";
 import { SITE } from "@/lib/site";
 import { formatDate } from "@/lib/labels";
+import { publicAlternates } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Tiết lộ liên kết affiliate",
   description:
     "Cách site này kiếm tiền, liên kết nào được trả hoa hồng, và điều đó ảnh hưởng thế nào tới nội dung bạn đọc.",
-  alternates: { canonical: "/tiet-lo-lien-ket" },
+  alternates: publicAlternates("/tiet-lo-lien-ket"),
   openGraph: { title: `Tiết lộ liên kết affiliate · ${SITE.name}`, url: "/tiet-lo-lien-ket" },
 };
 

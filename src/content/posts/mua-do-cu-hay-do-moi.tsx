@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout, CriteriaTable } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Không phải món nào mua cũ cũng lời. Cách chia đồ thành ba nhóm theo chi phí hỏng, và bốn câu hỏi trả lời được trước khi chuyển tiền.",
   category: "tai-chinh",
   publishedAt: "2026-07-20",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 7,
   cover: {
@@ -101,6 +103,18 @@ export const post: Post = {
         Gần như mọi món đồ có tuổi đều có một bộ phận mòn trước: pin, lốp, gioăng, lớp
         chống dính, bộ lọc. Tìm ra bộ phận đó, hỏi giá thay mới, rồi cộng vào giá mua.
         Nếu người bán không cho kiểm bộ phận đó, coi như nó đã hết.
+      </p>
+
+      <p>
+        Hai món hay mua cũ nhất đều kiểm được ngay trước mặt người bán:{" "}
+        <Link href="/blog/khi-nao-nen-doi-dien-thoai">
+          dung lượng pin còn lại và tình trạng cập nhật bảo mật của điện thoại
+        </Link>{" "}
+        nằm trong phần cài đặt, còn với xe thì{" "}
+        <Link href="/blog/tu-kiem-xe-truoc-chuyen-di-xa">
+          danh sách tự kiểm trước chuyến đi xa
+        </Link>{" "}
+        dùng được nguyên vẹn làm danh sách kiểm trước khi mua.
       </p>
 
       <h3>2. Còn phụ tùng thay thế không?</h3>

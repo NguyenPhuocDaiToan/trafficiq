@@ -2,7 +2,11 @@ import Link from "next/link";
 import { FOOTER_NAV, MAIN_NAV, SITE } from "@/lib/site";
 import { categoryName, getAuthor } from "@/content/taxonomy";
 import { formatDate } from "@/lib/labels";
+import type { TocEntry } from "@/content/headings";
 import type { Post } from "@/content/types";
+/* Chỉ lấy KIỂU từ `lib/seo`: file đó đọc env qua `publicBaseUrl()`, và import giá
+   trị từ nó sẽ kéo cả nhánh đó vào mọi chỗ dùng component này. */
+import type { Crumb } from "@/lib/seo";
 
 /*
  * Primitive cho surface công khai — theo design-system/trafficiq/pages/blog.md
@@ -590,15 +594,29 @@ export function CategoryTag({ category }: { category: Post["category"] }) {
  * `withByline` chỉ bật ở bài dẫn trang nhất và ở đầu bài viết: site chạy dưới
  * thương hiệu cá nhân nên byline là tín hiệu tin cậy, nhưng in tên người viết cạnh
  * mọi tiêu đề trong một danh sách bốn bài của cùng một người thì chỉ là nhiễu.
+ *
+ * `withUpdated` chỉ bật ở trang bài, và nó KHÔNG phải chi tiết trang trí:
+ * `/gioi-thieu` hứa với người đọc là "bài sẽ được sửa và ghi rõ ngày cập nhật, không
+ * sửa lặng lẽ". Đặt `updatedAt` trong `src/content` mà không in ra là biến câu đó
+ * thành câu nói suông. Không bật ở thẻ trong danh sách: ở đó ngày là mốc để quét
+ * theo thời gian, hai ngày cạnh nhau chỉ làm rối.
  */
 export function PostMetaLine({
   post,
   withByline = false,
+  withUpdated = false,
 }: {
   post: Post;
   withByline?: boolean;
+  withUpdated?: boolean;
 }) {
   const author = withByline ? getAuthor(post.authorId) : undefined;
+  /* Chỉ hiện khi khác ngày đăng: bài chưa sửa lần nào mà in "Cập nhật <ngày đăng>"
+     là nói rằng có một lần sửa không hề xảy ra. */
+  const updated =
+    withUpdated && post.updatedAt && post.updatedAt !== post.publishedAt
+      ? post.updatedAt
+      : undefined;
 
   return (
     <p className="text-sm text-muted-foreground">
@@ -613,6 +631,14 @@ export function PostMetaLine({
       <span>
         <span className="font-mono tabular-nums">{post.readingMinutes}</span> phút đọc
       </span>
+      {updated ? (
+        <>
+          <span aria-hidden="true"> · </span>
+          <span>
+            Cập nhật <time dateTime={updated}>{formatDate(updated)}</time>
+          </span>
+        </>
+      ) : null}
     </p>
   );
 }
@@ -1030,6 +1056,150 @@ export function SectionHeading({
  */
 
 /**
+ * Breadcrumb — dùng ở `/blog`, `/chuyen-muc/[slug]` và `/blog/[slug]`.
+ *
+ * Hai vai cùng lúc, và đó là lý do nó là component dùng chung chứ không phải markup
+ * viết tại từng trang:
+ *   1. Người tới từ Google rơi thẳng vào một bài, cần biết mình đang ở đâu.
+ *   2. Cùng mảng `trail` này được `breadcrumbNode()` (`lib/seo.ts`) dịch sang
+ *      `BreadcrumbList`. Google chỉ in đường dẫn thay cho URL trong kết quả tìm
+ *      kiếm khi structured data KHỚP với breadcrumb thấy trên trang — viết tay hai
+ *      chỗ là cách chắc chắn để hai chỗ lệch nhau.
+ *
+ * Mục cuối là trang đang mở: in chữ thường + `aria-current`, không phải link — link
+ * trỏ về chính trang đang đứng chỉ làm người dùng bàn phím tab qua một đích vô nghĩa.
+ */
+export function Breadcrumb({ trail }: { trail: Crumb[] }) {
+  return (
+    <nav aria-label="Đường dẫn" className="text-sm text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-2">
+        {trail.map((crumb, index) => {
+          const isLast = index === trail.length - 1;
+
+          return (
+            <li key={crumb.path} className="flex items-center gap-2">
+              {index > 0 ? <span aria-hidden="true">/</span> : null}
+              {isLast ? (
+                <span aria-current="page" className="text-foreground">
+                  {crumb.name}
+                </span>
+              ) : (
+                <Link
+                  href={crumb.path}
+                  className="cursor-pointer transition-colors duration-150 hover:text-foreground"
+                >
+                  {crumb.name}
+                </Link>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+/**
+ * Số mục tối thiểu để hiện mục lục. Dưới ngưỡng này thì mục lục chỉ lặp lại thứ
+ * người đọc thấy hết trong một lần cuộn — thêm một khối phải bỏ qua trước khi tới
+ * chữ đầu tiên của bài.
+ */
+const TOC_MIN_ENTRIES = 4;
+
+/**
+ * Mục lục trong bài. `entries` do `withHeadingAnchors()` (`content/headings.tsx`)
+ * sinh cùng lúc với `id` của các heading, nên không có mục nào trỏ vào anchor chết.
+ *
+ * Vì sao có nó trên một blog 12 bài: bài dài ở đây là dạng "làm theo từng bước", và
+ * người tới từ tìm kiếm thường chỉ cần đúng một mục ("cách kiểm pin"). Đây cũng là
+ * thứ cho Google đủ dữ liệu để hiện link tới từng mục ngay dưới kết quả — nhưng nó
+ * chỉ hoạt động khi heading có `id` thật, không phải khi mục lục là danh sách chữ.
+ *
+ * Dùng `<a>` thay vì `<Link>`: đích là anchor trong chính trang này, không có gì để
+ * prefetch, và `<Link>` sẽ đẩy thêm một entry vào history cho mỗi lần bấm.
+ */
+export function TableOfContents({ entries }: { entries: TocEntry[] }) {
+  if (entries.length < TOC_MIN_ENTRIES) return null;
+
+  return (
+    <nav
+      aria-labelledby="trong-bai-nay"
+      className="max-w-2xl border-t-2 border-rule pt-3"
+    >
+      <h2
+        id="trong-bai-nay"
+        className="text-[0.6875rem] font-bold tracking-[0.18em] uppercase"
+      >
+        Trong bài này
+      </h2>
+
+      <ol className="mt-3 space-y-1.5">
+        {entries.map((entry) => (
+          <li
+            key={entry.id}
+            /* h3 thụt vào + cỡ nhỏ hơn: thứ bậc của bài phải đọc được ngay trong
+               mục lục, nếu không thì nó chỉ là một danh sách phẳng dài. */
+            className={entry.level === 3 ? "pl-5 text-sm" : "text-[0.9375rem]"}
+          >
+            <a
+              href={`#${entry.id}`}
+              className={`cursor-pointer underline decoration-1 underline-offset-4 transition-colors duration-150 hover:text-accent ${
+                entry.level === 3 ? "text-muted-foreground" : "text-primary"
+              }`}
+            >
+              {entry.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+/**
+ * Khối "người viết" ở cuối bài.
+ *
+ * Đây là tín hiệu E-E-A-T rẻ nhất mà site đang bỏ trống: byline ở đầu bài chỉ có
+ * một cái tên, còn ai đứng sau cái tên đó thì người đọc phải tự đi tìm. Khối này
+ * lấy `bio`/`role` từ `AUTHORS` (`content/taxonomy.ts`) — cùng nguồn với
+ * `personNode()` trong `lib/seo.ts` và với mục "Ai viết" ở `/gioi-thieu`, nên ba
+ * chỗ không thể nói ba điều khác nhau về cùng một người.
+ *
+ * KHÔNG thêm ảnh chân dung hay các link mạng xã hội không tồn tại vào đây: bịa
+ * hồ sơ tác giả là đúng thứ nó đang cố chứng minh là không có.
+ */
+export function AuthorCard({ authorId }: { authorId: string }) {
+  const author = getAuthor(authorId);
+  if (!author) return null;
+
+  return (
+    <aside
+      aria-labelledby="nguoi-viet"
+      className="max-w-2xl border-t-2 border-rule pt-6"
+    >
+      <h2
+        id="nguoi-viet"
+        className="text-[0.6875rem] font-bold tracking-[0.18em] uppercase"
+      >
+        Người viết
+      </h2>
+
+      <p className="mt-3 font-display text-xl font-bold">{author.name}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{author.role}</p>
+      <p className="mt-3 text-muted-foreground">{author.bio}</p>
+
+      <Link
+        href="/gioi-thieu"
+        className="group mt-4 inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-primary underline decoration-1 underline-offset-4 transition-colors duration-150 hover:text-accent"
+      >
+        Site này là gì, và kiếm tiền bằng cách nào
+        <ArrowRightIcon className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+      </Link>
+    </aside>
+  );
+}
+
+/**
  * Tiêu đề trang cho các trang không phải bài viết.
  * `eyebrow` để trang biết mình thuộc nhóm nào (ví dụ "Pháp lý") — chuẩn editorial.
  */
@@ -1063,29 +1233,16 @@ export function PageHeader({
   );
 }
 
-/**
- * Cảnh báo hiện trên trang pháp lý khi `SITE.legal` chưa được điền.
+/*
+ * ⚠️ `LegalGapNotice` (banner "Bản nháp — chưa dùng được cho pháp lý" ở đầu
+ * /dieu-khoan và /chinh-sach-bao-mat) ĐÃ BỎ theo yêu cầu của chủ dự án: site
+ * hiện chạy như blog cá nhân, chưa có pháp nhân nào để khai.
  *
- * Cố ý hiện ra thay vì im lặng: một trang điều khoản không có tên pháp nhân là
- * trang chưa dùng được, và im lặng thì rất dễ deploy thật mà không ai nhớ. Điền
- * `NEXT_PUBLIC_LEGAL_ENTITY` là khối này tự biến mất.
+ * Hai trang đó VẪN CÒN và vẫn phải đúng sự thật — chúng chỉ rơi về
+ * `SITE.legal.entityName ?? SITE.name`, tức nói "InsightDaily vận hành" thay vì
+ * bịa tên công ty. Điền `NEXT_PUBLIC_LEGAL_*` là chúng tự dùng tên pháp nhân.
+ * Lấy banner lại được từ git nếu về sau chạy traffic trả tiền và cần nhắc.
  */
-export function LegalGapNotice() {
-  if (SITE.legal.entityName) return null;
-
-  return (
-    <div className="border-l-[3px] border-warning bg-warning/10 px-4 py-3 text-sm text-warning">
-      <p className="font-semibold">Bản nháp — chưa dùng được cho pháp lý</p>
-      <p className="mt-1">
-        Chưa điền tên pháp nhân, địa chỉ và mã số thuế. Đặt các biến môi trường{" "}
-        <code className="font-mono text-xs">NEXT_PUBLIC_LEGAL_ENTITY</code>,{" "}
-        <code className="font-mono text-xs">NEXT_PUBLIC_LEGAL_ADDRESS</code>,{" "}
-        <code className="font-mono text-xs">NEXT_PUBLIC_LEGAL_TAX_ID</code> và cho
-        luật sư soát lại trước khi chạy traffic trả tiền.
-      </p>
-    </div>
-  );
-}
 
 /**
  * Bọc văn bản dài. Style thật nằm ở `.prose` trong globals.css.

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Đồ ăn bị bỏ hầu như luôn vì mua theo món chứ không theo bữa. Cách lên khung bữa trước khi viết danh sách, và thứ tự dùng theo độ bền.",
   category: "bep",
   publishedAt: "2026-07-09",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 6,
   cover: {
@@ -48,7 +50,11 @@ export const post: Post = {
       <ul>
         <li>Một món chính (đạm: thịt, cá, trứng, đậu).</li>
         <li>Một loại rau.</li>
-        <li>Một món tinh bột.</li>
+        <li>
+          Một món tinh bột — với phần lớn nhà thì đây là cơm, và{" "}
+          <Link href="/blog/chon-noi-com-dien">nồi nấu ra nó</Link> ảnh hưởng tới bữa ăn
+          nhiều hơn hầu hết những thứ khác trong bếp.
+        </li>
       </ul>
 
       <p>
@@ -164,6 +170,16 @@ export const post: Post = {
         Sau khoảng một tháng, hai câu hỏi đó tự hình thành một danh sách chừng mười lăm
         món mà nhà bạn thật sự ăn hết. Từ lúc có danh sách đó, việc lên khung năm bữa
         không còn là việc nghĩ, chỉ còn là việc chọn.
+      </p>
+
+      <p>
+        Tiền chợ là khoản chi dễ thấy nhất trong nhà, nên nó cũng là khoản người ta cắt
+        đầu tiên. Nhóm khó thấy hơn — và thường lớn hơn — là{" "}
+        <Link href="/blog/phi-am-tham-trong-hoa-don-hang-thang">
+          những khoản tự trừ mỗi tháng mà không ai bấm đồng ý lần nào nữa
+        </Link>
+        . Rà nhóm đó một buổi tối thường tiết kiệm được nhiều hơn cả tháng tính toán ở
+        chợ.
       </p>
     </>
   ),

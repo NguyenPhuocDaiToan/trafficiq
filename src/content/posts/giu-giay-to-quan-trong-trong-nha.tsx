@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
@@ -8,6 +9,7 @@ export const post: Post = {
     "Phần lớn nhà không thiếu chỗ cất giấy tờ — thiếu cách biết đang thiếu giấy gì. Cách dựng một hệ thống ba lớp làm một lần, cập nhật vài phút mỗi năm.",
   category: "doi-song",
   publishedAt: "2026-06-22",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 6,
   cover: {
@@ -29,7 +31,10 @@ export const post: Post = {
       <h3>Lớp 1 — Một hộp vật lý, có mục lục dán ngoài</h3>
 
       <p>
-        Không cần hộp chuyên dụng — một hộp nhựa có nắp là đủ, miễn là chống được ẩm.
+        Không cần hộp chuyên dụng — một hộp nhựa có nắp là đủ, miễn là chống được ẩm
+        (nhà đang có góc{" "}
+        <Link href="/blog/xu-ly-am-moc-trong-nha">ẩm hoặc mốc</Link> thì xử chỗ đặt hộp
+        trước, giấy hút ẩm nhanh hơn bạn tưởng).
         Điều quan trọng hơn cái hộp là <strong>tờ mục lục dán ở mặt trong nắp</strong>:
         liệt kê tên từng loại giấy đang có trong hộp. Khi thêm hay bỏ giấy, cập nhật
         luôn tờ mục lục — việc này mất mười giây và là thứ khiến cả hệ thống còn dùng
@@ -55,10 +60,18 @@ export const post: Post = {
         giấy: một dịch vụ lưu trữ trên mạng, hoặc một thẻ nhớ gửi ở nhà người thân.
       </p>
 
+      <p>
+        Đây chính là điều kiện &ldquo;một bản ở nơi khác&rdquo; của{" "}
+        <Link href="/blog/sao-luu-du-lieu-quy-tac-3-2-1">quy tắc sao lưu 3-2-1</Link> — và
+        cũng là lý do đừng dừng ở việc chỉ đồng bộ bản chụp lên một tài khoản: mất tài
+        khoản đó là mất cả lớp 2.
+      </p>
+
       <Callout title="Đặt tên file theo thứ tìm, không theo ngày chụp">
         Đặt tên kiểu <code>ho-chieu-nguyen-van-a.jpg</code>, không phải{" "}
         <code>IMG_2847.jpg</code>. Lúc cần, bạn tìm theo tên giấy tờ, không tìm theo
-        ngày mình chụp nó.
+        ngày mình chụp nó. Quy tắc đặt tên đầy đủ (và chỗ đặt thư mục này trong máy) ở
+        bài <Link href="/blog/dung-lai-thu-muc-may-tinh">dựng lại thư mục máy tính</Link>.
       </Callout>
 
       <h3>Lớp 3 — Một danh sách &ldquo;ai cần biết gì&rdquo; cho người thân</h3>

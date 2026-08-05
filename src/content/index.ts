@@ -64,6 +64,25 @@ export function allPosts(): Post[] {
   return SORTED;
 }
 
+/**
+ * Mốc nội dung thay đổi gần nhất trên toàn site (ISO `YYYY-MM-DD`).
+ *
+ * Dùng cho `lastModified` của trang chủ/trang danh sách trong sitemap,
+ * `lastBuildDate` của RSS, và dải `Dateline` ở trang chủ.
+ *
+ * VÌ SAO KHÔNG DÙNG `SORTED[0]`: `SORTED` xếp theo `publishedAt`, nên phần tử đầu là
+ * bài ĐĂNG gần nhất — không phải bài SỬA gần nhất. Ba chỗ trên từng đọc
+ * `posts[0].updatedAt ?? posts[0].publishedAt` và cho ra ngày cũ hơn thực tế ngay khi
+ * một bài đăng trước đó được sửa: sitemap báo trang chủ chưa đổi trong khi mười một
+ * bài vừa sửa, tức tự nói với crawler là "không cần quay lại".
+ */
+export function lastContentUpdate(): string {
+  return SORTED.reduce<string>((newest, post) => {
+    const stamp = post.updatedAt ?? post.publishedAt;
+    return stamp > newest ? stamp : newest;
+  }, "");
+}
+
 export function getPost(slug: string): Post | undefined {
   return REGISTRY.find((item) => item.slug === slug);
 }

@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { JsonLd } from "@/components/json-ld";
 import { PageHeader, Prose } from "@/components/site";
 import { AUTHORS, CATEGORIES } from "@/content/taxonomy";
+import {
+  graph,
+  personNode,
+  profilePageNode,
+  publicAlternates,
+  webSiteNode,
+} from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Giới thiệu",
   description: `${SITE.name} là gì, viết cho ai, và kiếm tiền bằng cách nào.`,
-  alternates: { canonical: "/gioi-thieu" },
+  alternates: publicAlternates("/gioi-thieu"),
   openGraph: { title: `Giới thiệu · ${SITE.name}`, url: "/gioi-thieu" },
 };
 
@@ -16,6 +24,14 @@ export default function AboutPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      {/*
+        `ProfilePage` bọc quanh `#person`: trang này là hồ sơ của người viết, và nó
+        là đích của `author.url` trong metadata mọi bài. Đó là cách một site cá nhân
+        chứng minh tác giả là một người thật có thể tra được, thay vì một cái tên
+        đứng ở byline. Bio/role lấy từ `AUTHORS` nên trang và JSON-LD không lệch.
+      */}
+      <JsonLd data={graph(webSiteNode(), personNode(), profilePageNode())} />
+
       <PageHeader
         eyebrow="Về site"
         title={`Về ${SITE.name}`}

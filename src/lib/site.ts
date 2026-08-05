@@ -61,7 +61,12 @@ export const SITE = {
   },
 
   legal: {
-    /** null = chưa điền. Trang điều khoản/privacy sẽ hiện cảnh báo thay vì bịa. */
+    /**
+     * null = chưa điền, và đó là trạng thái bình thường của một blog cá nhân.
+     * Trang điều khoản/privacy khi đó rơi về `SITE.name` làm bên vận hành —
+     * không bịa tên công ty, không hiện banner cảnh báo (banner đã bỏ, xem ghi
+     * chú `LegalGapNotice` trong `components/site.tsx`).
+     */
     entityName: process.env.NEXT_PUBLIC_LEGAL_ENTITY ?? null,
     address: process.env.NEXT_PUBLIC_LEGAL_ADDRESS ?? null,
     taxId: process.env.NEXT_PUBLIC_LEGAL_TAX_ID ?? null,

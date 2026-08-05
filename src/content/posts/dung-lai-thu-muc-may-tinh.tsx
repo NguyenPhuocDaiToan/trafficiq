@@ -1,13 +1,18 @@
+import Link from "next/link";
 import { Callout } from "@/components/content";
 import type { Post } from "@/content/types";
 
 export const post: Post = {
   slug: "dung-lai-thu-muc-may-tinh",
-  title: "Dựng lại thư mục máy tính một lần cho xong, không phải sắp xếp lại mỗi tháng",
+  /* 67 ký tự: `check:content` cảnh báo từ 72 trở lên vì phần sau đó bị cắt trên
+     trang kết quả tìm kiếm. Bản trước dài 76 và mất đúng cụm "mỗi tháng" — cụm mang
+     cả ý đối lập của tiêu đề. */
+  title: "Dựng lại thư mục máy tính một lần cho xong, không sắp lại mỗi tháng",
   description:
     "Lý do phần lớn cách sắp xếp file thất bại sau vài tuần, và một cấu trúc bốn cấp dựa trên cách bạn tìm lại file, không dựa trên cách bạn tạo ra nó.",
   category: "lam-viec",
   publishedAt: "2026-07-06",
+  updatedAt: "2026-08-05",
   authorId: "toan",
   readingMinutes: 8,
   cover: {
@@ -38,7 +43,12 @@ export const post: Post = {
           <strong>Cấp 1 — Vai trò lớn.</strong> Ba đến năm thư mục cố định, gần như
           không đổi qua nhiều năm: <em>Công việc</em>, <em>Cá nhân</em>,{" "}
           <em>Giấy tờ</em>, <em>Lưu trữ</em>. Đừng tạo thư mục theo tên dự án ở cấp
-          này — dự án kết thúc thì cấp 1 phải còn nguyên.
+          này — dự án kết thúc thì cấp 1 phải còn nguyên. (Thư mục{" "}
+          <em>Giấy tờ</em> ở đây là chỗ để bản chụp của{" "}
+          <Link href="/blog/giu-giay-to-quan-trong-trong-nha">
+            hộp giấy tờ trong nhà
+          </Link>
+          .)
         </li>
         <li>
           <strong>Cấp 2 — Nhóm việc.</strong> Bên trong mỗi vai trò, chia theo mảng ổn
@@ -62,6 +72,17 @@ export const post: Post = {
         Chuyển nguyên cả cụm cấp 2/3 của việc đã xong vào <em>Lưu trữ</em>, giữ đúng
         cấu trúc cũ. Tìm lại thì vẫn theo đúng lối cũ trong đầu, chỉ đổi gốc.
       </Callout>
+
+      <p>
+        Một điều cần nói rõ để không ai yên tâm sai: <em>Lưu trữ</em> là chỗ để việc đã
+        xong, <strong>không phải bản sao lưu</strong>. Nó nằm trên cùng cái ổ với mọi thứ
+        khác, nên cùng hỏng, cùng bị mã hoá, cùng mất theo máy. Cấu trúc thư mục làm việc
+        tìm lại dễ hơn; thứ chống mất dữ liệu là{" "}
+        <Link href="/blog/sao-luu-du-lieu-quy-tac-3-2-1">
+          ba bản sao lưu theo quy tắc 3-2-1
+        </Link>
+        .
+      </p>
 
       <h2>Đặt tên file: một quy tắc, áp dụng mọi nơi</h2>
 

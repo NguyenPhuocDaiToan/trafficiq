@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:contrast": "node scripts/check-contrast.mjs",
+    "gen:icons": "node scripts/generate-icons.mjs",
     "setup:indexes": "tsx --env-file-if-exists=.env.local scripts/setup-indexes.ts",
     "seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts"
   },

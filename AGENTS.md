@@ -68,8 +68,13 @@ Nếu hai kết quả lệch nhau, lấy theo `--domain style` và ghi lý do v�
   rỗng ngoài `globals.css`:
 
   ```bash
-  rg "(text|bg|border|from|via|to|fill|stroke|ring|divide|outline|shadow|decoration)-(neutral|slate|zinc|gray|stone)-[0-9]{2,3}|#[0-9a-fA-F]{6}" src --glob '!globals.css'
+  rg "(text|bg|border|from|via|to|fill|stroke|ring|divide|outline|shadow|decoration)-(neutral|slate|zinc|gray|stone)-[0-9]{2,3}|#[0-9a-fA-F]{6}" src --glob '!globals.css' --glob '!icon.svg'
   ```
+
+  `icon.svg` được loại vì nó là **file ảnh**, không phải component: favicon nằm
+  trong tab trình duyệt, ngoài cây DOM của trang, nên không có CSS variable nào
+  phân giải được ở đó. Nó là bản sinh ra từ `scripts/generate-icons.mjs` — sửa
+  màu ở script rồi chạy `npm run gen:icons`, đừng sửa tay file SVG.
 
   Bản cũ của grep này là `rg "neutral-|slate-|zinc-|gray-|#[0-9a-fA-F]{6}"` và nó
   **báo nhầm**: `slate-` khớp cả bên trong `translate-x-1` (utility transform, không

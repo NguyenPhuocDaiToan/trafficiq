@@ -17,7 +17,7 @@ const NAV = [
   // Trang chẩn đoán, đứng cuối vì mở thưa hơn hẳn bốn mục trên. Vẫn phải có tab
   // riêng chứ không chỉ là link từ Tổng quan: nó là chỗ trả lời "click của tôi
   // đi đâu mất", và người đang đi tìm câu đó không nghĩ tới việc vào báo cáo.
-  { href: "/admin/nhat-ky-bot", label: "Nhật ký bot" },
+  { href: "/admin/nhat-ky", label: "Nhật ký" },
 ];
 
 /**

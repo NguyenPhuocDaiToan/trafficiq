@@ -56,8 +56,14 @@ export function rangeForDays(days: number): DateRange {
   return { from, to };
 }
 
-/** Bot/crawler (kể cả FB, Slack, Telegram fetch OG) không phải traffic thật. */
-const EXCLUDE_BOTS = { device: { $ne: "bot" } };
+/**
+ * Bot/crawler (kể cả FB, Slack, Telegram fetch OG) không phải traffic thật.
+ *
+ * Export để `analytics/click-log.ts` dùng chung đúng một định nghĩa. Nếu nhật ký
+ * và dashboard tự viết điều kiện riêng thì chỉ cần một bên đổi là bảng log và ô
+ * "Lượt click" nói hai con số khác nhau về cùng một tập dữ liệu.
+ */
+export const EXCLUDE_BOTS = { device: { $ne: "bot" } } as const;
 
 function clickMatch(range: DateRange, campaignId?: ObjectId) {
   return {

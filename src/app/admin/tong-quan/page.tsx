@@ -231,8 +231,10 @@ function BotReasons({ rows }: { rows: { key: string; clicks: number }[] }) {
         </ul>
       )}
 
+      {/* Trỏ thẳng vào tab bot của nhật ký (`loai=bot` là mặc định nên không cần
+          param) — ô này nói về bot, mở ra tab click thường là lạc đề. */}
       <Link
-        href="/admin/nhat-ky-bot"
+        href="/admin/nhat-ky"
         className="mt-3 inline-block cursor-pointer text-sm text-primary underline transition-colors duration-150 hover:text-accent"
       >
         Xem từng lượt →

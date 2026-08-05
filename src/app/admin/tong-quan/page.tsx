@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDashboardSnapshot } from "@/lib/analytics/queries";
 import { publicBaseUrl } from "@/lib/env";
-import { countryLabel, deviceLabel, sourceLabel } from "@/lib/labels";
+import { botReasonLabel, countryLabel, deviceLabel, sourceLabel } from "@/lib/labels";
 import {
   Card,
   EmptyRow,
@@ -61,7 +61,7 @@ export default async function DashboardPage({
   const days = RANGES.includes(Number(daysParam) as (typeof RANGES)[number])
     ? Number(daysParam)
     : DEFAULT_DAYS;
-  const { overview, campaignRows, sources, countries, devices, series } =
+  const { overview, campaignRows, sources, countries, devices, botReasons, series } =
     await getDashboardSnapshot(days);
 
   const baseUrl = publicBaseUrl();
@@ -178,12 +178,66 @@ export default async function DashboardPage({
         </TableWrap>
       </Card>
 
-      <div className="grid gap-2 lg:grid-cols-3">
+      {/*
+        Bốn ô cùng một hàng ở xl, hai hàng ở lg. Ô "Bot bị chặn" đứng cạnh ba ô
+        kia chứ không tách ra dưới cùng: nó cũng là một lát cắt của cùng khoảng
+        thời gian, và để nó ở cuối trang thì người nghi bị chặn nhầm phải cuộn
+        xuống mới thấy — đúng lúc họ cần nhất.
+      */}
+      <div className="grid gap-2 lg:grid-cols-2 xl:grid-cols-4">
         <Breakdown title="Nguồn traffic" rows={sources} label={sourceLabel} />
         <Breakdown title="Quốc gia" rows={countries} label={countryLabel} />
         <Breakdown title="Thiết bị" rows={devices} label={deviceLabel} />
+        <BotReasons rows={botReasons} />
       </div>
     </div>
+  );
+}
+
+/**
+ * Bot bị chặn, tách theo lý do.
+ *
+ * Ô này là nghịch đảo của ba ô cạnh nó: mọi số khác trên trang đều ĐÃ LOẠI bot,
+ * còn đây là chính phần bị loại. Vì vậy nó có mô tả riêng thay vì chỉ tiêu đề —
+ * không nói rõ thì con số ở đây trông như cộng thêm vào "Lượt click".
+ *
+ * Tổng của bảng phải khớp với `overview.botClicks` ở ô KPI phía trên. Hai số
+ * đến từ hai aggregation khác nhau nhưng cùng một match (`device: "bot"`, cùng
+ * range) — lệch nhau nghĩa là có bản ghi bot thiếu `botReason`, xem
+ * `getBotReasonBreakdown`.
+ */
+function BotReasons({ rows }: { rows: { key: string; clicks: number }[] }) {
+  return (
+    <Card title="Bot bị chặn" description="Không tính vào số liệu click ở trên.">
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Chưa có lượt nào bị chặn trong khoảng này.
+        </p>
+      ) : (
+        <ul className="space-y-1 text-sm">
+          {rows.map((row) => (
+            <li
+              key={row.key}
+              className="flex justify-between gap-4 rounded px-1 transition-colors hover:bg-muted"
+            >
+              <span className="truncate" title={botReasonLabel(row.key)}>
+                {botReasonLabel(row.key)}
+              </span>
+              <span className="font-mono tabular-nums text-muted-foreground">
+                {row.clicks}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Link
+        href="/admin/nhat-ky-bot"
+        className="mt-3 inline-block cursor-pointer text-sm text-primary underline transition-colors duration-150 hover:text-accent"
+      >
+        Xem từng lượt →
+      </Link>
+    </Card>
   );
 }
 

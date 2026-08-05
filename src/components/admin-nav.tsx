@@ -14,6 +14,10 @@ const NAV = [
   { href: "/admin/destinations", label: "URL đích" },
   { href: "/admin/advertisers", label: "Đối tác" },
   { href: "/admin/lien-he", label: "Hộp thư" },
+  // Trang chẩn đoán, đứng cuối vì mở thưa hơn hẳn bốn mục trên. Vẫn phải có tab
+  // riêng chứ không chỉ là link từ Tổng quan: nó là chỗ trả lời "click của tôi
+  // đi đâu mất", và người đang đi tìm câu đó không nghĩ tới việc vào báo cáo.
+  { href: "/admin/nhat-ky-bot", label: "Nhật ký bot" },
 ];
 
 /**

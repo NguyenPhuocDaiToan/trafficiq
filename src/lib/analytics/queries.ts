@@ -242,6 +242,32 @@ export async function getDimensionBreakdown(
   return rows.map((r) => ({ key: r._id ?? "unknown", clicks: r.clicks }));
 }
 
+/**
+ * Bot BỊ CHẶN, tách theo lý do — nghịch đảo của mọi hàm khác trong file này.
+ *
+ * KHÔNG dùng `clickMatch()`: hàm đó gắn sẵn `EXCLUDE_BOTS`, tức lọc đi đúng thứ
+ * ta muốn đếm ở đây. Match phải viết tay với `device: "bot"`.
+ *
+ * `_id` có thể `null` với bản ghi bot không kèm `botReason`. Trên lý thuyết
+ * không có: đường ghi duy nhất (`app/go/[token]/route.ts`) luôn set field này.
+ * Nhưng schema để nó optional, nên gộp về "unknown" thay vì để rơi mất khỏi
+ * bảng — tổng của bảng phải khớp với ô "đã loại N lượt bot", nếu không thì
+ * người đọc mất niềm tin vào cả hai con số.
+ */
+export async function getBotReasonBreakdown(range: DateRange): Promise<DimensionRow[]> {
+  const col = await clickEvents();
+
+  const rows = await col
+    .aggregate<{ _id: string | null; clicks: number }>([
+      { $match: { ts: { $gte: range.from, $lte: range.to }, device: "bot" } },
+      { $group: { _id: "$botReason", clicks: { $sum: 1 } } },
+      { $sort: { clicks: -1 } },
+    ])
+    .toArray();
+
+  return rows.map((r) => ({ key: r._id ?? "unknown", clicks: r.clicks }));
+}
+
 export interface TimeseriesPoint {
   bucket: string;
   clicks: number;
@@ -276,12 +302,13 @@ export interface DashboardSnapshot {
   sources: DimensionRow[];
   countries: DimensionRow[];
   devices: DimensionRow[];
+  botReasons: DimensionRow[];
   series: TimeseriesPoint[];
 }
 
 /**
  * Dashboard không cần realtime (quyết định chủ dự án) — cache 30s để chuyển
- * tab qua lại không chạy lại 6 aggregation mỗi lần.
+ * tab qua lại không chạy lại 7 aggregation mỗi lần.
  *
  * Cache theo `days`, KHÔNG theo `range`: `range.to` là `new Date()` tại thời
  * điểm gọi nên nếu đưa `range` vào key thì mỗi lần gọi ra key khác, cache không
@@ -291,16 +318,17 @@ export interface DashboardSnapshot {
 export const getDashboardSnapshot = unstable_cache(
   async (days: number): Promise<DashboardSnapshot> => {
     const range = rangeForDays(days);
-    const [overview, campaignRows, sources, countries, devices, series] =
+    const [overview, campaignRows, sources, countries, devices, botReasons, series] =
       await Promise.all([
         getOverview(range),
         getCampaignBreakdown(range),
         getDimensionBreakdown(range, "source"),
         getDimensionBreakdown(range, "country"),
         getDimensionBreakdown(range, "device"),
+        getBotReasonBreakdown(range),
         getClicksTimeseries(range, days === 1 ? "hour" : "day"),
       ]);
-    return { overview, campaignRows, sources, countries, devices, series };
+    return { overview, campaignRows, sources, countries, devices, botReasons, series };
   },
   ["dashboard-snapshot"],
   { revalidate: 30 },

@@ -20,9 +20,39 @@ const SOURCE_LABELS: Record<string, string> = {
   unknown: "Không rõ",
 };
 
+/**
+ * Lý do một request bị chặn ở `/go/[token]` — xem `BotReason` trong lib/types.ts.
+ *
+ * Nhãn nói CƠ SỞ của quyết định chứ không chỉ tên tín hiệu ("tự khai là crawler"
+ * chứ không phải "ua-regex"), vì đây là bảng người ta mở ra đúng lúc nghi hệ
+ * thống chặn nhầm. Biết nó chặn dựa trên cái gì mới phán được là đúng hay sai.
+ *
+ * "unknown" là bản ghi bot không có `botReason` — không nên tồn tại (đường ghi
+ * duy nhất luôn set field này), nhưng nếu xuất hiện thì nó là dấu hiệu có đường
+ * ghi thứ hai lọt vào, chứ không phải chuyện vô hại.
+ */
+const BOT_REASON_LABELS: Record<string, string> = {
+  "ua-regex": "UA tự khai là crawler",
+  "twitter-asn": "Dải mạng của X (ASN 13414)",
+  unknown: "Không ghi lý do",
+};
+
+/** Tín hiệu đáng ngờ nhưng KHÔNG chặn — xem `WeakSignal` trong lib/types.ts. */
+const WEAK_SIGNAL_LABELS: Record<string, string> = {
+  "no-accept-language": "Thiếu accept-language",
+};
+
 /** Dùng cho cột "Thiết bị" trên dashboard. */
 export function deviceLabel(value: string): string {
   return DEVICE_LABELS[value] ?? value;
+}
+
+export function botReasonLabel(value: string): string {
+  return BOT_REASON_LABELS[value] ?? value;
+}
+
+export function weakSignalLabel(value: string): string {
+  return WEAK_SIGNAL_LABELS[value] ?? value;
 }
 
 /** Dùng cho cột "Nguồn traffic". Giá trị khác là sub-id do người chạy tự đặt. */

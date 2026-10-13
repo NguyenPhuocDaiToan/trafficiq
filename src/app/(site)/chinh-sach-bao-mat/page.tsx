@@ -86,6 +86,19 @@ export default function PrivacyPage() {
             <li>Loại thiết bị, trình duyệt, hệ điều hành.</li>
             <li>Trang giới thiệu (referrer), nếu trình duyệt của bạn gửi.</li>
             <li>
+              Một điểm đánh giá khả năng lượt bấm đến từ phần mềm tự động thay vì
+              người thật. Điểm này được tính từ các thông tin trình duyệt đã nêu
+              ở trên, cùng một số tiêu đề (header) yêu cầu mà trình duyệt tự gửi
+              (ngôn ngữ ưu tiên, loại nội dung chấp nhận, chế độ tải trang, thông
+              tin nhận diện trình duyệt và nền tảng) và mạng nguồn của kết nối
+              (số hiệu ASN của nhà mạng). Chỉ mã định danh của các dấu hiệu được
+              lưu, không lưu giá trị header. Điểm hiện chỉ dùng để thống kê — nó
+              không quyết định bạn có được chuyển tiếp hay không. Việc nhận diện
+              crawler dựa trên chuỗi User-Agent (và số ASN của một số nền tảng)
+              là một bước riêng: một lượt bấm từ phần mềm tự động có thể nhận
+              trang xem trước thay vì được chuyển tiếp.
+            </li>
+            <li>
               Một <strong>bản băm một chiều của địa chỉ IP</strong> — xem mục dưới.
             </li>
           </ul>

@@ -96,13 +96,13 @@ export interface ClickGeo {
  * Lý do một request bị CHẶN ở `/go/[token]` — chỉ những tín hiệu đủ mạnh để
  * coi là crawler thật. Xem `lib/tracking/ua.ts`.
  */
-export type BotReason = "ua-regex" | "twitter-asn";
+export type BotReason = "ua-regex" | "twitter-asn" | "non-browser-ua";
 
 /**
  * Tín hiệu đáng ngờ nhưng KHÔNG đủ để chặn: được ghi lại để đo, request vẫn
  * đi tiếp bình thường. Xem comment ở `botReason()`/`weakSignals()`.
  */
-export type WeakSignal = "no-accept-language";
+export type WeakSignal = "no-accept-language" | "no-user-agent" | "no-sec-fetch";
 
 export interface ClickEvent {
   _id?: ObjectId;
@@ -139,6 +139,13 @@ export interface ClickEvent {
   botReason?: BotReason;
   /** Ghi để đo, KHÔNG dùng để lọc. Rỗng thì bỏ trắng cho nhẹ doc. */
   weakSignals?: WeakSignal[];
+  /**
+   * Điểm rủi ro 0–100 từ `lib/botdetect` — CHẾ ĐỘ BÓNG: chỉ ghi, không có đường
+   * code nào đọc nó để đổi response. Bỏ trắng khi 0 cho nhẹ doc.
+   */
+  riskScore?: number;
+  /** Id các tín hiệu đã góp vào `riskScore` (SignalId trong lib/botdetect/types.ts). */
+  riskSignals?: string[];
 }
 
 export interface Conversion {

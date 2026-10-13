@@ -34,12 +34,15 @@ const SOURCE_LABELS: Record<string, string> = {
 const BOT_REASON_LABELS: Record<string, string> = {
   "ua-regex": "UA tự khai là crawler",
   "twitter-asn": "Dải mạng của X (ASN 13414)",
+  "non-browser-ua": "UA không có dấu hiệu trình duyệt nào (Mozilla/<số>, bộ máy, Java ME…)",
   unknown: "Không ghi lý do",
 };
 
 /** Tín hiệu đáng ngờ nhưng KHÔNG chặn — xem `WeakSignal` trong lib/types.ts. */
 const WEAK_SIGNAL_LABELS: Record<string, string> = {
   "no-accept-language": "Thiếu accept-language",
+  "no-user-agent": "Không có User-Agent",
+  "no-sec-fetch": "Thiếu Sec-Fetch-* (không phải điều hướng của browser hiện đại)",
 };
 
 /** Dùng cho cột "Thiết bị" trên dashboard. */

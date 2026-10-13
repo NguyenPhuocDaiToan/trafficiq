@@ -330,6 +330,32 @@ tại chỗ trước.
     điều hướng: bấm thử mà đi qua `/go/[token]` là tạo click giả trong chính báo
     cáo mà dashboard đang đọc.
 
+18. **`lib/botdetect` chấm điểm rủi ro — điểm chỉ được dùng để ghi log, giới
+    hạn tần suất, ra thử thách PoW.** Không dùng nó để trả nội dung khác nhau cho
+    crawler và người (cloaking). Ở `/go/[token]` nó đang chạy **chế độ bóng**: ghi
+    `riskScore`/`riskSignals` vào `clickEvent` (chỉ khi điểm > 0 và request không bị `botReason` chặn trước), không đổi response. Trang
+    `/chinh-sach-bao-mat` đang khẳng định đúng điều đó (bất biến 11) — cho điểm này
+    quyết định redirect thì phải sửa trang đó cùng lúc.
+
+    FCrDNS (`assessRequest`) cần DNS nên **không chạy trên hot path** — dùng
+    `assessRequestSync` ở đó. Module import `node:dns`/`node:crypto` nên không
+    được import từ `proxy.ts` (Edge, bất biến 7). Google: **đừng** nới suffix về
+    `googleusercontent.com` trần — mọi VM Google Cloud có PTR dạng đó, nghĩa là ai
+    cũng giả được Googlebot. Chi tiết từng lớp: `src/lib/botdetect/README.md`.
+
+    **`botReason()` (`lib/tracking/ua.ts`) quyết định ai được redirect — chặn nhầm một người nghĩa là họ nhận
+    Social Card thay vì được chuyển tiếp.** Quy luật `non-browser-ua` bắt UA KHÔNG có dấu hiệu trình duyệt nào:
+    không `Mozilla/<số>` Ở BẤT KỲ ĐÂU trong chuỗi (webview đặt tên app trước `Mozilla/5.0`; `Mozilla` viết lệch cũng
+    tính), không token bộ máy (AppleWebKit, Gecko, Trident, …), không dấu hiệu Java ME/WAP, TV hay in-app, và không
+    phải dạng điện thoại đời cũ (`LEGACY_BROWSER_UA`, cố ý rộng). Stack HTTP gốc của ứng dụng (Dalvik, CFNetwork,
+    Microsoft Office, Sonos…) cố ý bị tính là không-phải-trình-duyệt. Số đo HIỆN TẠI: `npm run check:bot-external`
+    (corpus bên thứ ba, có ngưỡng); số đo trước/sau và lý do từng quy luật: `src/lib/botdetect/HISTORY.md`.
+
+    Thêm quy luật bắt bot vào đây thì phải đo CHẶN NHẦM NGƯỜI trước (`check:bot` + `check:bot-external`), không chỉ
+    recall. Regex trong file này đã từng bị tìm ra là bậc hai (ReDoS) nhiều lần, kể cả của chính tác giả (xem `src/lib/botdetect/HISTORY.md`):
+    đừng dùng `[...]*` hay `[^)]*` không giới hạn trước một ký tự có thể không xuất hiện, và hai `\s*` kề nhau quanh một
+    thành phần tuỳ chọn; giới hạn độ dài (`{0,300}`), và chạy lại các dạng đầu vào bất lợi trong `botdetect.test.ts`.
+
 ---
 
 ## Commands
@@ -341,6 +367,10 @@ npm run typecheck        # tsc --noEmit
 npm run lint
 npm run check:contrast   # gate WCAG cho design token
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
+npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
+npm run test:botdetect   # unit test lib/botdetect (FCrDNS, điểm, rate limit, PoW)
+npm run check:botdetect-live  # FCrDNS với DNS thật (cần mạng, không nằm trong CI)
+npm run check:probe-browser   # probe client trong Chromium thật qua CDP (cần Chromium của Playwright)
 npm run gen:thumbs       # sinh thumbnail 160×90 — chạy khi thêm/đổi ảnh bìa bài viết
 
 npm run setup:indexes    # BẮT BUỘC chạy 1 lần sau khi tạo cluster

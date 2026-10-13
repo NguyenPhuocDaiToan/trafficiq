@@ -82,10 +82,11 @@ const REASONS: { value: BotReason | "all"; label: string }[] = [
   { value: "all", label: "Tất cả lý do" },
   { value: "ua-regex", label: botReasonLabel("ua-regex") },
   { value: "twitter-asn", label: botReasonLabel("twitter-asn") },
+  { value: "non-browser-ua", label: botReasonLabel("non-browser-ua") },
 ];
 
 function isReason(value: string | undefined): value is BotReason {
-  return value === "ua-regex" || value === "twitter-asn";
+  return value === "ua-regex" || value === "twitter-asn" || value === "non-browser-ua";
 }
 
 interface UrlState {

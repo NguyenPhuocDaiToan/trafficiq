@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
+import { assessRequestSync } from "@/lib/botdetect";
 import { publicBaseUrl } from "@/lib/env";
 import { buildOgCard, ogCardHeadHtml } from "@/lib/landing/og-card";
 import {
@@ -92,6 +93,11 @@ export async function GET(
   const candidate = pickCandidate(route.candidates);
   const clickId = randomUUID();
   const weak = weakSignals(request);
+  // Chấm điểm rủi ro — CHẾ ĐỘ BÓNG: kết quả chỉ được GHI xuống clickEvent để đo
+  // (nhóm nào convert, nhóm nào không). Không có nhánh nào dưới đây đọc nó để
+  // đổi redirect: người thật vẫn luôn nhận 302. Sync nên không có DNS trên hot
+  // path (xem lib/botdetect/assess.ts).
+  const risk = assessRequestSync({ headers: request.headers });
 
   const target = buildTargetUrl(candidate.url, {
     clickId,
@@ -118,6 +124,9 @@ export async function GET(
     userAgent: context.userAgent,
     // Bỏ trắng khi rỗng — đỡ tốn dung lượng doc trên M0 512MB.
     ...(weak.length > 0 ? { weakSignals: weak } : {}),
+    ...(risk.score > 0
+      ? { riskScore: risk.score, riskSignals: risk.signals.map((sig) => sig.id) }
+      : {}),
   });
 
   return NextResponse.redirect(target, { status: 302, headers: NO_STORE });

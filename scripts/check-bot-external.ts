@@ -17,9 +17,11 @@
  *
  * Nhãn Matomo là theo THIẾT BỊ chứ không theo "người bấm link": file smartphone/desktop có nhiều UA là stack HTTP của
  * ứng dụng (Dalvik, CFNetwork, Microsoft Office, Sonos…) — không phải cú bấm link, và bị coi là non-browser có chủ đích.
- * Gate loại các stack đó (NATIVE_STACK) khỏi phép đo chặn nhầm; danh sách đó công khai ở dưới để ai cũng soi được.
+ * Gate loại khỏi phép đo chặn nhầm các UA BẮT ĐẦU bằng một tên trong NATIVE_STACK (danh sách công khai ở dưới để ai cũng soi được).
+ * Stack có tiền tố tên app (`Reeder/… CFNetwork/…`) và Sonos KHÔNG được loại, nên vẫn nằm trong số chặn nhầm còn lại.
  *
- * Ngưỡng là BÁNH CÓC đặt sát giá trị đo được (kèm biên nhỏ): hạ chúng khi đo kém đi là che hồi quy.
+ * Ngưỡng là BÁNH CÓC với biên riêng cho từng loại (TV có biên khá rộng; console và ô tô chỉ cách ngưỡng khoảng một UA vì mẫu nhỏ):
+ * hạ chúng khi đo kém đi là che hồi quy.
  * Danh sách bên thứ ba thay đổi theo thời gian, nên FAIL nghĩa là "xem lại UA mới", chưa chắc lỗi code.
  */
 import { NextRequest } from "next/server";
@@ -139,11 +141,11 @@ async function main(): Promise<number> {
   console.log(`crawler-user-agents: ${all.size} UA (dev ${dev.size}, holdout ${hold.size}) | microlink người: ${humans.length}`);
   console.log(`Matomo: ${matomo.bots.length} UA bot | người theo loại: ${[...matomo.human].map(([c, l]) => `${c} ${l.length}`).join(", ")}\n`);
 
-  console.log("— BOT: botReason có bắt không (mục tiêu của dự án: > 90%) —");
-  gate(`crawler-user-agents DEV (${dev.size})`, recall(dev, isBlocked), 90, "min");
-  gate(`crawler-user-agents HOLDOUT (${hold.size})`, recall(hold, isBlocked), 90, "min");
-  gate(`crawler-user-agents tất cả (${all.size})`, recall(all, isBlocked), 93, "min");
-  gate(`Matomo bots.yml (${matomo.bots.length})`, recall(matomo.bots, isBlocked), 90, "min");
+  console.log("— BOT: botReason có bắt không (mục tiêu của dự án: > 95%) —");
+  gate(`crawler-user-agents DEV (${dev.size})`, recall(dev, isBlocked), 95, "min");
+  gate(`crawler-user-agents HOLDOUT (${hold.size})`, recall(hold, isBlocked), 95, "min");
+  gate(`crawler-user-agents tất cả (${all.size})`, recall(all, isBlocked), 95, "min");
+  gate(`Matomo bots.yml (${matomo.bots.length})`, recall(matomo.bots, isBlocked), 95, "min");
   gate(`điểm rủi ro ≥ 30 — crawler-user-agents, header tối giản`, recall(all, (u) => botScore(u) >= 30), 99, "min");
 
   console.log("\n— NGƯỜI: có bị chặn nhầm không (chặn nhầm = người nhận Social Card, KHÔNG được redirect) —");

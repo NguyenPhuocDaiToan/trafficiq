@@ -22,6 +22,9 @@ export type SignalId =
   | "wildcard-accept"
   | "non-document-accept"
   | "datacenter-asn"
+  | "mobile-hint-mismatch"
+  | "client-hints-brand-mismatch"
+  | "fetch-dest-mismatch"
   // Lớp 3 — telemetry phía client
   | "webdriver-flag"
   | "untrusted-events"

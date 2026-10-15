@@ -6,7 +6,7 @@
  *
  *   human    — browser/in-app webview thật. Chặn nhầm ở đây là mất một click thật
  *              (không tới advertiser, không conversion) → đo specificity.
- *   declared — crawler/HTTP client tự khai được bằng UA hoặc ASN → đo recall.
+ *   declared — crawler/HTTP client tự khai được bằng UA (hoặc bằng header ASN, nếu hạ tầng gửi nó) → đo recall.
  *              Đây là nhóm hàm này CÓ THỂ bắt; gate ở đây.
  *   stealth  — automation đội UA browser bình thường (Selenium/Playwright…).
  *              UA-regex không thể phân biệt, nên KHÔNG tính vào gate. Vẫn in ra để
@@ -25,7 +25,7 @@ interface Sample {
   kind: Kind;
   name: string;
   ua: string;
-  /** Header phụ (vd. ASN của Vercel). */
+  /** Header phụ (vd. header ASN `x-vercel-ip-as-number`, nếu hạ tầng gửi nó). */
   headers?: Record<string, string>;
 }
 

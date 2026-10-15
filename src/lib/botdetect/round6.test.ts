@@ -35,6 +35,7 @@ import {
   readAsn,
 } from "@/lib/botdetect/signals";
 import { normalizeIp, hostMatchesSuffix } from "@/lib/botdetect/fcrdns";
+import { matchKnownCrawler } from "@/lib/botdetect/crawlers";
 import { BOT_UA_REGEX, LEGACY_BROWSER_UA } from "@/lib/tracking/ua";
 
 // ---------------------------------------------------------------- helpers
@@ -225,7 +226,7 @@ test("UA starting with a digit / non-ASCII / quote scores as non-browser (40) un
 });
 
 test("NBSP / NEL / C1 / soft hyphen / ZWSP around a UA do not change its score", () => {
-  const pads = [" ", "\u0085", "\u0080", "\u009f", "­", "​", "﻿", " ", "\t", " "];
+  const pads = [" ", "\u0085", "\u0080", "\u009f", "­", "​", "﻿", " ", "\t", ""];
   const cases = ["Mozilla/5.0 (X11; Linux x86_64)", "-", "Mozilla/5.0", "", "Nokia6230/2.0", "GuzzleHttp/7", "curl/8.0", "Googlebot/2.1"];
   for (const ua of cases) {
     const base = combineWeights([...uaSignals(ua), ...headerSignals(bag(MODERN), ua)]);
@@ -361,7 +362,7 @@ test("sweep 40k: cleanUa idempotent, returns a contiguous slice, strips only whi
     let s = "";
     for (let k = 0; k < L; k++) {
       const m = r();
-      s += m < 0.35 ? pick(r, ["a", "M", "-", "(", "5", "é", "ạ", "😀"]) : m < 0.7 ? pick(r, [" ", "\t", " ", "\u0085", "­", "​", "﻿", "\u0080", "\u009f", " ", "　", "⁠", "᠎"]) : String.fromCharCode(Math.floor(r() * 0x10000));
+      s += m < 0.35 ? pick(r, ["a", "M", "-", "(", "5", "é", "ạ", "😀"]) : m < 0.7 ? pick(r, [" ", "\t", " ", "\u0085", "­", "​", "﻿", "\u0080", "\u009f", "", "　", "⁠", "᠎"]) : String.fromCharCode(Math.floor(r() * 0x10000));
     }
     const c = cleanUa(s);
     assert.equal(cleanUa(c), c, `not idempotent: ${JSON.stringify(s)}`);
@@ -412,7 +413,7 @@ test("sweep 30k: monotonicity — adding strong evidence never lowers the score 
   let n = 0;
   for (let i = 0; i < 30_000; i++) {
     const ua = genUa(r);
-    if (/googlebot|bingbot|applebot|facebookexternalhit|twitterbot|yandex|baiduspider|adsbot|mediapartners|google|bingpreview|msnbot|facebot|meta-/i.test(ua)) continue;
+    if (matchKnownCrawler(ua) || /googlebot|bingbot|applebot|facebookexternalhit|twitterbot|yandex|baiduspider|adsbot|mediapartners|google|bingpreview|msnbot|facebot|meta-/i.test(ua)) continue;
     const h = genHeaders(r, ua);
     const base = safeHeaders(h);
     if (!base) continue;
@@ -439,7 +440,7 @@ test("sweep 30k: assessRequestSync equals noisy-OR(uaSignals + headerSignals) fo
   let n = 0;
   for (let i = 0; i < 30_000; i++) {
     const ua = genUa(r);
-    if (/googlebot|adsbot|mediapartners|google-|googleother|storebot|feedfetcher|apis-google|bingbot|bingpreview|msnbot|adidxbot|applebot|yandex|baiduspider|facebookexternalhit|facebot|meta-external|meta-webindexer|twitterbot|twittercardservice/i.test(ua)) continue;
+    if (matchKnownCrawler(ua) || /googlebot|adsbot|mediapartners|google-|googleother|storebot|feedfetcher|apis-google|bingbot|bingpreview|msnbot|adidxbot|applebot|yandex|baiduspider|facebookexternalhit|facebot|meta-external|meta-webindexer|twitterbot|twittercardservice/i.test(ua)) continue;
     const h = safeHeaders(genHeaders(r, ua));
     if (!h) continue;
     const expected = combineWeights([...uaSignals(ua), ...headerSignals(h, ua)]);

@@ -32,8 +32,8 @@ const SOURCE_LABELS: Record<string, string> = {
  * ghi thứ hai lọt vào, chứ không phải chuyện vô hại.
  */
 const BOT_REASON_LABELS: Record<string, string> = {
-  "ua-regex": "UA tự khai là crawler",
-  "twitter-asn": "Dải mạng của X (ASN 13414)",
+  "ua-regex": "UA tự khai là crawler hoặc công cụ tự động",
+  "twitter-asn": "Header ASN báo mạng của X (13414), chưa xác minh",
   "non-browser-ua": "UA không có dấu hiệu trình duyệt nào (Mozilla/<số>, bộ máy, Java ME…)",
   unknown: "Không ghi lý do",
 };

@@ -8,11 +8,11 @@
  *   Bing   — blogs.bing.com/webmaster/2012/08/31/how-to-verify-that-bingbot-is-bingbot
  *   Apple  — support.apple.com/en-us/119829
  *   Yandex — yandex.com/support/webmaster/en/robot-workings/check-yandex-robots.html
- *   Baidu  — CHỈ có nguồn bên thứ ba (Baidu không có trang xác minh chính thức
- *            tìm được); nếu Baidu quan trọng với bạn, kiểm lại trước khi tin.
+ *   Baidu  — help.baidu.com/question?prod_id=99&class=0&id=3001 (trang Webmaster của Baidu): khuyên reverse DNS, hostname
+ *            là *.baidu.com hoặc *.baidu.jp.
  *   Meta   — developers.facebook.com/docs/sharing/webmasters/web-crawlers: Meta
  *            KHÔNG công bố rDNS, chỉ công bố UA và dải IP theo ASN 32934.
- *   X      — ASN 13414 (đang dùng trong lib/tracking/ua.ts).
+ *   X      — ASN 13414 (đang dùng trong lib/tracking/ua.ts). Header ASN: xem README, "Header ASN không được Vercel công bố".
  */
 export interface KnownCrawler {
   id: string;
@@ -20,7 +20,7 @@ export interface KnownCrawler {
   ua: RegExp;
   /** Xác minh bằng FCrDNS: hostname phải kết thúc bằng một trong các suffix. */
   rdnsSuffixes?: readonly string[];
-  /** Xác minh bằng ASN của IP nguồn (Vercel gửi `x-vercel-ip-as-number`). */
+  /** Xác minh bằng ASN của IP nguồn, đọc từ header `x-vercel-ip-as-number` (Vercel KHÔNG công bố header này; xem README). */
   asns?: readonly number[];
 }
 
@@ -63,7 +63,7 @@ export const KNOWN_CRAWLERS: readonly KnownCrawler[] = [
   },
   {
     id: "x",
-    ua: /twitterbot|twittercardservice/i,
+    ua: /twitterbot|twittercardservice|twitter-image-proxy/i,
     asns: [13414],
   },
 ];

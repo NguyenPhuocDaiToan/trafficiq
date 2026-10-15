@@ -5,7 +5,7 @@ chắc chắn automation.** Điểm dùng để **ghi log, giới hạn tần su
 thách PoW** — không dùng để đổi nội dung trang trả về.
 
 ```
-npm run test:botdetect   # unit + property + fuzz (`botdetect.test.ts` của tác giả + `independent.test.ts` và các file `round*.test.ts` do các vòng reviewer độc lập viết; số test thay đổi theo thời gian, đừng tin con số ở đây — chạy lệnh để biết)
+npm run test:botdetect   # unit + property + fuzz (`botdetect.test.ts` của tác giả + `independent.test.ts`, `twitter.test.ts` và các file `round*.test.ts` do các vòng reviewer độc lập viết; số test thay đổi theo thời gian, đừng tin con số ở đây — chạy lệnh để biết)
 npm run check:bot        # gate recall/specificity của regex UA (ua.ts)
 npm run check:botdetect-live  # FCrDNS với DNS THẬT (cần mạng)
 npm run check:probe-browser   # probe client trong Chromium thật qua CDP
@@ -23,7 +23,7 @@ dừng ở gate đầu tiên đỏ:
 |---|---|---|---|
 | 1 | Unit + property + fuzz (chạy tuần tự; các test thời gian đo trên máy rảnh, có thể đỏ khi CPU đang bị chiếm) | 0 test fail | `test:botdetect` |
 | 2 | Regex UA: recall crawler tự khai / specificity người thật (gate 135 UA = 51 người + 84 crawler; 4 UA stealth nằm ngoài gate) | ≥ 90% mỗi chỉ số **và 0 UA phân loại sai trên corpus** (bánh cóc hồi quy) | `check:bot` |
-| 2b | **Corpus bên thứ ba** (không do tác giả viết): `botReason` recall trên `crawler-user-agents` (DEV/HOLDOUT theo crawler) và Matomo `bots.yml`; chặn nhầm người trên `top-user-agents` và trên Matomo THEO LOẠI THIẾT BỊ (TV, feature phone, console, ô tô, tablet, smartphone…) sau khi loại stack ứng dụng | recall ≥ 90% mỗi nửa DEV/HOLDOUT và Matomo, ≥ 93% trên danh sách gộp, ≥ 99% điểm rủi ro ≥ 30 trên crawler-user-agents; 0 chặn nhầm trên UA hiện đại; chặn nhầm theo loại ≤ 0,5–5%, tổng ≤ 1,5% | `check:bot-external` (cần mạng, 16 tiêu chí) |
+| 2b | **Corpus bên thứ ba** (không do tác giả viết): `botReason` recall trên `crawler-user-agents` (DEV/HOLDOUT theo crawler) và Matomo `bots.yml`; chặn nhầm người trên `top-user-agents` và trên Matomo THEO LOẠI THIẾT BỊ (TV, feature phone, console, ô tô, tablet, smartphone…) sau khi loại stack ứng dụng | recall ≥ 95% mỗi nửa DEV/HOLDOUT và Matomo, ≥ 95% trên danh sách gộp, ≥ 99% điểm rủi ro ≥ 30 trên crawler-user-agents; 0 chặn nhầm trên UA hiện đại; chặn nhầm theo loại ≤ 0,5–5%, tổng ≤ 1,5% | `check:bot-external` (cần mạng, 16 tiêu chí) |
 | 3 | FCrDNS trên DNS thật (Google, Bing, Apple, Yandex, Baidu + 5 ca giả mạo) | 12/12; `error` (timeout) được thử tối đa 3 lần (2 lần thử lại) | `check:botdetect-live` |
 | 4 | Probe client trong Chromium thật (5 kịch bản) | 5/5 đúng kỳ vọng | `check:probe-browser` |
 | 5 | Typecheck | 0 lỗi | `typecheck` |
@@ -38,7 +38,7 @@ chúng vì chúng là số đo một lần về các bản mã cũ, không phả
 
 Tiêu chí 8 là phán đoán của một reviewer độc lập chứ không phải số đo, nên nó là phần yếu nhất của
 bảng này: nó chứng minh "một reviewer mới không tìm ra gì", không chứng minh "không còn lỗi". Câu "không có thay đổi nào
-sau vòng N" **không** được phát biểu bằng lời ở đây, vì thư mục này chưa nằm trong git (không có `git diff`)
+sau vòng N" **không** được phát biểu bằng lời ở đây, vì manifest SHA-256 ghim đúng bản đã review, độc lập với lịch sử git (commit hay chưa commit)
 và mtime vô nghĩa (mutation test khôi phục file bằng `cp`). Thay vào đó mã nguồn được ghim bằng SHA-256:
 `npm run check:botdetect-frozen` so 11 file (mọi `*.ts` không phải test trong thư mục này, cộng
 `lib/tracking/ua.ts`) với `FROZEN.sha256`, là bản mà vòng review độc lập cuối đã đọc. Sửa, thêm hay xoá một file đều làm lệnh đó đỏ. Sửa mã hợp lệ về sau thì lệnh đỏ là ĐÚNG — nghĩa là bản đó chưa
@@ -49,7 +49,11 @@ và mtime vô nghĩa (mutation test khôi phục file bằng `cp`). Thay vào đ
 `check:bot` dùng corpus do tác giả viết, nên nó chấm bài của chính mình. Vì vậy `check:bot-external` đo `botReason` (hàm quyết định
 redirect hay Social Card ở `/go`) trên corpus do BÊN THỨ BA duy trì, và in ra các con số HIỆN TẠI mỗi lần chạy:
 
-- bot: `crawler-user-agents` (chia DEV/HOLDOUT theo crawler) và Matomo `bots.yml` — ngưỡng recall của gate: ≥ 90% mỗi nửa / mỗi danh sách;
+- bot: `crawler-user-agents` (chia DEV/HOLDOUT theo crawler) và Matomo `bots.yml` — ngưỡng recall của gate: ≥ 95% mỗi nửa / mỗi danh sách.
+  **Giới hạn của phép đo này:** sau khi thêm vào `BOT_UA_REGEX` các token TÊN riêng (pingdom, netcraft, siteimprove, nikto, httrack, zgrab,
+  watchtowr, onlyscans, uptimia…) lấy từ chính các danh sách đó, DEV/HOLDOUT không còn là dữ liệu chưa thấy: phần recall tăng nhờ tên riêng chỉ
+  chứng minh "đã thấy mẫu này", KHÔNG chứng minh khái quát hoá. Chỉ các quy luật chung chọn từ trước (`+<URL>`, `https?://`, `crawl`…) mới có cơ sở để tin là bắt được crawler chưa thấy;
+  quy luật email-trong-UA cũng được thêm SAU khi đã thấy corpus nên không được tính là bằng chứng khái quát. Muốn một con số khái quát thật thì phải đo trên một corpus chưa dùng để chọn token.
 - người: `top-user-agents` (UA trình duyệt hiện đại) và Matomo THEO LOẠI THIẾT BỊ (TV, feature phone, console, ô tô, tablet, smartphone…)
   sau khi loại stack HTTP của ứng dụng — ngưỡng chặn nhầm của gate: 0% trên UA hiện đại, ≤ 0,5–5% theo loại, ≤ 1,5% tổng.
 
@@ -57,7 +61,7 @@ README không chép lại các con số đo (chúng đổi theo thời gian và 
 quy luật, lý do chọn/bỏ từng quy luật, và những con số do reviewer báo nằm trong [HISTORY.md](./HISTORY.md) — ghi chép một lần, KHÔNG phải
 khẳng định về mã hiện tại.
 
-Các quy luật trong `lib/tracking/ua.ts` (mô tả định tính): `+<URL>` và `https?://`/`mailto:` (bot tự khai bằng URL); gốc `crawl` và vài danh từ
+Các quy luật trong `lib/tracking/ua.ts` (mô tả định tính): `+<URL>` và `https?://`/`mailto:` (bot tự khai bằng URL); email liên hệ trong UA (`@host.tld`, `[at]host.tld`, `(at)host.tld`; regex `@[a-z0-9.-]{1,64}\.[a-z]{2,10}` không neo cuối nên `x@example.photography` vẫn bị bắt; nhưng cần một dấu `.` nằm trong 65 ký tự đầu sau `@` và theo sau bởi ≥ 2 chữ cái; vì vậy `@` + 64 chữ + `.com` và `@` + 62 chữ + `.1.com` bị bắt, còn `@` + 65 chữ + `.com` và `@` + 63 chữ + `.1.com` thì lọt); công cụ automation (`playwright`, `selenium`, `puppeteer`, `webdriver`); các dịch vụ giám sát/audit/crawler (`pingdom`, `siteimprove`, `netcraft`, `nutch`, `httrack`, `synthetics?`, `optimizer`, `observatory`...); crawler dịch vụ Google (`Web Preview`, `Page Speed`, `Ads/AdSense`...; KHÔNG gồm `Google Favicon` và `DuplexWeb-Google`, xem "Đánh đổi đã biết"); gốc `crawl` và vài danh từ
 (`fetcher`, `scanner`, `monitor`, `checker`, `validator`, `harvest`, `extractor`, `indexer`, `probe`); AI agent khai danh không có chữ "bot";
 `bot` là một TỪ (không khớp "Caboto") NHƯNG một token có chứa "bot" kèm phiên bản (`bot…/<số>`) vẫn bị bắt, nên `Caboto/1` hay `Abbott/1.0` bị chặn; làm trống đoạn nền tảng Android/Instagram trước khi tìm "bot" ("M bot 54") trừ khi trong đó có dấu hiệu
 crawler; và **`non-browser-ua`**: UA không có dấu hiệu trình duyệt nào (`Mozilla/<số>` ở bất kỳ đâu, token bộ máy, Java ME/WAP, TV, app…).
@@ -69,14 +73,19 @@ họ nhận Social Card thay vì được redirect. Vì vậy allowlist điện 
 ngừng sản xuất) sẽ nhận Social Card; lý do ghi ở nhật ký là `non-browser-ua`, lọc được ở `/admin/nhat-ky`.
 
 **Đánh đổi đã biết (reviewer độc lập thấy, CHƯA sửa có chủ đích):**
+
+- Email trong UA bị coi là bot tự khai (`@domain.tld`, `[at]domain.tld`, `(at)domain.tld`). Trong đoạn nền tảng Android/Instagram thì `@` và
+  `[at]` được coi là dấu hiệu crawler (không bị làm trống), còn `(at)` thì KHÔNG (dấu `)` kết thúc đoạn trước); trong trường FBDV/FBMF/FBBD/FBDM chỉ
+  `@` được nhận ra (`[at]` thì không vì `]` kết thúc trường; `(at)` thì không vì `CRAWLER_MARK` không có dạng đó nên trường bị làm trống). Ở đoạn nền tảng khác thì KHÔNG được miễn: một UA IE6 cổ do công ty cài
+  (`…Windows NT 5.0; user@ch.eu.csc.com; .NET CLR 1.0.3705)`) bị chặn nhầm. Rất cũ, nên tác động thấp; chấp nhận để bắt crawler khai email liên hệ.
 - Quy tắc URL (`https?://` bất kỳ đâu) chặn nhầm một số trình duyệt cổ: QtWeb (`http://www.QtWeb.net`), K-Meleon
   (`+http://www.kangaroo-personal.de`), Opera 9.x có URL trong comment, IE nhúng (`from: http://bsalsa.com/`). Đổi lại nó bắt
   thêm nhiều bot tự khai bằng URL trần; né nó bằng một ngoại lệ sẽ để lọt bot đội vỏ trình duyệt.
 - `libwww` (Amaya, NCSA/VMS Mosaic) và `java/` (HotJava) khớp các trình duyệt cổ; cả hai là thư viện HTTP phổ biến của bot.
 - Bot giấu tên trong ngoặc nền tảng Android MÀ KHÔNG kèm phiên bản/URL/"crawler" (`(Linux; Android 10; GPTBot)`) lọt — giống
   việc viết `Mozilla/5.0`. `Java/11 Configuration/CLDC-1.1` lọt vì dấu hiệu MIDP/CLDC rộng hơn tài liệu.
-- Một UA bắt đầu bằng U+0085 / U+00AD (ký tự vô hình) rồi tới tiền tố allowlist (ví dụ soft-hyphen + `Lynx/2.9`) làm `botReason`
-  (cắt bằng `trim()`) và `uaSignals` (cắt bằng `cleanUa`, rộng hơn) bất đồng: `botReason` trả `non-browser-ua` (người đó nhận Social Card,
+- Một UA bắt đầu bằng ký tự vô hình mà `cleanUa` cắt còn `trim()` thì không (U+0085, U+00AD, U+200B–200F, U+2060…; U+FEFF và U+00A0 thì `trim()` cũng cắt nên không dính) rồi tới
+  tiền tố allowlist (ví dụ soft-hyphen + `Lynx/2.9`) làm `botReason` (cắt bằng `trim()`) và `uaSignals` (cắt bằng `cleanUa`, rộng hơn) bất đồng: `botReason` trả `non-browser-ua` (người đó nhận Social Card,
   KHÔNG được redirect) trong khi điểm rủi ro coi UA là sạch. Hiếm và chưa thấy UA người thật nào mang dạng này.
 - Mô hình/thương hiệu có chữ "bot" nằm NGOÀI phần đã làm trống (`UCWEB/2.0 (… Adr 4.0.4; …; M bot 54)`, hậu tố Weibo/BiliApp)
   vẫn bị chặn nhầm; vài trình duyệt WAP cổ (`Blazer`, `Browser/WAP2.0`, `Browser/MAUI`) bị coi là không-phải-trình-duyệt.
@@ -85,12 +94,12 @@ ngừng sản xuất) sẽ nhận Social Card; lý do ghi ở nhật ký là `no
   chúng đã ngừng và ít giá trị; `googleweblight` thì không nên bắt vì nó phục vụ một người đang duyệt thật. `Amzn-User`, `Google-CWS`,
   `Google-Site-Verification` thì bị bắt. Yandex Browser trên Android (`(Linux; arm_64; Android 12; M bot 54)`) từng bị chặn
   nhầm; đã sửa bằng cách cho phép tới 2 token tuỳ ý trước "Android" ở đoạn nền tảng.
-- Các token tự khai có "bot" kèm phiên bản được bắt, nhưng "bot" dính liền với chữ và không có phiên bản (ví dụ `Mozilla/5.0 (compatible; botx)`) thì không — regex gốc ở HEAD bắt được dạng đó, và đây là một hồi quy nhỏ có chủ đích so với HEAD. (`Foo bot-x` thì BỊ bắt, vì "bot" đứng trước dấu gạch.)
+- Các token tự khai có "bot" kèm phiên bản được bắt, nhưng "bot" dính liền với chữ và không có phiên bản (ví dụ `Mozilla/5.0 (compatible; botx)`) thì không — regex gốc (trước commit f17cbe4) bắt được dạng đó, và đây là một hồi quy nhỏ có chủ đích so với bản đó. (`Foo bot-x` thì BỊ bắt, vì "bot" đứng trước dấu gạch.)
 
 **Giới hạn của phép đo này:** (1) corpus bên thứ ba là các crawler ĐÃ TỰ KHAI — không đo bot đội UA trình duyệt;
 (2) nhãn Matomo là theo THIẾT BỊ, không theo "người bấm link", nên gate phải loại stack ứng dụng bằng một danh sách
 (`NATIVE_STACK`, công khai trong `scripts/check-bot-external.ts`); (3) các danh sách đổi theo thời gian; (4) ngưỡng
-của gate là bánh cóc đặt sát giá trị đo được — hạ chúng khi đo kém đi là che hồi quy.
+của gate là bánh cóc với biên riêng cho từng loại (TV đo 1,92% so với ngưỡng 3%; console và ô tô chỉ cách ngưỡng khoảng một UA vì mẫu nhỏ) — hạ chúng khi đo kém đi là che hồi quy.
 
 ## Trạng thái nối vào hệ thống — ĐỌC TRƯỚC
 
@@ -134,8 +143,8 @@ giờ** thành `spoofed`.
 Chi tiết dễ sai đã được test (và hai chỗ đo trên DNS thật bằng `npm run check:botdetect-live`):
 - Khớp suffix theo **ranh giới nhãn**: `evilgooglebot.com` và
   `googlebot.com.evil.net` đều trượt.
-- **Google: KHÔNG chấp nhận `*.googleusercontent.com` trần.** Google liệt kê domain
-  này, nhưng mọi VM Google Cloud của khách hàng có PTR `*.bc.googleusercontent.com`
+- **Google: KHÔNG chấp nhận `*.googleusercontent.com` trần.** Bảng fetcher của Google chỉ liệt kê `gae.googleusercontent.com`, còn phần mô tả thủ tục của Google nêu
+  `googleusercontent.com` trần; dự án CỐ Ý theo bảng, vì domain trần khớp mọi VM Google Cloud của khách hàng có PTR `*.bc.googleusercontent.com`
   và forward khớp — thuê một VM là giả được Googlebot. Chỉ nhận
   `gae.googleusercontent.com`.
 - Hostname phải là chuỗi nhãn DNS hợp lệ trước khi khớp suffix: `evil\0.googlebot.com`
@@ -152,12 +161,11 @@ Chi tiết dễ sai đã được test (và hai chỗ đo trên DNS thật bằn
 - Kết quả cache per-instance: xác định 6h, lỗi 60s.
 
 **Meta và X không có rDNS.** Meta chỉ công bố UA và ASN 32934; X dùng ASN 13414.
-Hai bên được xác minh bằng ASN đọc từ header `x-vercel-ip-as-number` (chỉ có khi
-chạy trên Vercel; thiếu header → `unverified`, không phải `spoofed`). ASN chỉ
+Hai bên được xác minh bằng ASN đọc từ header `x-vercel-ip-as-number` (thiếu header → `unverified`, không phải `spoofed`;
+xem cảnh báo dưới về việc Vercel không công bố header này). ASN chỉ
 chứng minh "IP nằm trong mạng của họ", yếu hơn FCrDNS.
 
-Nguồn từng suffix ở đầu `crawlers.ts`. **Baidu chỉ có nguồn bên thứ ba** — kiểm
-lại trước khi tin.
+Nguồn từng suffix ở đầu `crawlers.ts` (Baidu: trang Webmaster `help.baidu.com/question?prod_id=99&class=0&id=3001`).
 
 ### Lớp 2 — Heuristic UA + header (`signals.ts`)
 
@@ -167,13 +175,16 @@ lại trước khi tin.
 |---|---|---|
 | `headless-ua` (HeadlessChrome, PhantomJS, Puppeteer, Selenium…) | 90 | |
 | `headless-client-hint` (`sec-ch-ua` chứa HeadlessChrome) | 90 | Bắt cả khi UA đã bị sửa |
-| `http-library-ua` (curl, python, axios, Go, okhttp, Java, Scrapy…) | 85 | |
-| `unknown-declared-bot` | 55 | Tự khai là bot, không có trong registry |
-| `non-browser-ua` (UA không mở đầu bằng `Mozilla/<số>` hay `Opera/`) | 40 | Đảo ngược việc liệt kê thư viện: `GuzzleHttp`, `Ruby`, `colly`… không bao giờ đủ danh sách. Dưới bậc rate-limit chặt (60) và challenge (80), nhưng dùng chung bucket `s:` nên vượt burst 30 vẫn bị 429 |
+| `client-hints-brand-mismatch` (Firefox/Safari gửi `sec-ch-ua` Chromium) | 45 | Cùng nhóm với `platform-mismatch` và `mobile-hint-mismatch`: chỉ MỘT trong ba được giữ (cùng nguyên nhân, tránh cộng dồn lên bậc challenge). UA đã bị sửa — nhưng extension đổi UA của người dùng thật trông y hệt, nên KHÔNG tới ngưỡng rate-limit/challenge |
+| `http-library-ua` (curl, python, axios, Go, okhttp, Java, Scrapy, camoufox, crawlee, tls-client…) | 85 | |
 | `empty-ua` | 60 | |
+| `unknown-declared-bot` | 55 | Tự khai là bot, không có trong registry |
 | `platform-mismatch` (UA nói Windows, `sec-ch-ua-platform` nói Android) | 45 | Dấu hiệu UA bị sửa |
+| `mobile-hint-mismatch` (`sec-ch-ua-mobile` mâu thuẫn với OS: `?1` với Windows/macOS, hoặc `?0` với iPhone/iPod; iPad không tính) | 45 | |
+| `fetch-dest-mismatch` (`navigate` đi với dest của tài nguyên con: script/image/font/style/worker…; hoặc dest `document` với mode khác `navigate`/`same-origin`: `cors`, `no-cors`, `websocket`…) | 45 | `empty` (fetch(), preload/prefetch), `embed`, `frame`, `object` không chứng minh được là không điều hướng nên KHÔNG bị chấm |
+| `non-browser-ua` (UA không mở đầu bằng `Mozilla/<số>` hay `Opera/`) | 40 | Đảo ngược việc liệt kê thư viện: `GuzzleHttp`, `Ruby`… không bao giờ đủ danh sách. Dưới bậc rate-limit chặt (60) và challenge (80), nhưng dùng chung bucket `s:` nên vượt burst 30 vẫn bị 429 |
 | `programmatic-fetch` (`sec-fetch-mode` khác `navigate`/`same-origin`: `cors`, `no-cors`, `websocket`, `nested-navigate`, giá trị lạ) | 30 | Click của người là `navigate` |
-| `datacenter-asn` (AWS, GCP, Azure, DO, OVH, Hetzner…) | 20 | Có người dùng VPN; dưới ngưỡng flag một mình |
+| `datacenter-asn` (AWS, GCP, Azure, DO, OVH, Hetzner, Leaseweb, Contabo, Alibaba, Tencent, Oracle, Hostinger…) | 20 | Có người dùng VPN; dưới ngưỡng flag một mình. Cloudflare (13335) cố ý KHÔNG có: iCloud Private Relay/WARP của người thật |
 | `non-document-accept` (Accept không có `text/html`/`xhtml`) | 20 | Điều hướng của trình duyệt luôn có; Accept kiểu axios là lời gọi API |
 | `no-accept` / `wildcard-accept` / `no-accept-language` / `no-sec-fetch` | 10–18 | Yếu; webview cũ thiếu các header này |
 
@@ -193,7 +204,8 @@ lại trước khi tin.
 
 Các tín hiệu header chia làm hai nhóm:
 
-- **Bằng chứng MẠNH** (`headless-client-hint`, `platform-mismatch`, `programmatic-fetch`) áp cho
+- **Tín hiệu áp cho MỌI UA** (`headless-client-hint`, `client-hints-brand-mismatch`, `platform-mismatch`, `mobile-hint-mismatch`,
+  `programmatic-fetch`, `fetch-dest-mismatch`; mạnh hay yếu tuỳ trọng số ở bảng trên, ba cái client-hint chỉ 45) áp cho
   **mọi** UA, bất kể UA nói gì về mình. Nếu chỉ áp cho UA `Mozilla/5.0` thì đổi UA thành
   `Mozilla/4.0 (compatible; MSIE 8.0)` hay `Opera/9.80` là tắt hết (90 → 0), và gắn thêm token
   crawler vào UA Chrome kèm client hint HeadlessChrome từng hạ điểm 90 → 50.
@@ -318,7 +330,8 @@ chỉ làm automation quy mô lớn tốn kém. Kẻ có GPU/farm vẫn giải �
 - Lớp 3 cần trang nhúng probe, và client có thể nói dối. Payload telemetry là dữ liệu
   không đáng tin: luôn qua `parseTelemetry()` (kiểm kiểu, hữu hạn, trần số, độ dài UA,
   bỏ field thừa) trước khi chấm.
-- Header ASN (`x-vercel-ip-as-number`) chỉ có trên Vercel; `readAsn` chỉ nhận số thập phân
+- **Header ASN không được Vercel công bố.** Tài liệu chính thức của Vercel (request-headers) chỉ liệt kê 8 header `x-vercel-ip-*` (city, continent, country, country-region, latitude, longitude, postal-code, timezone), KHÔNG có `x-vercel-ip-as-number`. Header này từ code gốc của dự án; chưa có bằng chứng nó được gửi trên Vercel. Nếu không được gửi thì các nhánh dựa vào nó (`twitter-asn`, xác minh Meta/X bằng ASN, `datacenter-asn`) KHÔNG chạy: Twitterbot/Meta vẫn bị `botReason` bắt qua UA và chấm `unverified-crawler` 55. Nếu client gửi được header này (không ai lột nó) thì nó giả được: giả 13414 làm mất redirect của chính người gửi, giả 32934 kèm UA facebookexternalhit cho điểm 0. Cách kiểm: gửi một request với UA trình duyệt từ một IP datacenter (ví dụ máy ảo AWS) tới `/go/<token>` rồi đọc trường `riskSignals` của document `clickEvents` đó TRỰC TIẾP trong Mongo (`/admin/nhat-ky` không hiển thị trường này); có `datacenter-asn` nghĩa là header được gửi. Request từ IP dân dụng không cho kết luận (không có tín hiệu ASN dù header có tồn tại), và request mang UA Twitterbot/Meta bị `botReason` chặn trước nên không có `riskSignals`.
+- `readAsn` chỉ nhận số thập phân
   ≤ 2³²−1 (`0x80A6` từng được đọc thành ASN 32934 của Meta).
 - IP nguồn do caller truyền vào. Trên Vercel `x-forwarded-for` đáng tin; ở host khác
   client tự đặt được header này, và khi đó FCrDNS/rate limit theo IP không có nghĩa.

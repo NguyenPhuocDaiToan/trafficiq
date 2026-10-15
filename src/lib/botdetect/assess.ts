@@ -61,7 +61,7 @@ function verifyByAsn(input: AssessInput): CrawlerClaim | undefined {
 function checkAsn(crawler: KnownCrawler, input: AssessInput): CrawlerClaim | undefined {
   if (!crawler.asns) return undefined;
   const asn = readAsn(input.headers);
-  // Không có header ASN (dev, host ngoài Vercel): không có bằng chứng nào, nên
+  // Không có header ASN (dev, host không gửi nó, kể cả Vercel nếu nó không công bố header này): không có bằng chứng nào, nên
   // "unverified" chứ KHÔNG phải "spoofed".
   if (asn === undefined) return { id: crawler.id, verification: "unverified" };
   return crawler.asns.includes(asn)

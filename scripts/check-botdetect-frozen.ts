@@ -5,9 +5,9 @@
  *   npm run check:botdetect-frozen              # so với src/lib/botdetect/FROZEN.sha256
  *   npm run check:botdetect-frozen -- --write   # ghim lại bản HIỆN TẠI (chỉ làm sau một vòng review mới)
  *
- * Vì sao cần: thư mục này không nằm trong git (chưa commit), nên "không có thay đổi sau vòng N" không
- * thể chứng minh bằng `git diff` — và mtime vô nghĩa vì mutation test khôi phục file bằng `cp`. Manifest
- * biến câu đó thành lệnh chạy được. Nó KHÔNG nằm trong `check:botdetect-all` có chủ ý: sửa mã hợp lệ về
+ * Vì sao cần: "không có thay đổi sau vòng review N" phải kiểm được bằng một lệnh, độc lập với việc đã commit hay
+ * chưa (một commit có thể gộp mã đã review lẫn chưa review) — và mtime vô nghĩa vì mutation test khôi phục file
+ * bằng `cp`. Manifest biến câu đó thành lệnh chạy được. Nó KHÔNG nằm trong `check:botdetect-all` có chủ ý: sửa mã hợp lệ về
  * sau phải đi qua review rồi mới `--write`, và gate này đỏ chính là tín hiệu "bản này chưa được review".
  */
 import { createHash } from "node:crypto";

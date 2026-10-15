@@ -1,4 +1,3 @@
-import type { NextRequest } from "next/server";
 import type { BotReason, ClickEvent, WeakSignal } from "@/lib/types";
 
 type Device = ClickEvent["device"];
@@ -7,10 +6,11 @@ type Device = ClickEvent["device"];
  * Đo bằng `npm run check:bot` (scripts/check-bot-detection.ts) — thêm/bớt mẫu
  * ở đó trước khi sửa regex này.
  *
- * Các nhóm sau được chọn vì chúng là QUY LUẬT, không phải tên crawler: `+<URL>` và `https?://`/`mailto:` (quy ước crawler tự khai bằng
- * một URL), gốc `crawl`, vài danh từ (`fetcher`, `scanner`, `monitor`, `checker`, `validator`, `harvest`, `extractor`, `indexer`,
- * `probe`), và tên AI agent không có chữ "bot". Chúng được chọn chỉ dựa trên một nửa (DEV) của danh sách `crawler-user-agents` rồi
- * kiểm trên nửa còn lại (HOLDOUT); một danh sách TÊN (`grub|findlinks|teoma|…`) bị loại vì chỉ vá đúng mẫu đã thấy, không khái quát.
+ * Hai loại quy luật, không được lẫn: (1) QUY LUẬT chung: `+<URL>`, `https?://`/`mailto:`, gốc `crawl`, vài danh
+ * từ (`fetcher`, `scanner`, `monitor`, `checker`, `validator`, `harvest`, `extractor`, `indexer`, `probe`). Các quy luật này ban đầu
+ * được chọn chỉ trên nửa DEV của `crawler-user-agents` rồi kiểm trên HOLDOUT. (2) Đợt thêm SAU khi đã thấy cả hai nửa và Matomo: quy luật email-trong-UA và danh sách TÊN riêng (`pingdom`, `netcraft`, `nikto`,
+ * `httrack`, `zgrab`, `teoma`, `watchtowr`, `onlyscans`, `uptimia`…). Nó chỉ vá đúng
+ * mẫu đã thấy, KHÔNG chứng minh khái quát, và làm DEV/HOLDOUT hết là dữ liệu chưa thấy (xem lib/botdetect/README.md).
  * Quy luật có thể chặn nhầm một số trình duyệt cổ (xem "Đánh đổi đã biết" trong lib/botdetect/README.md). Số đo trước/sau và lý do từng
  * quy luật: lib/botdetect/HISTORY.md (ghi chép một lần). Số HIỆN TẠI: `npm run check:bot-external`.
  *
@@ -26,7 +26,7 @@ type Device = ClickEvent["device"];
  *   họ chứa `bot.html` / `DuckDuckBot`.
  */
 export const BOT_UA_REGEX =
-  /(?<!cu)bots?(?![a-z])|(?<!cu)bot[a-z0-9_.-]{0,20}\/\d|crawl|spider|\+\s*(?:https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,})|https?:\/\/|mailto:|claude-user|claude-searchbot|perplexity-user|chatgpt-user|oai-searchbot|duckassistbot|mistralai-user|gemini-deep-research|google-extended|cohere-ai|youbot|amzn-user|google-cws|google-site-verification|fetcher|scanner|monitor|checker|validator|harvest|extractor|indexer|probe|twittercardservice|facebookexternalhit|facebookcatalog|meta-external|meta-webindexer|whatsapp|quora link preview|yahoo! slurp|curl|wget|python|aiohttp|node-fetch|undici|axios|sindresorhus\/got|go-http-client|okhttp|(?<!semc-)java\/(?!asvm|semc|qvm|hwja|lgvm|jbed)|apache-httpclient|libwww(?!-fm)|scrapy|headless|phantomjs|lighthouse|mediapartners|googleother|google-inspectiontool|google-read-aloud|feedfetcher|bingpreview|qwantify|embedly|skypeuripreview|vkshare|w3c_validator|anthropic-ai/i;
+  /(?<!cu)bots?(?![a-z])|(?<!cu)bot[a-z0-9_.-]{0,20}\/\d|crawl|spider|\+\s*(?:https?:\/\/|www\.|[a-z0-9-]+\.[a-z]{2,})|https?:\/\/|mailto:|@[a-z0-9.-]{1,64}\.[a-z]{2,10}|\[at\][a-z0-9.-]{1,64}\.[a-z]{2,10}|\(at\)[a-z0-9.-]{1,64}\.[a-z]{2,10}|claude-user|claude-searchbot|perplexity-user|chatgpt-user|oai-searchbot|duckassistbot|mistralai-user|gemini-deep-research|google-(?:extended|cws|site-verification|inspectiontool|read-aloud|adwords|ads|adsense|pagespeed|hotelads|youtube|publisher|amphtml|imageproxy|sites-thumbnails|businesslink|assess|agent)|google (?:web preview|page speed|search console)|googleimageproxy|googleadsenseinfeed|googleother|cohere-ai|youbot|amzn-user|fetcher|scanner|monitor|checker|validator|harvest|extractor|indexer|probe|twittercardservice|twitter-image-proxy|xbot|xai-grok|grokbot|grok-deepsearch|facebookexternalhit|facebookcatalog|meta-external|meta-webindexer|whatsapp|quora link preview|yahoo! slurp|curl|wget|python|aiohttp|node-fetch|undici|axios|sindresorhus\/got|go-http-client|okhttp|(?<!semc-)java\/(?!asvm|semc|qvm|hwja|lgvm|jbed)|apache-httpclient|libwww(?!-fm)|scrapy|headless|phantomjs|playwright|selenium|puppeteer|webdriver|nutch|httrack|pingdom|siteimprove|netcraft|synthetics?|optimizer|observatory|diagnostics|gtmetrix|ghost inspector|dareboost|daumoa|daum 4|(?<![a-z])teoma(?![a-z])|zgrab|twingly|datanyze|trendsmapresolver|detectify|statuscake|whatcms|nikto|openvas|catchpoint|assetnote|ptst\/|transcoder|auditor|taginspector|securityheaders|newsblur|inoreader|theoldreader|outbrain|watchtowr|infrawatch|patchwatch|onlyscans|manus-user|seznamemailproxy|morningscore|uptimia|lighthouse|mediapartners|feedfetcher|bingpreview|qwantify|embedly|skypeuripreview|vkshare|w3c_validator|anthropic-ai|crawlee|camoufox|tls-client|curl-impersonate|brightdata|zenrows|cloudscraper/i;
 
 /**
  * Trình duyệt chữ / điện thoại đời cũ KHÔNG mở đầu bằng "Mozilla/" hay "Opera/". Đúng DẠNG UA thật,
@@ -78,7 +78,8 @@ export function isNonBrowserUa(ua: string): boolean {
  * Tên máy Android hay chứa chữ "bot"/"spider" ("M bot 54", "VR BOT 552", "XBot Junior", "Spider 8", "htc_botdugls"),
  * ở đoạn nền tảng "(Linux; Android …; MODEL Build/…)" VÀ ở đoạn lặp lại của app Instagram ("Instagram 267.0 Android
  * (31/12; …; HTC Desire 22 pro; htc_botdugls; …)"). Xoá hai đoạn đó trước khi tìm từ khoá bot — TRỪ KHI trong đoạn có
- * dấu hiệu của một crawler thật: token có phiên bản ("Storebot-Google/1.0"), URL/mailto, "+host.tld", hay chữ "crawler".
+ * dấu hiệu của một crawler thật: token có phiên bản ("Storebot-Google/1.0"), URL/mailto, "+host.tld", email ("@host.tld" hoặc
+ * "[at]host.tld"; dạng "(at)" KHÔNG nhận ra ở đây vì dấu ")" kết thúc đoạn trước), hay chữ "crawler".
  * Tên máy không bao giờ có các dấu hiệu đó; crawler giấu tên trong đoạn này thì gần như luôn có.
  *
  * (Bản đầu xoá VÔ ĐIỀU KIỆN đoạn đầu và làm lọt Storebot-Google, YRSpider, GPTBot, Y!J-BRZ crawler — reviewer độc lập
@@ -91,7 +92,7 @@ export function isNonBrowserUa(ua: string): boolean {
  */
 const ANDROID_PLATFORM = /(mozilla\/\d[^(]{0,40})\(((?:[a-z0-9_]{1,12}; ){0,2}android[^)]{0,300})\)/i;
 const INSTAGRAM_PLATFORM = /((?:instagram|barcelona) [0-9][0-9.]{0,20} android )\(([^)]{0,300})\)/i;
-const CRAWLER_MARK = /[a-z]\/\d|https?:|mailto:|\+\s*[a-z0-9-]+\.[a-z]{2,}|crawler/i;
+const CRAWLER_MARK = /[a-z]\/\d|https?:|mailto:|\+\s*[a-z0-9-]+\.[a-z]{2,}|@[a-z0-9.-]{1,64}\.[a-z]{2,10}|\[at\][a-z0-9.-]{1,64}\.[a-z]{2,10}|crawler/i;
 // Facebook in-app lặp lại hãng/tên máy ở các trường FBMF/FBBD/FBDV/FBDM ("FBDV/M bot 54"): chỉ làm trống GIÁ TRỊ của đúng các trường đó.
 const FB_DEVICE_FIELD = /(fb(?:mf|bd|dv|dm)\/)[^;\]]{0,80}/gi;
 const hasCrawlerMark = (inner: string): boolean => CRAWLER_MARK.test(inner.replace(/build\/[a-z0-9._-]+/gi, "build"));
@@ -118,11 +119,19 @@ export function isDeclaredBotUa(ua: string): boolean {
   return BOT_UA_REGEX.test(t);
 }
 
+/** Phần tối thiểu của request mà `botReason`/`weakSignals` đọc (NextRequest thoả, và dùng được ở test mà không cần Next). */
+export type RequestLike = {
+  headers: {
+    get(name: string): string | null;
+  };
+};
+
 /**
  * Vì sao request này bị coi là crawler — `null` nghĩa là cho đi tiếp.
  *
- * CHỈ chứa tín hiệu đủ mạnh để chặn, tức những thứ crawler TỰ KHAI hoặc xác
- * minh được ở tầng mạng. Chặn nhầm ở đây tốn đúng một click thật của người
+ * CHỈ chứa tín hiệu đủ mạnh để chặn: thứ crawler TỰ KHAI (UA) và header ASN 13414 của X. Header ASN KHÔNG được
+ * Vercel công bố và giả được nếu client gửi nó (xem README, "Header ASN không được Vercel công bố"), nên nhánh
+ * `twitter-asn` là tín hiệu chưa xác minh chứ không phải bằng chứng ở tầng mạng. Chặn nhầm ở đây tốn đúng một click thật của người
  * dùng (họ bị đẩy về `/c/[slug]`, không tới được trang advertiser, không có
  * conversion, không có hoa hồng) — nên ngưỡng phải cao.
  *
@@ -134,12 +143,14 @@ export function isDeclaredBotUa(ua: string): boolean {
  * `botReason`) nhưng không tới advertiser. Giờ nó là
  * `WeakSignal`: vẫn ghi lại để đo, nhưng không chặn ai cả.
  */
-export function botReason(req: NextRequest): BotReason | null {
+export function botReason(req: RequestLike): BotReason | null {
   const ua = req.headers.get("user-agent") ?? "";
   if (isDeclaredBotUa(ua)) return "ua-regex";
   if (isNonBrowserUa(ua)) return "non-browser-ua";
 
-  // Header Vercel Edge: ASN 13414 = Twitter/X.
+  // Header ASN 13414 = Twitter/X (Vercel KHÔNG công bố header này; nếu nền tảng không gửi thì nhánh này không chạy, xem README). KHÔNG suy ra từ
+  // `x-forwarded-for`/IP hay từ header RPC/tracing (`x-b3-traceid`, Finagle…): client nào cũng gửi được,
+  // nên mỗi người thật gắn thêm một header là mất redirect (đã thử: XFF giả và x-b3-traceid đều ra "twitter-asn").
   if (req.headers.get("x-vercel-ip-as-number") === "13414") return "twitter-asn";
 
   return null;
@@ -150,7 +161,7 @@ export function botReason(req: NextRequest): BotReason | null {
  * "nhóm này có convert không" rồi mới quyết định có nâng lên thành tín hiệu
  * chặn hay không — thay vì chặn trước rồi đoán.
  */
-export function weakSignals(req: NextRequest): WeakSignal[] {
+export function weakSignals(req: RequestLike): WeakSignal[] {
   const signals: WeakSignal[] = [];
 
   const acceptLang = req.headers.get("accept-language");
@@ -206,6 +217,7 @@ function detectBrowser(s: string): string {
   if (/instagram/.test(s)) return "Instagram In-App";
   if (/tiktok|bytelo/.test(s)) return "TikTok In-App";
   if (/zalo/.test(s)) return "Zalo In-App";
+  if (/twitterandroid|twitter for (?:iphone|ipad|android)|(?:\b|^)x for (?:iphone|android|ipad)|tweetdeck|twitterweb|twitterrific/.test(s)) return "Twitter In-App";
   if (/firefox|fxios/.test(s)) return "Firefox";
   if (/chrome|crios/.test(s)) return "Chrome";
   if (/safari/.test(s)) return "Safari";

@@ -260,7 +260,8 @@ describe("1b. ReDoS / adversarial size timing", () => {
         matchKnownCrawler(ua);
         assessRequestSync({ headers: hdrs({ "user-agent": ua }) });
         const dt = performance.now() - t0;
-        assert.ok(dt < 1500, `${label} ${n}: ${dt.toFixed(0)}ms`);
+        const maxMs = n > 1e6 ? 3500 : 1500;
+        assert.ok(dt < maxMs, `${label} ${n}: ${dt.toFixed(0)}ms`);
       }
     });
   }

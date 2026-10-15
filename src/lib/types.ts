@@ -94,7 +94,8 @@ export interface ClickGeo {
 /** Append-only. Có TTL index trên `ts`. */
 /**
  * Lý do một request bị CHẶN ở `/go/[token]` — chỉ những tín hiệu đủ mạnh để
- * coi là crawler thật. Xem `lib/tracking/ua.ts`.
+ * coi là crawler thật. Xem `lib/tracking/ua.ts`. `twitter-asn` dựa trên header ASN mà Vercel không công bố
+ * và client giả được: nó chưa được xác minh.
  */
 export type BotReason = "ua-regex" | "twitter-asn" | "non-browser-ua";
 

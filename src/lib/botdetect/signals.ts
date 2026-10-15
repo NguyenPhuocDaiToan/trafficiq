@@ -12,8 +12,8 @@ import type { HeaderBag, Signal } from "./types";
  */
 
 /**
- * Tên công cụ headless/automation. Độc lập với BOT_UA_REGEX: chỉ `headless` và `phantomjs` trùng; `puppeteer`,
- * `playwright`, `selenium`, `webdriver` thì BOT_UA_REGEX không biết. Cả hai danh sách này được kiểm trên UA đã làm trống
+ * Tên công cụ headless/automation. Cả sáu tên này hiện cũng nằm trong BOT_UA_REGEX (ua.ts), nên `botReason` bắt chúng; danh sách
+ * ở đây tồn tại để cho ĐIỂM (`headless-ua`, 90) và loại UA khỏi `claimsBrowser`. Cả hai danh sách này được kiểm trên UA đã làm trống
  * đoạn tên máy (xem `withoutDevicePlatform`), giống `botReason`, nên một điện thoại tên "Node" hay "Probe" không bị chấm.
  */
 const HEADLESS_UA = /headless|phantomjs|puppeteer|playwright|selenium|webdriver/i;
@@ -21,7 +21,7 @@ const HEADLESS_UA = /headless|phantomjs|puppeteer|playwright|selenium|webdriver/
 // redirect: nhiều tên ở đây cũng bị `botReason` chặn qua BOT_UA_REGEX hoặc `non-browser-ua`.
 // Riêng `dart` phải kèm `/` ("Dart/3.2 (dart:io)"): tên máy "DART KZ07" là điện thoại thật.
 const HTTP_LIBRARY_UA =
-  /curl|wget|python|aiohttp|node-fetch|undici|axios|sindresorhus\/got|go-http-client|okhttp|(?<!semc-)java\/(?!asvm|semc|qvm|hwja|lgvm|jbed)|java-http-client|apache-httpclient|libwww(?!-fm)|scrapy|postmanruntime|httpie|reqwest|(?:^|[\s(;])(?:node|deno|bun)(?:[/\s);]|$)|(?:^|[\s(;])dart\//i;
+  /curl|wget|python|aiohttp|node-fetch|undici|axios|sindresorhus\/got|go-http-client|okhttp|(?<!semc-)java\/(?!asvm|semc|qvm|hwja|lgvm|jbed)|java-http-client|apache-httpclient|libwww(?!-fm)|scrapy|postmanruntime|httpie|reqwest|crawlee|camoufox|tls-client|curl-impersonate|rest-client|faraday|brightdata|zenrows|cloudscraper|(?:^|[\s(;])(?:node|deno|bun)(?:[/\s);]|$)|(?:^|[\s(;])dart\//i;
 /**
  * Agent AI/crawler tự khai ("User" fetcher không có chữ "bot"). Danh sách này dùng để cho ĐIỂM
  * (`unknown-declared-bot`) và để loại UA khỏi `isBrowserLikeUa`; BOT_UA_REGEX (ua.ts) cũng đã bắt
@@ -48,7 +48,19 @@ export function isPlaceholderUa(ua: string): boolean {
   return PLACEHOLDER_UA.test(cleanUa(ua));
 }
 
-/** ASN của nhà cung cấp hosting — người dùng thật hiếm khi duyệt web từ đây. */
+/**
+ * Ba tín hiệu mâu thuẫn UA↔client hint có CHUNG một nguyên nhân (UA bị đổi, thường do extension của người dùng).
+ * Cộng noisy-OR chúng làm một người dùng iPhone-Safari-giả đạt 83 (bậc challenge), nên chỉ giữ MỘT (tín hiệu đầu tiên).
+ */
+const CORRELATED_UA_HINT = new Set(["client-hints-brand-mismatch", "platform-mismatch", "mobile-hint-mismatch"]);
+
+/** `sec-fetch-dest` của tài nguyên con: không bao giờ là đích của một điều hướng. */
+const NON_NAVIGABLE_DEST = new Set([
+  "audio", "audioworklet", "font", "image", "manifest", "paintworklet", "report",
+  "script", "serviceworker", "sharedworker", "style", "track", "video", "worker", "xslt",
+]);
+
+/** ASN của nhà cung cấp hosting/datacenter/proxy — người dùng thật hiếm khi duyệt web từ đây. */
 const DATACENTER_ASNS = new Set([
   16509, 14618, // Amazon AWS
   15169, 396982, // Google Cloud
@@ -57,14 +69,27 @@ const DATACENTER_ASNS = new Set([
   16276, // OVH
   24940, // Hetzner
   63949, // Linode/Akamai
-  20473, // Vultr
+  20473, // Vultr / Choopa
+  // KHÔNG liệt kê Cloudflare (13335): iCloud Private Relay và WARP của người dùng thật đi ra từ đây,
+  // và nếu site đứng sau Cloudflare thì MỌI request mang ASN này.
+  16265, 28753, // Leaseweb
+  51167, // Contabo
+  12876, // Scaleway
+  37963, 45102, // Alibaba Cloud
+  132203, 132591, // Tencent Cloud
+  31898, // Oracle Cloud (OCI)
+  47583, // Hostinger
+  53667, // BuyVM / Frantech
+  50673, // Serverius
+  54825, // Equinix Metal (ex-Packet). KHÔNG phải 54888: đó là mạng của Twitter/X.
 ]);
 
 export function readAsn(headers: HeaderBag): number | undefined {
   const raw = headers.get("x-vercel-ip-as-number");
   if (!raw) return undefined;
   // Chỉ số thập phân CHUẨN (không số 0 đứng đầu): Number("0x80A6") và Number("00032934") đều ra
-  // 32934 và sẽ khớp ASN của Meta. Header thật từ Vercel luôn ở dạng chuẩn.
+  // 32934 và sẽ khớp ASN của Meta. Nếu nền tảng gửi header này, ta giả định nó là số thập phân chuẩn; một client tự gửi
+  // thì có thể gửi dạng khác ("0x80A6"), nên chỉ nhận dạng chuẩn.
   if (!/^(0|[1-9]\d{0,9})$/.test(raw.trim())) return undefined;
   const n = Number(raw.trim());
   return n <= 4_294_967_295 ? n : undefined; // ASN là số 32-bit
@@ -172,14 +197,30 @@ export function headerSignals(headers: HeaderBag, rawUa: string): Signal[] {
   const ua = cleanUa(rawUa);
   const signals: Signal[] = [];
 
-  // ---- Bằng chứng MẠNH về automation: áp cho MỌI UA, không phụ thuộc UA nói gì về mình. Nếu chỉ áp
+  // ---- Tín hiệu header áp cho MỌI UA (không phụ thuộc UA nói gì về mình; vài cái là bằng chứng mạnh, vài cái chỉ 45 vì
+  // người dùng thật cũng gây ra, xem từng dòng). Nếu chỉ áp
   // cho UA "Mozilla/5.0" thì đổi UA thành "Mozilla/4.0 (compatible; MSIE 8.0)" hay "Opera/9.80" là
   // tắt hết (90 → 0), và gắn thêm token crawler vào UA Chrome kèm client hint HeadlessChrome từng hạ
   // điểm 90 → 50. Cộng thêm cho thư viện HTTP là vô hại (noisy-OR đã bão hoà gần 100).
 
   // Headless Chrome cũ khai thẳng trong client hint, kể cả khi UA đã bị sửa.
-  if (/headlesschrome/i.test(headers.get("sec-ch-ua") ?? "")) {
+  const secChUa = headers.get("sec-ch-ua") ?? "";
+  if (/headlesschrome/i.test(secChUa)) {
     signals.push({ id: "headless-client-hint", weight: 90 });
+  }
+
+  // Client Hints brand mismatch: Firefox và Safari thật không gửi `sec-ch-ua`. UA nói Firefox/Safari mà
+  // header lại mang thương hiệu Chromium thì UA đã bị sửa. Nhưng đó KHÔNG phải bằng chứng bot: người dùng
+  // Chrome cài extension đổi UA (dev, QA, người bảo vệ riêng tư) trông y hệt, nên trọng số dưới ngưỡng challenge.
+  // `{0,200}` có giới hạn: `[^;]*` trần là bậc hai (UA 64KB → 233ms, 256KB → 4 giây).
+  const isPureFirefox = /\bfirefox\/\d/i.test(ua) && !/chrome|chromium/i.test(ua);
+  const isPureSafari = /\bversion\/\d[^;]{0,200}safari\/\d/i.test(ua) && !/chrome|chromium|edg|opr|samsung/i.test(ua);
+  if ((isPureFirefox || isPureSafari) && /chromium|google chrome/i.test(secChUa)) {
+    signals.push({
+      id: "client-hints-brand-mismatch",
+      weight: 45,
+      detail: `${isPureFirefox ? "firefox" : "safari"} with chromium hints`,
+    });
   }
 
   const claimed = platformFromUa(ua);
@@ -189,10 +230,37 @@ export function headerSignals(headers: HeaderBag, rawUa: string): Signal[] {
     signals.push({ id: "platform-mismatch", weight: 45, detail: `${claimed} vs ${hinted}` });
   }
 
+  const mobileHint = firstToken(headers.get("sec-ch-ua-mobile"));
+  if (claimed && (claimed === "windows" || claimed === "macos") && mobileHint === "?1") {
+    signals.push({ id: "mobile-hint-mismatch", weight: 45, detail: `${claimed} with mobile ?1` });
+  } else if (claimed === "ios" && /iphone|ipod/i.test(ua) && mobileHint === "?0") {
+    signals.push({ id: "mobile-hint-mismatch", weight: 45, detail: "iPhone with mobile ?0" });
+  }
+
   const fetchMode = firstToken(headers.get("sec-fetch-mode"));
   // Click của người là điều hướng ("navigate"). `cors`/`no-cors` là fetch()/XHR do script gọi.
   if (fetchMode && fetchMode !== "navigate" && fetchMode !== "same-origin") {
     signals.push({ id: "programmatic-fetch", weight: 30, detail: fetchMode });
+  }
+
+  const fetchDest = firstToken(headers.get("sec-fetch-dest"));
+  // Điều hướng thật có dest document/iframe/frame/embed/object/fencedframe; `empty` (fetch(), preload/prefetch)
+  // không chứng minh được đó không phải điều hướng nên cũng không chấm. (Speculation-rules prefetch trong Chromium gửi dest `document` + `Sec-Purpose: prefetch`.)
+  // Chỉ dest KHÔNG THỂ là một điều hướng (script, image, font…)
+  // đi kèm mode navigate mới mâu thuẫn; hoặc dest document mà mode là cors/no-cors.
+  if (fetchMode === "navigate" && fetchDest && NON_NAVIGABLE_DEST.has(fetchDest)) {
+    signals.push({ id: "fetch-dest-mismatch", weight: 45, detail: `mode:navigate with dest:${fetchDest}` });
+  } else if (fetchDest === "document" && fetchMode && fetchMode !== "navigate" && fetchMode !== "same-origin") {
+    signals.push({ id: "fetch-dest-mismatch", weight: 45, detail: `dest:document with mode:${fetchMode}` });
+  }
+
+  const correlated = signals.filter((s) => CORRELATED_UA_HINT.has(s.id));
+  if (correlated.length > 1) {
+    const keep = correlated[0];
+    for (let i = signals.length - 1; i >= 0; i--) {
+      if (signals[i] !== keep && CORRELATED_UA_HINT.has(signals[i].id)) signals.splice(i, 1);
+    }
+    keep.detail = `${keep.detail ?? ""} (+${correlated.length - 1} tín hiệu cùng nguyên nhân đã gộp)`.trim();
   }
 
   // ---- Tín hiệu "VẮNG header": chỉ cho UA trình duyệt sạch. Crawler thật (Googlebot…) vắng chúng một

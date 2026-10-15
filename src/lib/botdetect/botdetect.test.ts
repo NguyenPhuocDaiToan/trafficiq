@@ -1150,3 +1150,82 @@ describe("vòng 22", () => {
     }
   });
 });
+
+describe("phản biện sau vòng 23 — header mới", () => {
+  const FF = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0";
+  const sc = (extra: Record<string, string>) => assessRequestSync({ headers: humanChrome(extra) });
+  it("extension đổi UA sang Firefox (hint Chromium) chỉ bị flag, không tới ngưỡng rate-limit/challenge", () => {
+    const a = sc({ "user-agent": FF });
+    assert.ok(a.score >= 30 && a.score < 60, `score ${a.score}`);
+    assert.ok(a.signals.some((s) => s.id === "client-hints-brand-mismatch"));
+  });
+  it("điều hướng thật có sec-fetch-dest empty/embed/frame/object (prefetch, <embed>) không bị chấm mismatch", () => {
+    for (const dest of ["empty", "embed", "frame", "object", "fencedframe", "iframe", "document"]) {
+      assert.equal(sc({ "sec-fetch-dest": dest }).signals.some((s) => s.id === "fetch-dest-mismatch"), false, dest);
+    }
+    for (const dest of ["script", "image", "font", "style", "worker"]) {
+      assert.equal(sc({ "sec-fetch-dest": dest }).signals.some((s) => s.id === "fetch-dest-mismatch"), true, dest);
+    }
+  });
+  it("ASN Cloudflare (13335: Private Relay/WARP) không cộng điểm datacenter", () => {
+    assert.equal(sc({ "x-vercel-ip-as-number": "13335" }).signals.some((s) => s.id === "datacenter-asn"), false);
+    assert.equal(sc({ "x-vercel-ip-as-number": "16509" }).signals.some((s) => s.id === "datacenter-asn"), true);
+  });
+  it("regex Safari tuyến tính: UA 'Version/1 ' lặp lại 256KB chấm điểm dưới 300ms", () => {
+    const ua = "Mozilla/5.0 " + "Version/1 ".repeat(25_600);
+    let best = Infinity;
+    for (let i = 0; i < 3; i++) {
+      const t = performance.now();
+      assessRequestSync({ headers: humanChrome({ "user-agent": ua }) });
+      best = Math.min(best, performance.now() - t);
+    }
+    assert.ok(best < 300, `${best.toFixed(0)}ms`);
+  });
+});
+
+describe("vòng 24 — nhãn Twitter In-App", () => {
+  it("bot có chữ 'twitter' không bị gán nhãn Twitter In-App; app thật của người vẫn được gán", () => {
+    for (const ua of ["Twitterbot/1.0", "TelegramBot (like TwitterBot)", "Lkx-TraversalHttpPlugin/0.0.1 (+https://leakix.net/, +https://twitter.com/HaboubiAnis)"]) {
+      assert.notEqual(parseUserAgent(ua).browser, "Twitter In-App", ua);
+    }
+    for (const ua of [
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Twitter for iPhone",
+      "Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UD1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 TwitterAndroid",
+    ]) {
+      assert.equal(parseUserAgent(ua).browser, "Twitter In-App", ua);
+    }
+  });
+});
+
+describe("vòng 25 — gộp tín hiệu cùng nguyên nhân, teoma", () => {
+  const IPHONE_SAFARI = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
+  const MAC_SAFARI = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15";
+  const LINUX_FF = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0";
+  it("UA bị đổi (extension) trên Chrome Windows chỉ nhận MỘT tín hiệu client-hint, điểm dưới 60", () => {
+    for (const ua of [IPHONE_SAFARI, MAC_SAFARI, LINUX_FF]) {
+      const a = assessRequestSync({ headers: humanChrome({ "user-agent": ua }) });
+      const hint = a.signals.filter((s) => ["client-hints-brand-mismatch", "platform-mismatch", "mobile-hint-mismatch"].includes(s.id));
+      assert.equal(hint.length, 1, `${ua}: ${hint.map((s) => s.id).join(",")}`);
+      assert.ok(a.score < 60, `${ua}: ${a.score}`);
+    }
+  });
+  it("'TeomaBar' (thanh công cụ của người dùng) không bị chặn; crawler Teoma thật vẫn bị bắt", () => {
+    assert.equal(isDeclaredBotUa("Mozilla/4.0 (compatible; MSIE 6.0; Windows 98; TeomaBar 2.01; Wysigot 5.4)"), false);
+    assert.equal(isDeclaredBotUa("Mozilla/2.0 (compatible; Ask Jeeves/Teoma)"), true);
+  });
+});
+
+describe("vòng 26 — ASN, email trong đoạn nền tảng", () => {
+  const sc = (extra: Record<string, string>) => assessRequestSync({ headers: humanChrome(extra) });
+  it("AS54888 (Twitter) không bị coi là datacenter; AS54825 (Equinix Metal) thì có", () => {
+    assert.equal(sc({ "x-vercel-ip-as-number": "54888" }).signals.some((s) => s.id === "datacenter-asn"), false);
+    assert.equal(sc({ "x-vercel-ip-as-number": "54825" }).signals.some((s) => s.id === "datacenter-asn"), true);
+  });
+  it("email liên hệ trong đoạn nền tảng Android không bị làm trống (vẫn là crawler tự khai); tên máy thường thì có", () => {
+    const droid = (inner: string) => `Mozilla/5.0 (Linux; Android 10; ${inner}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36`;
+    assert.equal(isDeclaredBotUa(droid("contact@example.com")), true);
+    assert.equal(isDeclaredBotUa(droid("K [at]example.com")), true);
+    assert.equal(isDeclaredBotUa(droid("SM-G991B")), false);
+    assert.equal(isDeclaredBotUa(droid("M bot 54")), false);
+  });
+});

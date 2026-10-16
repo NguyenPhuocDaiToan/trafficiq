@@ -12,6 +12,7 @@ import {
 } from "@/lib/db/collections";
 import { isDuplicateKeyError } from "@/lib/tracking/emit";
 import { sanitizeLandingBody } from "@/lib/landing/sanitize-body";
+import { ogVersion } from "@/lib/landing/share-link";
 import { invalidateRouteCache } from "@/lib/redirect/resolve";
 import { slugify } from "@/lib/slug";
 import {
@@ -258,7 +259,7 @@ export async function updateCampaign(
   // nào phải revalidate.
   const before = await col.findOne(
     { _id: new ObjectId(data.id) },
-    { projection: { slug: 1, token: 1 } },
+    { projection: { slug: 1, token: 1, og: 1 } },
   );
   if (!before) return { ok: false, error: "Không tìm thấy chiến dịch" };
 
@@ -312,6 +313,17 @@ export async function updateCampaign(
     throw err;
   }
 
+  // Thẻ chia sẻ (tiêu đề/mô tả/ảnh) có đổi không? Nếu có, link ĐÃ đăng trước đây có thể còn hiện
+  // thẻ cũ ở X/Facebook (họ lưu theo URL) — người dùng chỉ đi gửi link nên phải được báo ngay lúc
+  // lưu, cùng mã mới để copy lại. Xem `lib/landing/share-link.ts`.
+  const versionBefore = before.og ? ogVersion(before.og) : undefined;
+  const versionAfter = ogVersion({
+    title: data.ogTitle,
+    description: data.ogDescription,
+    imageUrl: optional(data.ogImageUrl),
+  });
+  const cardChanged = versionBefore !== undefined && versionBefore !== versionAfter;
+
   const slugChanged = before.slug !== data.slug;
   if (slugChanged) invalidateRouteCache(before.token);
 
@@ -319,11 +331,14 @@ export async function updateCampaign(
   revalidatePath(`/c/${data.slug}`);
   if (slugChanged) revalidatePath(`/c/${before.slug}`);
 
+  const saved = slugChanged
+    ? `Đã lưu. Đường dẫn đổi thành /c/${data.slug} — link /c/${before.slug} đã chia sẻ trước đây giờ không còn hoạt động.`
+    : "Đã lưu thay đổi.";
   return {
     ok: true,
-    message: slugChanged
-      ? `Đã lưu. Đường dẫn đổi thành /c/${data.slug} — link /c/${before.slug} đã chia sẻ trước đây giờ không còn hoạt động.`
-      : "Đã lưu thay đổi.",
+    message: cardChanged
+      ? `${saved} Thẻ chia sẻ đã đổi: dùng link có đuôi ?v=${versionAfter} khi đăng lên X/Facebook. Link đã đăng trước đây có thể còn hiện thẻ cũ.`
+      : saved,
   };
 }
 

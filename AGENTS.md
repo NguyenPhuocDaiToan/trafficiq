@@ -423,6 +423,22 @@ tại chỗ trước.
     đối. Chưa có dọn rác: ảnh bị thay thế vẫn nằm trên đĩa. Upload cần JS — dán link vẫn chạy
     khi JS chưa tải.
 
+20. **Link chia sẻ = `/go/<token>?v=<mã thẻ>` — token KHÔNG BAO GIỜ đổi, đổi `?v=` mới làm mới thẻ.**
+    X/Facebook/Zalo lưu thẻ chia sẻ (tiêu đề, mô tả, ảnh) THEO URL trong nhiều ngày và không có cách
+    xoá từ phía mình; admin đổi ảnh xong thì link đã gửi vẫn hiện ảnh cũ, trong khi người dùng hệ thống
+    chỉ đi gửi link. Vì vậy mọi nơi admin hiện link theo dõi (`/admin/campaigns`, trang sửa,
+    `/admin/tong-quan`) hiện link có đuôi `?v=`, tính bằng `shareUrl()` (`src/lib/landing/share-link.ts`)
+    từ CHÍNH nội dung thẻ (hash của title + description + imageUrl). Đổi một trong ba → mã đổi → URL
+    mới → nền tảng lấy thẻ mới. Không có bộ đếm phiên bản nào để quên tăng, và bật/tắt trạng thái, đổi
+    đích, sửa landing không làm link đổi. `updateCampaign` báo ngay lúc lưu khi thẻ đổi kèm mã mới.
+
+    KHÔNG tạo lại `token` để "làm mới link": nó là link đã đem đi chạy traffic, mọi `clickEvent` lịch sử
+    neo vào campaign qua nó, và link cũ sẽ chết. `?v=` là tham số tuỳ chọn mà `/go` bỏ qua khi redirect
+    và `buildTargetUrl` không chuyển tiếp cho advertiser, nên link cũ không có đuôi vẫn chạy — chỉ là
+    thẻ của nó có thể còn bản cũ ở phía nền tảng. Card trả cho bot ở `/go` phản chiếu `?v=` vào
+    `og:url` (không vào `canonical`, vẫn là `/c/[slug]` sạch): nền tảng nào lưu thẻ theo `og:url` thì
+    mới thấy URL mới. Giá trị `?v=` đi vào HTML nên chỉ nhận đúng dạng mã (`parseShareVersion`).
+
 ---
 
 ## Commands
@@ -435,6 +451,7 @@ npm run lint
 npm run check:contrast   # gate WCAG cho design token
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
+npm run test:share       # mã ?v= của link chia sẻ và og:url ở /go
 npm run test:media       # ảnh tải lên: nén/độ nét, bảo mật route upload, ba driver lưu trữ (disk/vercel/s3)
 npm run test:botdetect   # unit test lib/botdetect (FCrDNS, điểm, rate limit, PoW)
 npm run check:botdetect-live  # FCrDNS với DNS thật (cần mạng, không nằm trong CI)

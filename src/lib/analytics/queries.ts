@@ -1,3 +1,4 @@
+import { ogVersion } from "@/lib/landing/share-link";
 import type { ObjectId } from "mongodb";
 import { unstable_cache } from "next/cache";
 import { campaigns, clickEvents, conversions } from "@/lib/db/collections";
@@ -162,6 +163,8 @@ export interface CampaignRow {
   name: string;
   slug: string;
   token: string;
+  /** Mã thẻ chia sẻ hiện tại, để dựng link `?v=` — xem `lib/landing/share-link.ts`. */
+  shareVersion: string;
   status: string;
   clicks: number;
   conversions: number;
@@ -175,7 +178,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
 
   const [allCampaigns, clickRows, conversionRows] = await Promise.all([
     campaignsCol
-      .find({}, { projection: { name: 1, slug: 1, token: 1, status: 1 } })
+      .find({}, { projection: { name: 1, slug: 1, token: 1, status: 1, og: 1 } })
       .sort({ createdAt: -1 })
       .toArray(),
     clicksCol
@@ -212,6 +215,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
         name: campaign.name,
         slug: campaign.slug,
         token: campaign.token,
+        shareVersion: ogVersion(campaign.og),
         status: campaign.status,
         clicks,
         conversions: convCount,

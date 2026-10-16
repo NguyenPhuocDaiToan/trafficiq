@@ -170,9 +170,13 @@ export default async function CampaignsPage({
                         Link theo dõi (link đem đi chạy traffic)
                       </dt>
                       <dd>
-                        <code className="font-mono text-xs">
-                          {baseUrl}/go/{campaign.token}
+                        <code className="font-mono text-xs break-all">
+                          {baseUrl}/go/{campaign.token}?v={campaign.shareVersion}
                         </code>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Đuôi <code className="font-mono">?v=</code> tự đổi khi tiêu đề, mô tả hoặc
+                          ảnh chia sẻ đổi, để X/Facebook lấy thẻ mới. Link không có đuôi vẫn chạy.
+                        </p>
                       </dd>
                     </div>
                   </dl>

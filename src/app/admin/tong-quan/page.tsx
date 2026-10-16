@@ -164,7 +164,7 @@ export default async function DashboardPage({
                     </td>
                     <td className="px-3 py-2">
                       <code className="font-mono text-xs text-muted-foreground">
-                        {`${baseUrl}/go/${row.token}`}
+                        {`${baseUrl}/go/${row.token}?v=${row.shareVersion}`}
                       </code>
                     </td>
                     <TdNum>{row.clicks}</TdNum>

@@ -17,6 +17,7 @@
     "check:botdetect-live": "tsx scripts/check-botdetect-live.ts",
     "check:probe-browser": "tsx scripts/check-probe-browser.ts",
     "test:botdetect": "tsx --test --test-concurrency=1 src/lib/botdetect/botdetect.test.ts src/lib/botdetect/independent.test.ts src/lib/botdetect/round2.test.ts src/lib/botdetect/round3.test.ts src/lib/botdetect/round4.test.ts src/lib/botdetect/round5.test.ts src/lib/botdetect/round6.test.ts src/lib/botdetect/round7.test.ts src/lib/botdetect/round8.test.ts src/lib/botdetect/twitter.test.ts src/lib/botdetect/round9.test.ts",
+    "test:share": "tsx --test src/lib/landing/share-link.test.ts",
     "test:media": "tsx --test --test-concurrency=1 src/lib/media/media.test.ts src/lib/media/upload-route.test.ts src/lib/media/storage.test.ts src/lib/media/client-shrink.test.ts",
     "gen:icons": "node scripts/generate-icons.mjs",
     "gen:thumbs": "tsx scripts/generate-thumbs.ts",

@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { assessRequestSync } from "@/lib/botdetect";
 import { publicBaseUrl } from "@/lib/env";
 import { buildOgCard, ogCardHeadHtml } from "@/lib/landing/og-card";
+import { parseShareVersion } from "@/lib/landing/share-link";
 import {
   buildTargetUrl,
   pickCandidate,
@@ -82,6 +83,8 @@ export async function GET(
       baseUrl: publicBaseUrl(),
       // resolveToken chỉ khớp campaign `active`, nên tới được đây là active.
       index: true,
+      // Phản chiếu `?v=` của link được chia sẻ vào og:url (xem `share-link.ts`).
+      version: parseShareVersion(request.nextUrl.searchParams.get("v")),
     });
 
     return new Response(ogCardHeadHtml(card), {

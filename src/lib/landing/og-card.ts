@@ -30,6 +30,14 @@ export interface OgCard {
   url: string;
   /** Campaign chưa active = bản preview → không cho index. */
   index: boolean;
+  /**
+   * Mã phiên bản của link chia sẻ (`?v=` mà người gửi dùng, xem `share-link.ts`). Chỉ đi vào
+   * `og:url`, KHÔNG đi vào `canonical`/refresh: nền tảng nào lưu thẻ theo `og:url` (Facebook chắc
+   * chắn, X thì không rõ) sẽ thấy một URL mới mỗi khi nội dung thẻ đổi — nếu không, mọi biến thể
+   * `/go/<token>?v=…` đều khai cùng một `og:url` và đổi `?v=` sẽ vô tác dụng. Canonical vẫn là
+   * `/c/[slug]` sạch để không tạo URL trùng nội dung trong chỉ mục tìm kiếm.
+   */
+  version?: string;
 }
 
 export function buildOgCard(params: {
@@ -37,6 +45,7 @@ export function buildOgCard(params: {
   slug: string;
   baseUrl: string;
   index: boolean;
+  version?: string;
 }): OgCard {
   return {
     title: params.og.title,
@@ -46,6 +55,7 @@ export function buildOgCard(params: {
     imageUrl: absoluteImageUrl(params.og.imageUrl, params.baseUrl),
     url: `${params.baseUrl}/c/${params.slug}`,
     index: params.index,
+    version: params.version,
   };
 }
 
@@ -104,7 +114,7 @@ export function ogCardHeadHtml(card: OgCard): string {
     `<link rel="canonical" href="${esc(card.url)}">`,
     card.index ? "" : `<meta name="robots" content="noindex, nofollow">`,
     `<meta property="og:type" content="website">`,
-    `<meta property="og:url" content="${esc(card.url)}">`,
+    `<meta property="og:url" content="${esc(card.version ? `${card.url}?v=${card.version}` : card.url)}">`,
     `<meta property="og:title" content="${esc(card.title)}">`,
     `<meta property="og:description" content="${esc(card.description)}">`,
     card.imageUrl ? `<meta property="og:image" content="${esc(card.imageUrl)}">` : "",

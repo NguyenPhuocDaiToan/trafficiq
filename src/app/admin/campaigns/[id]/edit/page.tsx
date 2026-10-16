@@ -1,3 +1,4 @@
+import { shareUrl } from "@/lib/landing/share-link";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
@@ -54,10 +55,13 @@ export default async function EditCampaignPage({
             danh sách chiến dịch
           </Link>
           , không đổi ở đây. Link theo dõi{" "}
-          <code className="font-mono text-xs">
-            {baseUrl}/go/{campaign.token}
-          </code>{" "}
-          không bao giờ thay đổi khi sửa — link đã đem đi chạy traffic vẫn sống.
+          <code className="font-mono text-xs break-all">
+            {shareUrl(baseUrl, campaign.token, campaign.og)}
+          </code>
+          . Phần <code className="font-mono text-xs">/go/{campaign.token}</code> không bao giờ
+          thay đổi khi sửa — link đã đem đi chạy traffic vẫn sống. Đuôi{" "}
+          <code className="font-mono text-xs">?v=</code> tự đổi khi tiêu đề, mô tả hoặc ảnh chia sẻ
+          đổi, để X/Facebook không dùng thẻ cũ đã lưu; sửa xong thì copy lại link ở đây.
         </p>
       </div>
 

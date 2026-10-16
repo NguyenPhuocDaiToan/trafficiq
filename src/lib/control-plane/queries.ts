@@ -1,3 +1,4 @@
+import { ogVersion } from "@/lib/landing/share-link";
 import { ObjectId } from "mongodb";
 import {
   advertisers,
@@ -88,6 +89,8 @@ export interface CampaignView {
   name: string;
   slug: string;
   token: string;
+  /** Mã thẻ chia sẻ hiện tại, để dựng link `?v=` — xem `lib/landing/share-link.ts`. */
+  shareVersion: string;
   status: EntityStatus;
   advertiserName: string;
   offers: OfferView[];
@@ -101,6 +104,7 @@ export async function listCampaigns(): Promise<CampaignView[]> {
       name: string;
       slug: string;
       token: string;
+      og: CampaignOg;
       status: EntityStatus;
       advertiser: { name: string }[];
       offerList: {
@@ -150,6 +154,7 @@ export async function listCampaigns(): Promise<CampaignView[]> {
     name: doc.name,
     slug: doc.slug,
     token: doc.token,
+    shareVersion: ogVersion(doc.og),
     status: doc.status,
     advertiserName: doc.advertiser[0]?.name ?? "(đã xóa)",
     offers: doc.offerList.map((offer) => ({

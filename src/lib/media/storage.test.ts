@@ -273,6 +273,27 @@ describe("driver vercel (API Vercel Blob giả qua VERCEL_BLOB_API_URL)", () => 
     }
   });
 
+  it("store Private (chọn nhầm lúc tạo) → StorageNotConfiguredError nói rõ cần Public", async () => {
+    // Lỗi thật do Vercel trả khi gọi `put` public vào store private: mã `bad_request`, câu chữ được giữ
+    // nguyên (đã bắt bằng một request thật tới store private).
+    const srv = await fakeServer(() => ({
+      status: 400,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        error: { code: "bad_request", message: "Cannot use public access on a private store. The store is configured with private access." },
+      }),
+    }));
+    process.env.VERCEL_BLOB_API_URL = srv.base;
+    try {
+      await assert.rejects(
+        saveImage(await image(), { driver: "vercel", token: TOKEN }),
+        (err: unknown) => err instanceof StorageNotConfiguredError && /Public/.test(err.message) && /Private/.test(err.message),
+      );
+    } finally {
+      await srv.close();
+    }
+  });
+
   it("API trả 403 → ném lỗi", async () => {
     const srv = await fakeServer(() => ({
       status: 403,

@@ -104,6 +104,14 @@ Nếu hai kết quả lệch nhau, lấy theo `--domain style` và ghi lý do v�
     chuyên mục) và KHÔNG dùng ở `/admin`.
   - `font-mono` (**JetBrains Mono**): **chỉ** cột số liệu (`tabular-nums`), code,
     token/URL — **không dùng cho heading**. Ngày tháng không phải cột số.
+  - **Chữ Ả Rập** (nội dung có thể có tiếng Ả Rập): **Noto Sans Arabic** cho body/giao diện,
+    **Noto Naskh Arabic** cho nhan đề — là hai `@font-face` TỰ HOST ở đầu `globals.css` (file ở
+    `src/app/fonts/`), KHÔNG qua `next/font`. Đừng "đơn giản hoá" bằng `Noto_Sans_Arabic` của next/font: nó vẽ
+    luôn chữ Việt bằng glyph Latin của font Ả Rập, và font dự phòng Arial của nó (không tắt được trên Turbopack)
+    chiếm chữ Ả Rập. Thứ tự trong `--font-sans`/`--font-display` là luật: font Ả Rập ĐẦU, font Latin/Việt sau,
+    từ khoá chung (`sans-serif`/`serif`) chỉ ở CUỐI. Giải thích và số đo: `globals.css` (khối `--font-sans`) và
+    MASTER.md § Typography "Đa ngôn ngữ". Mọi `font-family` đi qua `font-sans`/`font-display`/`font-mono` —
+    không hard-code, không dùng thẳng biến `--font-be-vietnam-pro`…
 
   Đừng quay lại Fira Code: nó không có subset `vietnamese` nên chữ có dấu thanh
   (U+1EA0–1EF9) rơi sang font hệ thống ngay giữa từ. Lý do đầy đủ + cách kiểm
@@ -121,6 +129,7 @@ Nếu hai kết quả lệch nhau, lấy theo `--domain style` và ghi lý do v�
 
 ```bash
 npm run check:contrast   # WCAG: 4.5:1 text, 3:1 UI. PHẢI pass.
+npm run check:fonts      # font: subset vietnamese, thứ tự ngăn xếp Ả Rập, luật font-display/font-mono. PHẢI pass.
 npm run lint
 npm run build
 ```
@@ -470,6 +479,8 @@ npm run build            # production build (đã bao gồm typecheck)
 npm run typecheck        # tsc --noEmit
 npm run lint
 npm run check:contrast   # gate WCAG cho design token
+npm run check:fonts      # gate font chữ (Việt · English · Ả Rập), xem Bất biến UI/UX § Font
+npm run test:fonts       # test của chính gate font (các cấu hình sai đã gặp thật)
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
 npm run test:guide       # bài học coach mark: dữ liệu hợp lệ và mọi data-tour có thật trên giao diện

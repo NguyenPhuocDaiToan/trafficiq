@@ -334,15 +334,15 @@ const POST_MOTIF: Record<string, React.ReactNode> = {
     <>
       <rect x="44" y="74" width="52" height="34" />
       <path d="M38 108h64" />
-      <text x="70" y="96" fill="currentColor" fontSize="13" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">1</text>
+      <text x="70" y="96" fill="currentColor" className="font-sans font-bold" fontSize="13" textAnchor="middle">1</text>
 
       <rect x="138" y="76" width="44" height="32" rx="2" />
       <circle cx="148" cy="92" r="3" />
       <path d="M156 92h18" />
-      <text x="160" y="68" fill="currentColor" fontSize="13" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">2</text>
+      <text x="160" y="68" fill="currentColor" className="font-sans font-bold" fontSize="13" textAnchor="middle">2</text>
 
       <path d="M220 94a18 18 0 0 1 30-12 14 14 0 0 1 18 14 12 12 0 0 1-8 12h-40a14 14 0 0 1 0-14z" />
-      <text x="242" y="94" fill="currentColor" fontSize="13" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">3</text>
+      <text x="242" y="94" fill="currentColor" className="font-sans font-bold" fontSize="13" textAnchor="middle">3</text>
 
       <g className="text-accent">
         <path d="M102 91h30" strokeWidth={2.5} />

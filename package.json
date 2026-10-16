@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "check:fonts": "node scripts/check-fonts.mjs",
+    "test:fonts": "node --test scripts/check-fonts.test.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:content": "tsx scripts/check-content.ts",
     "check:bot": "tsx scripts/check-bot-detection.ts",

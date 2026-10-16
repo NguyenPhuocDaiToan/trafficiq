@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chọn font — TrafficIQ (Việt · English · العربية)</title>
+<!--
+  TRANG THỬ FONT (công cụ thiết kế, không thuộc app). Mở trực tiếp bằng trình duyệt; cần mạng.
+  Màu lấy ĐÚNG từ src/app/globals.css nên khác biệt chỉ đến từ FONT.
+
+  Cách website đa ngôn ngữ chọn font: GHÉP HAI FONT trong cùng `font-family`:
+      font-family: <font Latin/Việt>, <font Ả Rập>, system-ui;
+  Trình duyệt tự dùng font đầu cho chữ Latin/Việt và font sau cho chữ Ả Rập (theo glyph có trong font),
+  nên không cần đổi font theo ngôn ngữ. Hầu hết font Ả Rập KHÔNG có dấu tiếng Việt (đã kiểm bằng
+  next/font font-data.json) — vì thế font Việt phải đứng TRƯỚC trong danh sách.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Public+Sans:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&family=Source+Sans+3:ital,wght@0,400..700;1,400..700&family=Noto+Sans:ital,wght@0,400..700;1,400..700&family=Inter:wght@400..700&family=Nunito+Sans:ital,wght@0,400..800;1,400..800&family=Lexend:wght@400..700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Literata:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&family=Fraunces:wght@700&family=JetBrains+Mono:wght@400..700&family=IBM+Plex+Mono:wght@400;600&family=Roboto+Mono:wght@400..700&family=Noto+Sans+Mono:wght@400..700&family=Noto+Sans+Arabic:wght@400..700&family=Noto+Naskh+Arabic:wght@400..700&family=Noto+Kufi+Arabic:wght@400..700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400..700&family=Tajawal:wght@400;500;700&family=Readex+Pro:wght@400..700&family=Almarai:wght@400;700&family=Amiri:wght@400;700&family=Markazi+Text:wght@400..700&family=Vazirmatn:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --f-display:'Fraunces',Georgia,serif; --f-body:'Be Vietnam Pro',system-ui,sans-serif; --f-ui:'Be Vietnam Pro',system-ui,sans-serif; --f-mono:'JetBrains Mono',monospace;
+  --ar-display:'Noto Naskh Arabic',serif; --ar-body:'Noto Sans Arabic',sans-serif;
+  --body-size:18px; --body-lh:1.7; --ui-size:14px; --ar-scale:1.1;
+  --a-bg:#fafafa; --a-fg:#09090b; --a-card:#ffffff; --a-muted:#ececee; --a-mfg:#52525b; --a-border:#e4e4e7; --a-primary:#18181b; --a-accent:#be185d; --a-input:#71717a; --a-success:#166534; --a-warning:#854d0e;
+  --p-bg:#fafafa; --p-fg:#0a0a0a; --p-mfg:#525252; --p-border:#e5e5e5; --p-accent:#c2410c; --p-rule:#0a0a0a;
+  --lab-bg:#f4f4f5; --lab-fg:#18181b; --lab-card:#fff; --lab-bd:#d4d4d8;
+}
+html[data-theme="dark"]{
+  --a-bg:#09090b; --a-fg:#fafafa; --a-card:#18181b; --a-muted:#27272a; --a-mfg:#a1a1aa; --a-border:#3f3f46; --a-primary:#fafafa; --a-accent:#f472b6; --a-success:#4ade80; --a-warning:#facc15;
+  --p-bg:#09090b; --p-fg:#fafafa; --p-mfg:#a1a1aa; --p-border:#3f3f46; --p-accent:#fb923c; --p-rule:#a1a1aa;
+  --lab-bg:#0c0c0e; --lab-fg:#fafafa; --lab-card:#18181b; --lab-bd:#3f3f46;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--lab-bg);color:var(--lab-fg);font:14px/1.5 system-ui,sans-serif}
+.bar{position:sticky;top:0;z-index:20;background:var(--lab-card);border-bottom:1px solid var(--lab-bd);padding:12px 16px;display:grid;gap:10px}
+.bar h1{margin:0;font:700 16px system-ui}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button,.copy,.lang button{font:600 12px system-ui;border:1px solid var(--lab-bd);background:var(--lab-card);color:var(--lab-fg);border-radius:8px;padding:6px 10px;cursor:pointer}
+.presets button:hover,.copy:hover,.lang button:hover{border-color:var(--lab-fg)}
+.presets button.on,.lang button.on{background:var(--lab-fg);color:var(--lab-bg);border-color:var(--lab-fg)}
+.lang{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lang span{font:700 11px system-ui;color:#71717a;text-transform:uppercase;letter-spacing:.05em}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+.ctrls label{display:grid;gap:3px;font:600 11px system-ui;color:#71717a;text-transform:uppercase;letter-spacing:.05em}
+.ctrls select,.ctrls input[type=range]{font:13px system-ui;min-width:140px}
+.ctrls select{padding:5px 6px;border:1px solid var(--lab-bd);border-radius:6px;background:var(--lab-card);color:var(--lab-fg)}
+.ctrls .grp{display:flex;gap:10px;flex-wrap:wrap;padding-inline-end:14px;border-inline-end:1px solid var(--lab-bd)}
+.out{font:12px ui-monospace,monospace;color:#71717a;word-break:break-word}
+.wrap{display:grid;gap:18px;padding:18px 16px 60px;max-width:1500px;margin:0 auto}
+@media(min-width:1100px){.wrap{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.wide{grid-column:1/-1}}
+.label{font:700 11px system-ui;letter-spacing:.07em;text-transform:uppercase;color:#71717a;margin:0 0 6px}
+
+/* Chữ Ả Rập: font Việt/Latin đứng trước, font Ả Rập đứng sau trong cùng một danh sách. */
+.stack-display{font-family:var(--f-display),var(--ar-display),system-ui,sans-serif}
+.stack-body{font-family:var(--f-body),var(--ar-body),system-ui,sans-serif}
+.stack-ui{font-family:var(--f-ui),var(--ar-body),system-ui,sans-serif}
+/* Chữ Ả Rập cần cỡ lớn hơn Latin ~10% và giãn dòng rộng hơn để dấu không dính nhau. */
+[lang="ar"] .a-body{font-size:calc(var(--body-size)*var(--ar-scale));line-height:calc(var(--body-lh) + .2)}
+[lang="ar"] .a-h1{line-height:1.45;letter-spacing:0}
+[lang="ar"] .a-body h2{line-height:1.5}
+[lang="ar"] .admin{font-size:calc(var(--ui-size)*var(--ar-scale))}
+
+.article{background:var(--p-bg);color:var(--p-fg);border:1px solid var(--lab-bd);border-radius:12px;overflow:hidden}
+.a-head{border-bottom:2px solid var(--p-rule);padding:14px 24px;display:flex;justify-content:space-between;align-items:baseline}
+.a-brand{font-weight:700;font-size:26px;letter-spacing:-.01em}
+.a-nav{display:flex;gap:16px;font-weight:500;font-size:14px;color:var(--p-mfg)}
+.a-main{padding:28px 24px 34px;max-width:42rem;margin:0 auto}
+.a-cat{font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--p-accent)}
+[lang="ar"] .a-cat{letter-spacing:0;font-size:14px}
+.a-h1{font-weight:700;font-size:40px;line-height:1.15;letter-spacing:-.015em;margin:8px 0 10px}
+.a-by{font-size:14px;color:var(--p-mfg);margin-bottom:22px}
+.a-by b{font-weight:600;color:var(--p-fg)}
+.a-body{font-size:var(--body-size);line-height:var(--body-lh)}
+.a-body p{margin:0 0 1.05em}
+.a-body h2{font-weight:700;font-size:1.55em;line-height:1.25;margin:1.5em 0 .5em}
+.a-body a{color:var(--p-fg);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.a-body blockquote{margin:1.2em 0;padding:.1em 1em;border-inline-start:3px solid var(--p-accent);font-style:italic;color:var(--p-mfg)}
+[lang="ar"] .a-body blockquote{font-style:normal}
+.a-body ul{padding-inline-start:1.2em;margin:0 0 1.05em}
+.a-body li{margin:.25em 0}
+.a-cap{font-size:13px;line-height:1.45;color:var(--p-mfg);border-top:1px solid var(--p-border);padding-top:8px;margin-top:20px}
+
+.admin{background:var(--a-bg);color:var(--a-fg);border:1px solid var(--lab-bd);border-radius:12px;overflow:hidden;font-size:var(--ui-size)}
+.m-nav{background:var(--a-card);border-bottom:1px solid var(--a-border);padding:8px 16px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.m-nav b{font-weight:600}
+.m-nav a{font-weight:500;color:var(--a-mfg);padding:3px 0;border-bottom:2px solid transparent}
+.m-nav a.on{color:var(--a-fg);border-color:var(--a-primary)}
+.m-body{padding:16px;display:grid;gap:14px}
+.m-h1{font-size:1.65em;font-weight:600;margin:0}
+.m-sub{color:var(--a-mfg);margin:2px 0 0;max-width:46em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{background:var(--a-card);border:1px solid var(--a-border);border-radius:12px;padding:10px 12px}
+.kpi small{display:block;font-size:.8em;letter-spacing:.05em;text-transform:uppercase;color:var(--a-mfg)}
+[lang="ar"] .kpi small{letter-spacing:0;text-transform:none;font-size:.9em}
+.kpi .n{font-family:var(--f-mono),monospace;font-size:1.7em;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px;direction:ltr;text-align:start}
+.kpi .h{font-size:.82em;color:var(--a-mfg);margin-top:2px}
+.card{background:var(--a-card);border:1px solid var(--a-border);border-radius:12px;padding:14px}
+.card h3{margin:0 0 8px;font-size:1.1em;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{text-align:start;font-size:.8em;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--a-mfg);padding:6px 8px}
+[lang="ar"] th{letter-spacing:0;text-transform:none;font-size:.9em}
+th.r,td.r{text-align:end}
+td{padding:7px 8px;border-top:1px solid var(--a-border)}
+td.r{font-family:var(--f-mono),monospace;font-variant-numeric:tabular-nums;direction:ltr}
+.badge{font-size:.85em;font-weight:500;border-radius:5px;padding:2px 8px;display:inline-block}
+.b-ok{background:color-mix(in srgb,var(--a-success) 15%,transparent);color:var(--a-success)}
+.b-wait{background:color-mix(in srgb,var(--a-warning) 15%,transparent);color:var(--a-warning)}
+.b-off{background:var(--a-muted);color:var(--a-mfg)}
+code{font-family:var(--f-mono),monospace;font-size:.86em;color:var(--a-mfg);direction:ltr;unicode-bidi:isolate}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld label{display:block;font-weight:500;margin-bottom:3px}
+.fld label i{font-style:normal;font-weight:400;color:var(--a-mfg);font-size:.85em;margin-inline-start:4px}
+.inp{width:100%;border:1px solid var(--a-input);background:var(--a-card);color:var(--a-fg);border-radius:8px;padding:7px 10px;font:inherit}
+.hint{font-size:.85em;color:var(--a-mfg);margin-top:3px}
+.btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.btn{font-weight:600;font-size:.9em;border-radius:8px;padding:7px 14px;border:1px solid var(--a-primary);background:transparent;color:var(--a-primary)}
+.btn.cta{background:var(--a-accent);border-color:var(--a-accent);color:#fff}
+.ok{font-size:.9em;color:var(--a-success)}
+
+.small{background:var(--a-card);color:var(--a-fg);border:1px solid var(--lab-bd);border-radius:12px;padding:16px;display:grid;gap:8px}
+.small p{margin:0}
+.stress{font-weight:700;font-size:34px;line-height:1.1;overflow:hidden;background:color-mix(in srgb,#eab308 14%,transparent);outline:1px dashed #a16207;padding:2px 4px}
+.stress.b{font-weight:600;font-size:26px}
+.mixrow{padding:8px 0;border-top:1px solid var(--a-border);display:grid;gap:2px}
+.mixrow small{font:600 11px system-ui;color:#71717a}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>Chọn font cho TrafficIQ — Tiếng Việt · English · العربية</h1>
+  <div class="presets" id="presets"></div>
+  <div class="lang"><span>Ngôn ngữ xem thử</span><button data-l="vi" class="on">Tiếng Việt</button><button data-l="en">English</button><button data-l="ar">العربية (phải → trái)</button></div>
+  <div class="ctrls">
+    <div class="grp">
+      <label>Tiêu đề · Latin/Việt<select id="s-display"></select></label>
+      <label>Thân bài · Latin/Việt<select id="s-body"></select></label>
+      <label>Giao diện admin · Latin/Việt<select id="s-ui"></select></label>
+      <label>Số liệu / code<select id="s-mono"></select></label>
+    </div>
+    <div class="grp">
+      <label>Tiêu đề · Ả Rập<select id="s-ardisplay"></select></label>
+      <label>Thân bài &amp; giao diện · Ả Rập<select id="s-arbody"></select></label>
+    </div>
+    <label>Cỡ chữ bài <span id="v-size"></span><input id="r-size" type="range" min="15" max="21" step="0.5" value="18"></label>
+    <label>Giãn dòng <span id="v-lh"></span><input id="r-lh" type="range" min="1.4" max="2" step="0.05" value="1.7"></label>
+    <label>Cỡ chữ admin <span id="v-ui"></span><input id="r-ui" type="range" min="12" max="16" step="0.5" value="14"></label>
+    <label>Phóng chữ Ả Rập <span id="v-ar"></span><input id="r-ar" type="range" min="1" max="1.25" step="0.025" value="1.1"></label>
+    <label>Chế độ<select id="s-theme"><option value="light">Sáng</option><option value="dark">Tối</option></select></label>
+    <button class="copy" id="copy">Sao chép lựa chọn của tôi</button>
+  </div>
+  <div class="out" id="out"></div>
+</div>
+
+<div class="wrap">
+  <div>
+    <p class="label" id="lb1"></p>
+    <div class="article" id="article">
+      <div class="a-head"><span class="a-brand stack-display" id="a-brand">InsightDaily</span><span class="a-nav stack-ui" id="a-nav"></span></div>
+      <div class="a-main">
+        <div class="a-cat stack-ui" id="a-cat"></div>
+        <h1 class="a-h1 stack-display" id="a-h1"></h1>
+        <div class="a-by stack-ui" id="a-by"></div>
+        <div class="a-body stack-body" id="a-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="label" id="lb2"></p>
+    <div class="admin stack-ui" id="admin"></div>
+  </div>
+
+  <div class="wide">
+    <p class="label">3 · Trộn ba chữ trong cùng một dòng — nhìn xem font Latin/Việt và Ả Rập có hợp nhau về cỡ chữ, độ đậm, đường cơ sở không</p>
+    <div class="small stack-body" id="mix"></div>
+  </div>
+
+  <div class="wide">
+    <p class="label">4 · Chữ nhỏ, và thử dấu chồng (khung vàng cắt chữ — dấu không được bị cụt)</p>
+    <div class="small">
+      <div class="stack-ui" id="sizes"></div>
+      <div class="stress stack-display">ỔỂỮẶẬỆỰỨỪỬ Ộ Ế Ở — Ổ cứng di động</div>
+      <div class="stress b stack-body">Ữ Ử Ự Ặ Ẩ Ễ Ệ Ợ Ỡ ổ ể ữ ặ ậ ệ ự ứ ừ ử — Trạng thái · Đã xem</div>
+      <div class="stress stack-display" dir="rtl" lang="ar" style="font-size:36px;line-height:1.6">مُتَى يَجِبُ عَلَيْكَ تَغْيِيرُ هَاتِفِكَ؟ — حَرَكَاتٌ وَتَشْكِيلٌ</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const T={
+ vi:{dir:"ltr",lang:"vi",l1:"1 · Bài viết trang công khai (đọc dài)",l2:"2 · Trang admin (dày thông tin, chữ nhỏ)",
+  nav:["Công nghệ","Tài chính","Đời sống","Giới thiệu"],cat:"Công nghệ",h1:"Khi nào nên đổi điện thoại, và khi nào chưa cần?",by:"<b>Toàn</b> · 5 phút đọc · 12 tháng 10, 2026",
+  body:`<p>Ba dấu hiệu thật cho biết máy đã đến lúc thay: pin tụt nhanh dù đã tối ưu, ứng dụng quen thuộc bắt đầu giật, và bản cập nhật bảo mật không còn về nữa. Nếu chưa gặp cả ba, bạn chưa cần đổi — hãy chờ thêm một chu kỳ khuyến mãi.</p><p>Nhiều người đổi máy vì <em>cảm giác cũ</em> chứ không vì máy hỏng. Một chiếc điện thoại tầm trung dùng ba năm vẫn <strong>đủ tốt</strong> cho gọi, nhắn tin, bản đồ và mạng xã hội.</p><h2>Pin còn bao nhiêu thì nên thay pin thay vì thay máy?</h2><p>Khi dung lượng pin còn dưới 80% và máy vẫn mượt, thay pin chỉ tốn một phần nhỏ chi phí. Hãy xem <a href="#">hướng dẫn kiểm tra sức khoẻ pin</a> trước khi quyết định.</p><blockquote>Đừng trả tiền cho thứ bạn không dùng tới — hãy trả cho thứ bạn dùng mỗi ngày.</blockquote><ul><li>Máy còn nhận cập nhật bảo mật: <strong>chưa cần đổi</strong>.</li><li>Pin dưới 80%, máy vẫn mượt: thay pin.</li><li>Ứng dụng ngân hàng không còn hỗ trợ: đã đến lúc đổi.</li></ul><div class="a-cap">Site không có ảnh; chữ là phương tiện tạo hình duy nhất.</div>`,
+  admin:{brand:"TrafficIQ",nav:["Chiến dịch","Tổng quan","URL đích","Đối tác","Hộp thư","Nhật ký","Hướng dẫn"],h1:"Tổng quan",sub:"Mỗi chiến dịch có một trang giới thiệu công khai và một link theo dõi. Trạng thái chiến dịch là công tắc chính: tạm dừng là link ngừng chạy.",
+   k:[["Lượt click","12.480","đã loại 312 lượt bot"],["Khách duy nhất","8.931","đếm theo IP đã băm"],["Chuyển đổi","214","từ postback của đối tác"],["CR","1,72%","tỷ lệ chuyển đổi"]],
+   th:["Chiến dịch","Trạng thái","Click","CR"],rows:[["Ưu đãi mở thẻ tín dụng","Đang chạy","ok","7.204","2,31%"],["Bảo hiểm sức khoẻ gia đình","Chờ duyệt","wait","0","0,00%"],["Ví điện tử — tặng 50.000đ","Tạm dừng","off","5.276","1,05%"]],
+   h3:"Chiến dịch",h3b:"Hiển thị khi chia sẻ link",f1:"Tiêu đề khi chia sẻ",f1i:"hiện trên Facebook, Zalo",f1v:"🔥 Ưu đãi demo — Nhận ngay hôm nay",f1h:"Tối đa 140 ký tự.",f2:"Ảnh khi chia sẻ",f2i:"tỉ lệ 1200×630",f2ok:"Đã tải lên · 1200×630 · 98KB",cta:"Tạo chiến dịch",b2:"Tạo và xem trước",note:"Chiến dịch mới luôn ở Chờ duyệt."},
+  mix:["Khi nào nên đổi điện thoại? · متى تغيّر هاتفك؟ · When to replace your phone?","Trạng thái: Đang chạy · الحالة: قيد التشغيل · Status: Active","12.480 lượt click · ١٢٬٤٨٠ نقرة · 12,480 clicks"],
+  sizes:["Phiên đăng nhập đã hết hạn. Tải lại trang rồi đăng nhập lại.","Hướng dẫn trang này · Tải ảnh lên · Chờ duyệt"]},
+ en:{dir:"ltr",lang:"en",l1:"1 · Public article page (long reading)",l2:"2 · Admin page (dense, small text)",
+  nav:["Technology","Finance","Lifestyle","About"],cat:"Technology",h1:"When should you replace your phone, and when can you wait?",by:"<b>Toàn</b> · 5 min read · October 12, 2026",
+  body:`<p>Three real signs tell you it is time to replace your phone: the battery drains fast even after tuning, familiar apps begin to stutter, and security updates stop arriving. If you have not hit all three, you do not need to switch — wait one more promotion cycle.</p><p>Many people replace a phone because of a <em>feeling of age</em> rather than a fault. A mid-range phone after three years is still <strong>good enough</strong> for calls, messaging, maps and social media.</p><h2>When is a new battery better than a new phone?</h2><p>If battery capacity is below 80% and the phone still feels smooth, a replacement battery costs a fraction of a new device. See the <a href="#">battery health guide</a> before you decide.</p><blockquote>Don't pay for what you won't use — pay for what you use every day.</blockquote><ul><li>Still receiving security updates: <strong>no need to switch</strong>.</li><li>Battery under 80%, phone still smooth: replace the battery.</li><li>Banking app no longer supported: time to switch.</li></ul><div class="a-cap">This site has no photos; type is the only visual medium.</div>`,
+  admin:{brand:"TrafficIQ",nav:["Campaigns","Overview","Destinations","Partners","Inbox","Log","Guide"],h1:"Overview",sub:"Each campaign has a public landing page and a tracking link. Campaign status is the main switch: pausing stops the link.",
+   k:[["Clicks","12,480","262 bot hits excluded"],["Unique visitors","8,931","counted by hashed IP"],["Conversions","214","from partner postback"],["CR","1.72%","conversion rate"]],
+   th:["Campaign","Status","Clicks","CR"],rows:[["Credit card sign-up offer","Active","ok","7,204","2.31%"],["Family health insurance","Pending","wait","0","0.00%"],["E-wallet — 50,000₫ bonus","Paused","off","5,276","1.05%"]],
+   h3:"Campaigns",h3b:"Share card",f1:"Share title",f1i:"shown on Facebook, Zalo",f1v:"Demo offer — Get it today",f1h:"Up to 140 characters.",f2:"Share image",f2i:"1200×630 ratio",f2ok:"Uploaded · 1200×630 · 98KB",cta:"Create campaign",b2:"Create and preview",note:"New campaigns always start as Pending."},
+  mix:["Khi nào nên đổi điện thoại? · متى تغيّر هاتفك؟ · When to replace your phone?","Trạng thái: Đang chạy · الحالة: قيد التشغيل · Status: Active","12.480 lượt click · ١٢٬٤٨٠ نقرة · 12,480 clicks"],
+  sizes:["Your session has expired. Reload the page and sign in again.","Guide for this page · Upload image · Pending"]},
+ ar:{dir:"rtl",lang:"ar",l1:"١ · صفحة مقال عامة (قراءة طويلة)",l2:"٢ · صفحة الإدارة (معلومات كثيفة، خط صغير)",
+  nav:["التقنية","المال","الحياة","من نحن"],cat:"التقنية",h1:"متى يجب عليك تغيير هاتفك، ومتى لا حاجة لذلك؟",by:"<b>توان</b> · 5 دقائق للقراءة · 12 أكتوبر 2026",
+  body:`<p>ثلاث علامات حقيقية تدل على أن الوقت قد حان لاستبدال هاتفك: تراجع سريع في عمر البطارية رغم تحسين الإعدادات، وبدء تقطّع التطبيقات المعتادة، وتوقف وصول تحديثات الأمان. وإن لم تلاحظ الثلاثة معًا، فلا حاجة إلى التغيير الآن — انتظر دورة العروض القادمة.</p><p>يغيّر كثيرون هواتفهم بسبب <em>شعور بأنها قديمة</em> لا لأنها تعطلت. فالهاتف المتوسط بعد ثلاث سنوات ما زال <strong>كافيًا</strong> للاتصال والمراسلة والخرائط وشبكات التواصل.</p><h2>متى يكفي استبدال البطارية بدل الهاتف؟</h2><p>إذا كانت سعة البطارية أقل من 80% وما زال الهاتف سلسًا، فإن تكلفة استبدالها جزء بسيط من ثمن جهاز جديد. اطّلع على <a href="#">دليل فحص صحة البطارية</a> قبل أن تقرر.</p><blockquote>لا تدفع ثمن ما لا تستخدمه — ادفع ثمن ما تستخدمه كل يوم.</blockquote><ul><li>الهاتف يتلقى تحديثات الأمان: <strong>لا حاجة للتغيير</strong>.</li><li>البطارية أقل من 80% والهاتف سلس: استبدل البطارية.</li><li>تطبيق البنك لم يعد مدعومًا: حان وقت التغيير.</li></ul><div class="a-cap">لا توجد صور في هذا الموقع؛ الخط هو الوسيلة البصرية الوحيدة.</div>`,
+  admin:{brand:"TrafficIQ",nav:["الحملات","نظرة عامة","الروابط الوجهة","الشركاء","البريد","السجل","الدليل"],h1:"نظرة عامة",sub:"لكل حملة صفحة تعريفية عامة ورابط تتبّع. حالة الحملة هي المفتاح الرئيسي: إيقاف الحملة يوقف الرابط.",
+   k:[["النقرات","12,480","استُبعدت 312 زيارة آلية"],["الزوار الفريدون","8,931","محسوبون بعنوان IP مُشفَّر"],["التحويلات","214","من إشعار الشريك"],["معدل التحويل","1.72%","نسبة التحويل"]],
+   th:["الحملة","الحالة","النقرات","معدل التحويل"],rows:[["عرض بطاقة ائتمانية","قيد التشغيل","ok","7,204","2.31%"],["تأمين صحي عائلي","بانتظار المراجعة","wait","0","0.00%"],["محفظة إلكترونية — مكافأة 50,000","متوقفة","off","5,276","1.05%"]],
+   h3:"الحملات",h3b:"بطاقة المشاركة",f1:"عنوان المشاركة",f1i:"يظهر على فيسبوك وزالو",f1v:"عرض تجريبي — احصل عليه اليوم",f1h:"حتى 140 حرفًا.",f2:"صورة المشاركة",f2i:"نسبة 1200×630",f2ok:"تم الرفع · 1200×630 · 98KB",cta:"إنشاء حملة",b2:"إنشاء ومعاينة",note:"الحملات الجديدة تبدأ دائمًا بانتظار المراجعة."},
+  mix:["Khi nào nên đổi điện thoại? · متى تغيّر هاتفك؟ · When to replace your phone?","Trạng thái: Đang chạy · الحالة: قيد التشغيل · Status: Active","12.480 lượt click · ١٢٬٤٨٠ نقرة · 12,480 clicks"],
+  sizes:["انتهت جلسة الدخول. أعد تحميل الصفحة ثم سجّل الدخول من جديد.","دليل هذه الصفحة · رفع صورة · بانتظار المراجعة"]},
+};
+
+const D=[["Fraunces","'Fraunces',Georgia,serif"],["Newsreader","'Newsreader',Georgia,serif"],["Source Serif 4","'Source Serif 4',Georgia,serif"],["Noto Serif","'Noto Serif',Georgia,serif"],["Lora","'Lora',Georgia,serif"],["Literata","'Literata',Georgia,serif"],["Be Vietnam Pro (sans)","'Be Vietnam Pro',sans-serif"],["Plus Jakarta Sans (sans)","'Plus Jakarta Sans',sans-serif"],["Noto Sans (sans)","'Noto Sans',sans-serif"],["IBM Plex Sans (sans)","'IBM Plex Sans',sans-serif"],["Readex Pro (sans)","'Readex Pro',sans-serif"]];
+const B=[["Be Vietnam Pro","'Be Vietnam Pro',sans-serif"],["Noto Sans","'Noto Sans',sans-serif"],["IBM Plex Sans","'IBM Plex Sans',sans-serif"],["Plus Jakarta Sans","'Plus Jakarta Sans',sans-serif"],["Source Sans 3","'Source Sans 3',sans-serif"],["Public Sans","'Public Sans',sans-serif"],["Nunito Sans","'Nunito Sans',sans-serif"],["Readex Pro","'Readex Pro',sans-serif"],["Inter","'Inter',sans-serif"],["Literata (serif)","'Literata',Georgia,serif"],["Source Serif 4 (serif)","'Source Serif 4',Georgia,serif"],["Newsreader (serif)","'Newsreader',Georgia,serif"],["Noto Serif (serif)","'Noto Serif',Georgia,serif"],["Lora (serif)","'Lora',Georgia,serif"]];
+const U=B.filter(([n])=>!/serif\)/.test(n));
+const M=[["JetBrains Mono","'JetBrains Mono',monospace"],["IBM Plex Mono","'IBM Plex Mono',monospace"],["Roboto Mono","'Roboto Mono',monospace"],["Noto Sans Mono","'Noto Sans Mono',monospace"]];
+const AD=[["Noto Naskh Arabic","'Noto Naskh Arabic',serif"],["Noto Kufi Arabic","'Noto Kufi Arabic',sans-serif"],["Noto Sans Arabic","'Noto Sans Arabic',sans-serif"],["Amiri","'Amiri',serif"],["Markazi Text","'Markazi Text',serif"],["IBM Plex Sans Arabic","'IBM Plex Sans Arabic',sans-serif"],["Cairo","'Cairo',sans-serif"],["Readex Pro","'Readex Pro',sans-serif"]];
+const AB=[["Noto Sans Arabic","'Noto Sans Arabic',sans-serif"],["IBM Plex Sans Arabic","'IBM Plex Sans Arabic',sans-serif"],["Cairo","'Cairo',sans-serif"],["Tajawal","'Tajawal',sans-serif"],["Almarai","'Almarai',sans-serif"],["Readex Pro","'Readex Pro',sans-serif"],["Vazirmatn","'Vazirmatn',sans-serif"],["Noto Naskh Arabic (serif)","'Noto Naskh Arabic',serif"],["Markazi Text (serif)","'Markazi Text',serif"]];
+const PRESETS=[
+ ["Hiện tại + Ả Rập","Fraunces","Be Vietnam Pro","Be Vietnam Pro","JetBrains Mono","Noto Naskh Arabic","Noto Sans Arabic"],
+ ["Noto đồng bộ (chuẩn đa ngôn ngữ)","Noto Serif","Noto Sans","Noto Sans","Noto Sans Mono","Noto Naskh Arabic","Noto Sans Arabic"],
+ ["IBM Plex đồng bộ","Source Serif 4","IBM Plex Sans","IBM Plex Sans","IBM Plex Mono","Noto Naskh Arabic","IBM Plex Sans Arabic"],
+ ["Một họ cho cả ba chữ: Readex Pro","Readex Pro (sans)","Readex Pro","Readex Pro","JetBrains Mono","Readex Pro","Readex Pro"],
+ ["Thân bài serif + UI sans","Fraunces","Literata (serif)","Be Vietnam Pro","JetBrains Mono","Noto Naskh Arabic","Noto Naskh Arabic (serif)"],
+ ["Báo chí tin cậy","Newsreader","Newsreader (serif)","Public Sans","Roboto Mono","Markazi Text","Noto Naskh Arabic (serif)"],
+ ["Sans thân thiện","Plus Jakarta Sans (sans)","Plus Jakarta Sans","Plus Jakarta Sans","JetBrains Mono","Noto Kufi Arabic","Cairo"],
+];
+const $=id=>document.getElementById(id), root=document.documentElement;
+const fill=(s,l)=>s.innerHTML=l.map(([n])=>`<option>${n}</option>`).join("");
+fill($("s-display"),D);fill($("s-body"),B);fill($("s-ui"),U);fill($("s-mono"),M);fill($("s-ardisplay"),AD);fill($("s-arbody"),AB);
+const fam=(l,n)=>(l.find(x=>x[0]===n)||l[0])[1].replace(/,\s*(Georgia,\s*)?(serif|sans-serif|monospace)\s*$/,'');
+let LANG="vi";
+
+function render(){
+  const t=T[LANG], a=t.admin;
+  for(const id of ["article","admin","mix"]) { const el=$(id); el.setAttribute("dir",t.dir); el.setAttribute("lang",t.lang); }
+  $("lb1").textContent=t.l1; $("lb2").textContent=t.l2;
+  $("a-nav").innerHTML=t.nav.map(x=>`<span>${x}</span>`).join(""); $("a-cat").textContent=t.cat; $("a-h1").textContent=t.h1; $("a-by").innerHTML=t.by; $("a-body").innerHTML=t.body;
+  $("admin").innerHTML=`<div class="m-nav"><b>${a.brand}</b>${a.nav.map((x,i)=>`<a class="${i===0?"on":""}">${x}</a>`).join("")}</div>
+   <div class="m-body"><div><h1 class="m-h1">${a.h1}</h1><p class="m-sub">${a.sub}</p></div>
+   <div class="kpis">${a.k.map(k=>`<div class="kpi"><small>${k[0]}</small><div class="n">${k[1]}</div><div class="h">${k[2]}</div></div>`).join("")}</div>
+   <div class="card"><h3>${a.h3}</h3><table><thead><tr><th>${a.th[0]}</th><th>${a.th[1]}</th><th class="r">${a.th[2]}</th><th class="r">${a.th[3]}</th></tr></thead><tbody>
+   ${a.rows.map((r,i)=>`<tr><td>${r[0]}${i===0?`<br><code>/go/HGPe6u9ssigC</code>`:""}</td><td><span class="badge b-${r[2]}">${r[1]}</span></td><td class="r">${r[3]}</td><td class="r">${r[4]}</td></tr>`).join("")}</tbody></table></div>
+   <div class="card"><h3>${a.h3b}</h3><div class="fgrid"><div class="fld"><label>${a.f1} <i>${a.f1i}</i></label><input class="inp" value="${a.f1v}"><div class="hint">${a.f1h}</div></div>
+   <div class="fld"><label>${a.f2} <i>${a.f2i}</i></label><input class="inp" dir="ltr" value="/uploads/9341f5…webp"><div class="ok">${a.f2ok}</div></div></div>
+   <div class="btns"><span class="btn cta">${a.cta}</span><span class="btn">${a.b2}</span><span class="hint">${a.note}</span></div></div></div>`;
+  $("mix").innerHTML=t.mix.map((m,i)=>`<div class="mixrow"><small>${[18,16,14][i]}px</small><div style="font-size:${[18,16,14][i]}px">${m}</div></div>`).join("");
+  $("sizes").innerHTML=[11,12,13,14].map(s=>`<p style="font-size:${s}px">${s}px — ${t.sizes[0]} ${t.sizes[1]}</p>`).join("");
+}
+function apply(){
+  root.style.setProperty("--f-display",fam(D,$("s-display").value)); root.style.setProperty("--f-body",fam(B,$("s-body").value));
+  root.style.setProperty("--f-ui",fam(U,$("s-ui").value)); root.style.setProperty("--f-mono",fam(M,$("s-mono").value));
+  root.style.setProperty("--ar-display",fam(AD,$("s-ardisplay").value)); root.style.setProperty("--ar-body",fam(AB,$("s-arbody").value));
+  root.style.setProperty("--body-size",$("r-size").value+"px"); root.style.setProperty("--body-lh",$("r-lh").value);
+  root.style.setProperty("--ui-size",$("r-ui").value+"px"); root.style.setProperty("--ar-scale",$("r-ar").value);
+  root.dataset.theme=$("s-theme").value;
+  $("v-size").textContent=$("r-size").value+"px";$("v-lh").textContent=$("r-lh").value;$("v-ui").textContent=$("r-ui").value+"px";$("v-ar").textContent="×"+$("r-ar").value;
+  $("out").textContent=`Latin/Việt — Tiêu đề: ${$("s-display").value} · Thân bài: ${$("s-body").value} · Giao diện: ${$("s-ui").value} · Số liệu: ${$("s-mono").value} || Ả Rập — Tiêu đề: ${$("s-ardisplay").value} · Thân bài/giao diện: ${$("s-arbody").value} (phóng ×${$("r-ar").value}) || Bài ${$("r-size").value}px/giãn dòng ${$("r-lh").value} · Admin ${$("r-ui").value}px · ${$("s-theme").value==="dark"?"Tối":"Sáng"}`;
+}
+function setPreset(i){const p=PRESETS[i];["s-display","s-body","s-ui","s-mono","s-ardisplay","s-arbody"].forEach((id,k)=>$(id).value=p[k+1]);
+  document.querySelectorAll("#presets button").forEach((b,j)=>b.classList.toggle("on",j===i));apply();}
+$("presets").innerHTML=PRESETS.map((p,i)=>`<button data-i="${i}">${p[0]}</button>`).join("");
+$("presets").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setPreset(+b.dataset.i)});
+document.querySelector(".lang").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;LANG=b.dataset.l;document.querySelectorAll(".lang button").forEach(x=>x.classList.toggle("on",x===b));render()});
+for(const id of ["s-display","s-body","s-ui","s-mono","s-ardisplay","s-arbody","r-size","r-lh","r-ui","r-ar","s-theme"])$(id).addEventListener("input",()=>{document.querySelectorAll("#presets button").forEach(b=>b.classList.remove("on"));apply()});
+$("copy").addEventListener("click",()=>{navigator.clipboard?.writeText($("out").textContent);$("copy").textContent="Đã sao chép ✓";setTimeout(()=>$("copy").textContent="Sao chép lựa chọn của tôi",1500)});
+render();setPreset(0);
+</script>
+</body></html>

@@ -178,6 +178,45 @@ Không nạp `latin-ext`: Ăă Đđ Ơơ Ưư đã nằm trong subset `vietnames
 tiếng Việt có dấu ở **cả hai phía** con chữ — mũ/móc phía trên, dấu nặng phía dưới —
 nên hai dòng liền nhau ở `1.5` sẽ chạm nhau.
 
+#### Đa ngôn ngữ — Việt · English · العربية
+
+Nội dung có thể có tiếng Ả Rập (viết phải-sang-trái) bên cạnh tiếng Việt và tiếng Anh. English dùng chung font
+Latin với tiếng Việt, nên chỉ chữ Ả Rập cần thêm font:
+
+| Vai trò | Latin / Việt / English | Ả Rập |
+|---|---|---|
+| Body + giao diện (`--font-sans`) | Be Vietnam Pro | **Noto Sans Arabic** (variable, wght 100–900) |
+| Nhan đề công khai (`--font-display`) | Fraunces 700 | **Noto Naskh Arabic** (variable, wght 400–700) — kiểu chữ báo in Ả Rập, đóng vai serif |
+| Số liệu / code (`--font-mono`) | JetBrains Mono | (số và URL luôn là Latin, kể cả trong câu Ả Rập) |
+
+**Vì sao ghép hai font thay vì một:** không font Ả Rập phổ biến nào có dấu tiếng Việt (Noto Sans Arabic, IBM Plex Sans
+Arabic, Cairo, Tajawal… chỉ có `arabic` + `latin`). Ngoại lệ duy nhất có đủ ba chữ là Readex Pro, nhưng nó thay
+Be Vietnam Pro và Fraunces. Cách chuẩn của web đa ngôn ngữ là ghép trong cùng `font-family`:
+`"Noto Sans Arabic", var(--font-be-vietnam-pro), system-ui, sans-serif` — trình duyệt chọn font theo glyph.
+
+**Ba lỗi đã đo thấy bằng Chromium (`CSS.getPlatformFontsForNode`) — luật thứ tự trong ngăn xếp là hệ quả:**
+
+1. Từ khoá chung (`sans-serif`) hoặc font dự phòng nằm GIỮA danh sách chấm dứt việc tìm font → chữ Ả Rập rơi sang
+   Segoe UI/Times New Roman. Từ khoá chung chỉ được ở cuối.
+2. `next/font` gắn mỗi font Latin một font dự phòng `local("Arial")` (Turbopack bỏ qua `adjustFontFallback: false`).
+   Arial có glyph Ả Rập, nên nếu font Ả Rập đứng SAU font Latin thì Arial chiếm chữ Ả Rập trước. → Font Ả Rập đứng
+   ĐẦU.
+3. Muốn đứng đầu mà không vẽ luôn chữ Latin/Việt thì font Ả Rập phải có `unicode-range` chỉ gồm khối chữ Ả Rập.
+   CSS của `next/font` thì phủ MỌI dải ký tự của font (`subsets` chỉ điều khiển preload). → Font Ả Rập là
+   `@font-face` tự host (`src/app/fonts/`, giấy phép OFL), không qua next/font. `unicode-range` cũng làm trang
+   tiếng Việt/English không tải byte nào của font Ả Rập.
+
+**Chỉnh kiểu chữ cho Ả Rập** (`:lang(ar)` trong `globals.css`): `letter-spacing: 0` (chữ nối liền, giãn chữ làm đứt
+nét), không nghiêng (dùng độ đậm; Ả Rập không có kiểu nghiêng), thân bài ×1,1 cỡ chữ và giãn dòng 1,9 (x-height thấp
+hơn Latin, dấu tashkeel ở cả hai phía). Số liệu trong câu Ả Rập giữ `direction: ltr`.
+
+**Bố cục RTL chưa làm.** `<html lang="vi">` đang cố định. Đo ngày 2026-10: tiện ích hướng vật lý (`ml-`, `pr-`,
+`text-left`, `left-`…) chỉ có 6 chỗ ở bề mặt công khai, 0 ở landing, 30 ở `/admin`, 4 trong CSS tay — nên chuyển
+sang thuộc tính logic (`ms-`, `pe-`, `text-start`, `inset-s-`) là việc nhỏ khi cần.
+
+**Xem thử và chọn font:** mở `design-system/trafficiq/font-lab.html` (cần mạng; màu lấy đúng từ `globals.css`) — có
+bộ gợi ý, đổi ngôn ngữ Việt/English/Ả Rập, dòng trộn ba chữ, thử dấu chồng. **Gate:** `npm run check:fonts`.
+
 ### Spacing Variables
 
 *Density: 8/10 — Dense / Dashboard*

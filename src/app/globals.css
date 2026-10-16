@@ -1,6 +1,37 @@
 @import "tailwindcss";
 
 /*
+ * Font chữ Ả Rập — tự host, KHÔNG qua next/font (lý do ở khối `--font-sans` trong @theme bên dưới).
+ *
+ * Nguồn: Noto Sans Arabic / Noto Naskh Arabic, bản variable, subset `arabic` lấy từ gói Fontsource v5.3.0
+ * (cùng dữ liệu với Google Fonts). Giấy phép SIL OFL 1.1, cho phép tự host và phân phối lại — bản giấy phép
+ * nằm cạnh file font ở src/app/fonts/. Chỉ có đúng một subset `arabic` mỗi font.
+ *
+ * `unicode-range` BẮT BUỘC và chính là thứ làm cho thứ tự trong `--font-sans` an toàn: nó giới hạn font
+ * vào khối chữ Ả Rập. Khoảng này lấy nguyên từ `unicode.json` của Fontsource cho subset `arabic`.
+ *
+ * Không preload và không tải gì trên trang không có chữ Ả Rập: trình duyệt chỉ tải file khi gặp ký tự
+ * nằm trong `unicode-range`. Trang tiếng Việt/English không tốn thêm byte nào.
+ */
+@font-face {
+  font-family: "Noto Sans Arabic";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/noto-sans-arabic-arabic-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EE03,U+1EE05-1EE1F,U+1EE21-1EE22,U+1EE24,U+1EE27,U+1EE29-1EE32,U+1EE34-1EE37,U+1EE39,U+1EE3B,U+1EE42,U+1EE47,U+1EE49,U+1EE4B,U+1EE4D-1EE4F,U+1EE51-1EE52,U+1EE54,U+1EE57,U+1EE59,U+1EE5B,U+1EE5D,U+1EE5F,U+1EE61-1EE62,U+1EE64,U+1EE67-1EE6A,U+1EE6C-1EE72,U+1EE74-1EE77,U+1EE79-1EE7C,U+1EE7E,U+1EE80-1EE89,U+1EE8B-1EE9B,U+1EEA1-1EEA3,U+1EEA5-1EEA9,U+1EEAB-1EEBB,U+1EEF0-1EEF1;
+}
+
+@font-face {
+  font-family: "Noto Naskh Arabic";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/noto-naskh-arabic-arabic-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EE03,U+1EE05-1EE1F,U+1EE21-1EE22,U+1EE24,U+1EE27,U+1EE29-1EE32,U+1EE34-1EE37,U+1EE39,U+1EE3B,U+1EE42,U+1EE47,U+1EE49,U+1EE4B,U+1EE4D-1EE4F,U+1EE51-1EE52,U+1EE54,U+1EE57,U+1EE59,U+1EE5B,U+1EE5D,U+1EE5F,U+1EE61-1EE62,U+1EE64,U+1EE67-1EE6A,U+1EE6C-1EE72,U+1EE74-1EE77,U+1EE79-1EE7C,U+1EE7E,U+1EE80-1EE89,U+1EE8B-1EE9B,U+1EEA1-1EEA3,U+1EEA5-1EEA9,U+1EEAB-1EEBB,U+1EEF0-1EEF1;
+}
+
+/*
  * Design tokens — nguồn duy nhất: design-system/trafficiq/MASTER.md
  *
  * KHÔNG hard-code màu trong component. Mọi màu phải đi qua token ở đây.
@@ -299,9 +330,23 @@
    * JetBrains Mono = CHỈ cột số liệu, code, token/URL — không dùng cho heading.
    * Cả hai đều có subset `vietnamese`; Fira Code trước đây không có nên chữ có
    * dấu bị rơi sang font hệ thống. Xem comment trong src/app/layout.tsx.
+   *
+   * CHỮ Ả RẬP — font Ả Rập ("Noto Sans Arabic" / "Noto Naskh Arabic", khai báo bằng @font-face ở
+   * đầu file này) đứng ĐẦU danh sách, rồi mới tới font Latin/Việt. THỨ TỰ LÀ LUẬT, đã đo bằng Chromium
+   * (CSS.getPlatformFontsForNode):
+   *   - Đứng đầu mà an toàn VÌ @font-face Ả Rập ở đây tự khai `unicode-range` chỉ gồm khối chữ Ả Rập
+   *     nên chữ Latin/Việt bỏ qua nó và rơi xuống Be Vietnam Pro.
+   *   - Đặt font Ả Rập SAU font Latin thì sai: next/font gắn vào mỗi font Latin một font dự phòng
+   *     `local("Arial")` (không tắt được: Turbopack bỏ qua `adjustFontFallback: false`), Arial có sẵn
+   *     glyph Ả Rập nên chiếm chữ Ả Rập trước khi tới Noto.
+   *   - Không dùng next/font cho font Ả Rập: CSS nó sinh ra phủ MỌI dải ký tự của font (kể cả Latin) —
+   *     tùy chọn `subsets` chỉ quyết định file nào được preload — nên font Ả Rập đứng đầu sẽ vẽ luôn
+   *     chữ Việt/English bằng glyph Latin của nó.
+   * Từ khoá chung (`sans-serif`, `serif`, `monospace`) chỉ được ở CUỐI: nó chấm dứt việc tìm font, mọi
+   * thứ đứng sau bị bỏ qua. `npm run check:fonts` gác các điều trên.
    */
-  --font-sans: var(--font-be-vietnam-pro);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-sans: "Noto Sans Arabic", var(--font-be-vietnam-pro), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   /*
    * Display = Fraunces, CHỈ dùng trên surface công khai và CHỈ cho nhan đề:
    * wordmark, tiêu đề bài, `.prose h2/h3`, tiêu đề trang. KHÔNG dùng cho nhãn nhỏ
@@ -309,7 +354,7 @@
    * đặc điểm và chỉ còn cảm giác nhoè. KHÔNG dùng ở /admin.
    * Lý do thêm họ chữ thứ ba: xem comment ở src/app/layout.tsx.
    */
-  --font-display: var(--font-fraunces);
+  --font-display: "Noto Naskh Arabic", var(--font-fraunces), Georgia, serif;
 }
 
 html {
@@ -319,13 +364,38 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-be-vietnam-pro), system-ui, sans-serif;
+  font-family: var(--font-sans);
   /*
    * 1.6 thay vì 1.5 mặc định: tiếng Việt có dấu ở CẢ hai phía (mũ/móc phía trên,
    * dấu nặng phía dưới) nên hai dòng liền nhau dễ chạm nhau. Đây là phần lớn cảm
    * giác "chữ chật, không thân thiện" ở bản trước.
    */
   line-height: 1.6;
+}
+
+/*
+ * Chữ Ả Rập (`lang="ar"`, kèm `dir="rtl"` do nơi dựng trang đặt). Không ảnh hưởng tiếng Việt/English.
+ *   - Không giãn chữ: chữ Ả Rập nối liền nhau, `letter-spacing` làm đứt nét nối.
+ *   - Không nghiêng: Ả Rập không có kiểu nghiêng, trình duyệt sẽ tự nghiêng giả và méo nét. Nhấn mạnh
+ *     bằng độ đậm.
+ *   - Thân bài lớn hơn ~10% và giãn dòng rộng hơn: chữ Ả Rập có x-height thấp hơn Latin cùng cỡ và dấu
+ *     (tashkeel) ở cả hai phía, nên cùng cỡ chữ trông nhỏ và các dòng dễ dính nhau.
+ * Đo trên bảng so sánh ở design-system/trafficiq/font-lab.html.
+ */
+:lang(ar) {
+  letter-spacing: 0;
+}
+
+:lang(ar) em,
+:lang(ar) i,
+:lang(ar) .italic {
+  font-style: normal;
+  font-weight: 600;
+}
+
+:lang(ar) .prose {
+  font-size: 1.1875rem;
+  line-height: 1.9;
 }
 
 /* Heading: dấu tiếng Việt cần leading thoáng hơn tỉ lệ mặc định của font size lớn. */
@@ -404,7 +474,7 @@ textarea {
  */
 .prose h2 {
   margin-top: 2.5em;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.75rem;
   /* 700, không phải 600: chỉ weight 700 của Fraunces được nạp (xem layout.tsx) —
      đặt 600 ở đây là bắt browser giả độ đậm, chữ serif bị dày và nhoè. */
@@ -414,7 +484,7 @@ textarea {
 
 .prose h3 {
   margin-top: 2em;
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.3125rem;
   font-weight: 700;
 }
@@ -494,14 +564,14 @@ textarea {
 /* Bo góc = 0 trên toàn surface công khai: Editorial Grid dựng thứ bậc bằng gạch
    kẻ, và một khối code bo góc 12px giữa bài là hình duy nhất "mềm" trên cả trang. */
 .prose code {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.875em;
   background: var(--muted);
   padding: 0.125em 0.375em;
 }
 
 .prose pre {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-family: var(--font-mono);
   background: var(--muted);
   border: 1px solid var(--border);
   padding: 1rem;

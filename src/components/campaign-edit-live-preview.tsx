@@ -224,7 +224,7 @@ export function CampaignEditLivePreview({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-semibold text-foreground">InsightDaily</span>
-                      <span className="text-[10px] text-muted-foreground font-mono">Đã chia sẻ liên kết • Preview Social Card</span>
+                      <span className="text-xs text-muted-foreground">Đã chia sẻ liên kết • Preview Social Card</span>
                     </div>
                   </div>
 

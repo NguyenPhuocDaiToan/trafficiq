@@ -21,6 +21,12 @@ import { SITE, TITLE_TEMPLATE } from "@/lib/site";
  *
  * Chỉ nạp 2 subset: `latin` + `vietnamese`. Không cần `latin-ext` vì Ăă Đđ Ơơ Ưư
  * đã nằm trong subset vietnamese (U+0102-0103, U+0110-0111, U+01A0-01A1, U+01AF-01B0).
+ *
+ * CHỮ Ả RẬP (nội dung có thể có tiếng Ả Rập) KHÔNG nằm ở đây: font Ả Rập là hai @font-face tự host ở đầu
+ * `globals.css` (file ở `src/app/fonts/`). Không dùng next/font cho chúng vì next/font sinh CSS phủ mọi dải
+ * ký tự của font (nên font Ả Rập đứng đầu danh sách sẽ vẽ luôn chữ Việt) và luôn thêm font dự phòng
+ * `local("Arial")` không tắt được trên Turbopack (nên font Ả Rập đứng sau sẽ bị Arial chiếm chữ Ả Rập).
+ * Lý do đầy đủ, số đo và luật thứ tự: khối `--font-sans` trong `globals.css`. `npm run check:fonts` gác.
  */
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam-pro",

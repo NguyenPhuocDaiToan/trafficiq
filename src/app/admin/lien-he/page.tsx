@@ -70,7 +70,7 @@ export default async function ContactInboxPage({
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-3" data-tour="inbox-stats">
         <Stat label="Chưa xử lý" value={unhandled.toLocaleString("vi-VN")} />
         <Stat
           label={showAll ? "Đang hiện (tất cả)" : "Đang hiện (chưa xử lý)"}
@@ -79,6 +79,7 @@ export default async function ContactInboxPage({
         />
       </div>
 
+      <div data-tour="inbox-list">
       {rows.length === 0 ? (
         <Card title={showAll ? "Chưa có tin nhắn nào" : "Không còn thư chưa xử lý"}>
           <p className="text-sm text-muted-foreground">
@@ -133,6 +134,7 @@ export default async function ContactInboxPage({
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -31,6 +31,7 @@ export default async function AdvertisersPage() {
         </p>
       </div>
 
+      <div data-tour="advertiser-form">
       <Card
         title="Thêm đối tác"
         description="Đối tác mới luôn ở trạng thái chờ duyệt — phải xem lại rồi mới kích hoạt."
@@ -60,7 +61,9 @@ export default async function AdvertisersPage() {
           </Field>
         </ActionForm>
       </Card>
+      </div>
 
+      <div data-tour="advertiser-list">
       <Card title={`Danh sách đối tác (${rows.length})`}>
         <TableWrap>
           <Table>
@@ -112,6 +115,7 @@ export default async function AdvertisersPage() {
           </Table>
         </TableWrap>
       </Card>
+      </div>
     </div>
   );
 }

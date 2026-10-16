@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { AdminNav } from "@/components/admin-nav";
+import { GuideTour } from "@/components/guide-tour";
 
 export const metadata = {
   title: "Quản trị TrafficIQ",
@@ -29,6 +31,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
       {/* Dashboard max-width 1400px theo pages/dashboard.md */}
       <main className="mx-auto max-w-350 px-4 py-6">{children}</main>
+      {/*
+        Coach mark + nút "Hướng dẫn trang này". Gắn một lần ở đây để mọi trang admin có, và để
+        `?huongdan=<bài>` chạy được trên bất kỳ trang nào mà không trang nào phải tự nhớ. `Suspense` vì
+        `useSearchParams` buộc phải có ranh giới này; không có gì để hiện trong lúc chờ nên fallback là null.
+      */}
+      <Suspense fallback={null}>
+        <GuideTour />
+      </Suspense>
     </div>
   );
 }

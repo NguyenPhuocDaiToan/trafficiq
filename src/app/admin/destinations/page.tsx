@@ -34,6 +34,7 @@ export default async function DestinationsPage() {
         </p>
       </div>
 
+      <div data-tour="destination-form">
       <Card
         title="Thêm URL đích"
         description="Chỉ nhận http/https. Mới thêm là chờ duyệt — phải kích hoạt mới redirect được."
@@ -72,7 +73,9 @@ export default async function DestinationsPage() {
           </ActionForm>
         )}
       </Card>
+      </div>
 
+      <div data-tour="destination-list">
       <Card title={`Danh sách cho phép (${rows.length})`}>
         <TableWrap>
           <Table>
@@ -128,6 +131,7 @@ export default async function DestinationsPage() {
           </Table>
         </TableWrap>
       </Card>
+      </div>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function CampaignFields({
         defaultSlug={campaign?.slug}
         mode={campaign ? "edit" : "create"}
       />
-      <Field label="Đối tác">
+      <Field label="Đối tác" tour="cf-advertiser">
         <select
           name="advertiserId"
           required
@@ -53,7 +53,7 @@ export function CampaignFields({
           ))}
         </select>
       </Field>
-      <Field label="Chữ trên nút bấm">
+      <Field label="Chữ trên nút bấm" tour="cf-cta">
         <input
           name="ctaLabel"
           required
@@ -74,7 +74,7 @@ export function CampaignFields({
       </Field>
 
       <SectionLabel>Nội dung trang giới thiệu</SectionLabel>
-      <Field label="Tiêu đề chính">
+      <Field label="Tiêu đề chính" tour="cf-headline">
         <input
           name="headline"
           required
@@ -112,13 +112,14 @@ export function CampaignFields({
       <ImageUrlField
         name="heroImageUrl"
         kind="hero"
+        tour="cf-hero"
         label="Ảnh lớn đầu trang"
         hint="(không bắt buộc) dán link hoặc tải ảnh lên"
         defaultValue={landing?.heroImageUrl}
       />
 
       <SectionLabel>Hiển thị khi chia sẻ link</SectionLabel>
-      <Field label="Tiêu đề khi chia sẻ" hint="hiện trên Facebook, Zalo, Telegram">
+      <Field label="Tiêu đề khi chia sẻ" hint="hiện trên Facebook, Zalo, Telegram" tour="cf-share">
         <input
           name="ogTitle"
           required

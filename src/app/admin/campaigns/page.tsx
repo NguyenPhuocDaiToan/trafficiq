@@ -82,6 +82,7 @@ export default async function CampaignsPage({
             return (
               <Collapsible
                 key={campaign.id}
+                tour="campaign-row"
                 // Chiến dịch vừa tạo mở sẵn: việc tiếp theo luôn là thêm đích.
                 defaultOpen={campaign.slug === createdSlug}
                 summary={
@@ -110,7 +111,7 @@ export default async function CampaignsPage({
                 }
               >
                 <div className="space-y-4">
-                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-3 text-sm" data-tour="campaign-actions">
                     {/*
                      * Sửa / Xem trước dùng cùng hình dáng với StatusButton (outline
                      * --primary) để hàng action không có hai kiểu nút khác nhau.
@@ -165,7 +166,7 @@ export default async function CampaignsPage({
                         </Link>
                       </dd>
                     </div>
-                    <div>
+                    <div data-tour="tracking-link">
                       <dt className="text-xs tracking-wide text-muted-foreground uppercase">
                         Link theo dõi (link đem đi chạy traffic)
                       </dt>
@@ -231,6 +232,7 @@ export default async function CampaignsPage({
                     )}
                   </div>
 
+                  <div data-tour="offer-form">
                   {options.destinations.length === 0 ? (
                     <Notice>
                       Cần có URL đích đang chạy trong danh sách cho phép trước khi
@@ -273,6 +275,7 @@ export default async function CampaignsPage({
                       </Field>
                     </ActionForm>
                   )}
+                  </div>
                 </div>
               </Collapsible>
             );

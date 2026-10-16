@@ -47,10 +47,13 @@ export function ImageUrlField({
   hint,
   kind,
   defaultValue,
+  tour,
 }: {
   name: string;
   label: string;
   hint?: string;
+  /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
+  tour?: string;
   /** Quyết định cỡ và định dạng server nén ra — xem `lib/media/process.ts`. */
   kind: "hero" | "og";
   defaultValue?: string;
@@ -171,6 +174,7 @@ export function ImageUrlField({
 
   return (
     <div
+      data-tour={tour}
       className={`text-sm ${dragging ? "rounded-lg outline-2 outline-dashed outline-ring outline-offset-4" : ""}`}
       onDragOver={(e) => {
         if (!hydrated || uploading) return;

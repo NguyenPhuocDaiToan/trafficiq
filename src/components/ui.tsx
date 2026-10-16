@@ -36,14 +36,17 @@ export function StatusBadge({ status }: { status: EntityStatus | string }) {
 export function Field({
   label,
   hint,
+  tour,
   children,
 }: {
   label: string;
   hint?: string;
+  /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
+  tour?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm">
+    <label className="block text-sm" data-tour={tour}>
       <span className="font-medium">{label}</span>
       {hint ? <span className="ml-1 text-xs text-muted-foreground">{hint}</span> : null}
       <div className="mt-1">{children}</div>
@@ -127,13 +130,17 @@ export function Collapsible({
   summary,
   children,
   defaultOpen = false,
+  tour,
 }: {
   summary: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
+  tour?: string;
 }) {
   return (
     <details
+      data-tour={tour}
       open={defaultOpen}
       // Khi đóng, summary là đáy card nên phải bo nốt góc dưới — nếu không,
       // nền hover vuông góc sẽ thò ra khỏi viền bo của card.

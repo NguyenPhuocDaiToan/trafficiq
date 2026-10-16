@@ -41,7 +41,7 @@ export function CampaignNameSlugFields({
 
   return (
     <>
-      <Field label="Tên chiến dịch">
+      <Field label="Tên chiến dịch" tour="cf-name">
         <input
           name="name"
           required

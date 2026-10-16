@@ -18,6 +18,9 @@ const NAV = [
   // riêng chứ không chỉ là link từ Tổng quan: nó là chỗ trả lời "click của tôi
   // đi đâu mất", và người đang đi tìm câu đó không nghĩ tới việc vào báo cáo.
   { href: "/admin/nhat-ky", label: "Nhật ký" },
+  // Trung tâm bài học + coach mark. Đứng cuối cùng và tách khỏi các mục làm việc: mở thưa hơn hẳn, nhưng
+  // phải có tab riêng để người mới thấy ngay thay vì phải biết đường tìm.
+  { href: "/admin/huong-dan", label: "Hướng dẫn" },
 ];
 
 /**

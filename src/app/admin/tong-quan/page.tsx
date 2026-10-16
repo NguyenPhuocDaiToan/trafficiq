@@ -71,7 +71,7 @@ export default async function DashboardPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Tổng quan</h1>
-        <div className="flex gap-2 text-sm">
+        <div className="flex gap-2 text-sm" data-tour="range">
           {RANGES.map((option) => (
             <Link
               key={option}
@@ -90,7 +90,7 @@ export default async function DashboardPage({
       </div>
 
       {/* KPI row — grid-gap 8px theo density 8/10 */}
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
         <Stat
           label="Lượt click"
           value={overview.clicks.toLocaleString("vi-VN")}
@@ -133,6 +133,7 @@ export default async function DashboardPage({
         )}
       </Card>
 
+      <div data-tour="campaign-table">
       <Card
         title="Chiến dịch"
         description="Xếp theo số lượt click trong khoảng thời gian đã chọn."
@@ -177,6 +178,7 @@ export default async function DashboardPage({
           </Table>
         </TableWrap>
       </Card>
+      </div>
 
       {/*
         Bốn ô cùng một hàng ở xl, hai hàng ở lg. Ô "Bot bị chặn" đứng cạnh ba ô
@@ -208,6 +210,7 @@ export default async function DashboardPage({
  */
 function BotReasons({ rows }: { rows: { key: string; clicks: number }[] }) {
   return (
+    <div data-tour="bot-blocked">
     <Card title="Bot bị chặn" description="Không tính vào số liệu click ở trên.">
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
@@ -240,6 +243,7 @@ function BotReasons({ rows }: { rows: { key: string; clicks: number }[] }) {
         Xem từng lượt →
       </Link>
     </Card>
+    </div>
   );
 }
 

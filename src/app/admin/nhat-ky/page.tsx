@@ -197,7 +197,7 @@ export default async function ClickLogPage({
         Tab dựng bằng <Link> + border-b, cùng ngôn ngữ với AdminNav — không phải
         state React. Đổi tab là đổi URL, nên F5 hay chia sẻ link đều ra đúng chỗ.
       */}
-      <nav aria-label="Loại bản ghi" className="flex gap-4 border-b border-border text-sm">
+      <nav aria-label="Loại bản ghi" className="flex gap-4 border-b border-border text-sm" data-tour="log-tabs">
         {TABS.map((item) => (
           <Link
             key={item.value}
@@ -214,20 +214,24 @@ export default async function ClickLogPage({
         ))}
       </nav>
 
-      <Filters
-        current={current}
-        tab={tab}
-        days={days}
-        reason={reason}
-        campaignId={campaignId}
-        choices={campaignChoices}
-      />
+      <div data-tour="log-filters">
+        <Filters
+          current={current}
+          tab={tab}
+          days={days}
+          reason={reason}
+          campaignId={campaignId}
+          choices={campaignChoices}
+        />
+      </div>
 
-      {tab === "bot" ? (
-        <BotTable log={log as BotLogPage} current={current} />
-      ) : (
-        <HumanTable log={log as HumanLogPage} current={current} />
-      )}
+      <div data-tour="log-table">
+        {tab === "bot" ? (
+          <BotTable log={log as BotLogPage} current={current} />
+        ) : (
+          <HumanTable log={log as HumanLogPage} current={current} />
+        )}
+      </div>
     </div>
   );
 }

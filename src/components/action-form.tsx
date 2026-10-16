@@ -59,7 +59,7 @@ export function ActionForm({
     >
       {children}
 
-      <div className="col-span-full">
+      <div className="col-span-full" data-tour="form-submit">
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"

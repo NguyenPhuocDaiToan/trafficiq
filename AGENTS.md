@@ -439,6 +439,27 @@ tại chỗ trước.
     `og:url` (không vào `canonical`, vẫn là `/c/[slug]` sạch): nền tảng nào lưu thẻ theo `og:url` thì
     mới thấy URL mới. Giá trị `?v=` đi vào HTML nên chỉ nhận đúng dạng mã (`parseShareVersion`).
 
+21. **Trang hướng dẫn `/admin/huong-dan` là hub bài học + coach mark, và `src/lib/guide/lessons.ts` là nguồn
+    DUY NHẤT của bài học.** Mỗi bài = một trang admin + chuỗi bước, mỗi bước chỉ vào MỘT phần tử qua
+    `data-tour="<target>"`. `?huongdan=<id bài>` trên URL mở đúng trang và chạy coach mark (`GuideTour`, gắn một
+    lần ở `app/admin/layout.tsx`); nút nổi "Hướng dẫn trang này" ở góc dưới phải mở bài của trang đang xem.
+    Thẻ bài học ở hub là `<Link>` thường và các bước cũng được liệt kê bằng chữ trong `<details>` — coach mark
+    cần JS, hub thì không.
+
+    **Thêm/đổi giao diện admin thì kiểm điểm chỉ.** Đổi tên hoặc xoá một `data-tour` là bước tương ứng mất chỗ
+    chỉ; `npm run test:guide` quét mã nguồn và đỏ nếu bài học trỏ tới `data-tour` không còn tồn tại, hoặc nếu
+    có `data-tour` mà không bài nào dùng. Thêm bước mới = thêm `data-tour` ở trang rồi thêm bước vào
+    `lessons.ts` (cả hai, test sẽ nói nếu quên một). Nội dung bước đã đối chiếu với hành vi thật (điều kiện để
+    link chạy, ai nhận thẻ chia sẻ, giới hạn ảnh…): đổi hành vi ở code thì sửa bài học cùng lúc, vì sai ở đây
+    là chỉ người dùng làm sai. Mọi con số trong trang hướng dẫn đọc từ nguồn thật (`limits.ts`,
+    `clickTtlDays()`), đừng viết cứng.
+
+    Coach mark KHÔNG khoá trang (lớp tối và vòng sáng `pointer-events: none`), tự mở `<details>` bao quanh mục
+    tiêu, và khi không tìm thấy mục tiêu (ví dụ chưa có chiến dịch nào nên chưa có dòng để chỉ) thì hiện hộp
+    thoại ở giữa kèm giải thích chứ KHÔNG bỏ qua bước. Nút chính dùng `--primary`, không dùng `--accent`
+    (accent chỉ cho CTA chính của trang). Tiến độ "Đã xem" chỉ lưu trong `localStorage` của trình duyệt — hệ
+    thống chỉ có một mật khẩu admin dùng chung nên không có "người dùng" nào để gắn tiến độ.
+
 ---
 
 ## Commands
@@ -451,6 +472,7 @@ npm run lint
 npm run check:contrast   # gate WCAG cho design token
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
+npm run test:guide       # bài học coach mark: dữ liệu hợp lệ và mọi data-tour có thật trên giao diện
 npm run test:share       # mã ?v= của link chia sẻ và og:url ở /go
 npm run test:media       # ảnh tải lên: nén/độ nét, bảo mật route upload, ba driver lưu trữ (disk/vercel/s3)
 npm run test:botdetect   # unit test lib/botdetect (FCrDNS, điểm, rate limit, PoW)

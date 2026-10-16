@@ -356,6 +356,62 @@ tại chỗ trước.
     đừng dùng `[...]*` hay `[^)]*` không giới hạn trước một ký tự có thể không xuất hiện, và hai `\s*` kề nhau quanh một
     thành phần tuỳ chọn; giới hạn độ dài (`{0,300}`), và chạy lại các dạng đầu vào bất lợi trong `botdetect.test.ts`.
 
+19. **Ảnh campaign: một field, hai nguồn — Mongo chỉ lưu đường dẫn, byte ảnh nằm trên đĩa.**
+    `heroImageUrl`/`ogImageUrl` là một chuỗi: admin dán link http(s) ngoài HOẶC tải ảnh lên
+    (`ImageUrlField`) — tải lên chỉ là điền `/uploads/<sha256>.<ext>` vào chính field đó.
+    KHÔNG được lưu byte ảnh vào MongoDB: Atlas M0 chỉ 512MB và dữ liệu ảnh không phải việc
+    của database này.
+
+    **Nơi lưu chọn bằng một cờ: `STORAGE_DRIVER=disk|vercel|s3`** (`src/lib/media/storage-config.ts`,
+    đầy đủ biến ở `.env.example`). Mỗi driver là một module trong `src/lib/media/drivers/` và chỉ
+    driver được chọn mới được nạp. **Mặc định (để trống cờ) là `vercel`** vì CI/CD deploy lên Vercel,
+    nơi đĩa không bền: Vercel Blob (`BLOB_READ_WRITE_TOKEN`, store PUBLIC). Thiếu token thì upload báo
+    lỗi rõ ràng và dán link vẫn chạy; chạy local không có token thì đặt `STORAGE_DRIVER=disk`. `disk`
+    ghi vào `UPLOAD_DIR` và trả `/uploads/<tên>` (route `/uploads/[file]` phục vụ) — chỉ chọn tường
+    minh, `UPLOAD_DIR` đơn lẻ KHÔNG bật nó, và `disk` trên Vercel bị từ chối. `s3` dùng mọi dịch vụ
+    tương thích S3 (R2, MinIO, B2, AWS) và trả URL tuyệt đối dưới `S3_PUBLIC_URL` — bucket phải đọc
+    được công khai, code không đặt ACL từng object.
+    Thêm nơi lưu mới = thêm một driver + một nhánh ở `saveImage`. Đổi driver giữa chừng không làm hỏng
+    campaign cũ vì schema nhận cả đường dẫn `/uploads/…` lẫn URL http(s); route `/uploads` vẫn phục vụ
+    ảnh cũ nếu `UPLOAD_DIR` còn được đặt.
+
+    Với `disk` trên VM: `UPLOAD_DIR` PHẢI nằm ngoài thư mục deploy và là đường dẫn TUYỆT ĐỐI; nginx nên
+    đọc thẳng thư mục đó, và route upload cần `client_max_body_size 5m` (mẫu cấu hình ở comment đầu
+    `src/app/uploads/[file]/route.ts`). Client S3 tắt checksum tự động (`WHEN_REQUIRED`) vì AWS SDK
+    mới mặc định gắn CRC32 + `aws-chunked`, thứ R2/B2/MinIO cũ từ chối. Giữ `import()` động cho từng
+    driver trong `store.ts`: đó cũng là thứ giữ cho `npm run build` không in cảnh báo Turbopack "whole
+    project was traced" (đường dẫn đọc ở driver `disk` do biến môi trường quyết định).
+
+    **Độ nét — đã đo, đừng "tối ưu" lại bằng cảm tính.** `processImage()` giữ nguyên bề rộng
+    (hero 1400px, OG 1200px) và hạ chất lượng từ 88 xuống sàn (WebP 50, JPEG 60) cho tới khi
+    ≤ 200KB. KHÔNG thu nhỏ ảnh để lọt ngân sách: ở ảnh dày chi tiết, thu nhỏ xuống 1190px làm
+    mất 13% cạnh (giữ 87%) trong khi q50 ở 1400px giữ 98%. Ảnh PNG đồ hoạ (chữ, ảnh chụp màn
+    hình) đi qua WebP lossless khi ≤ ngân sách — nhỏ hơn lossy và giữ nguyên từng điểm ảnh.
+    Ảnh có ICC (Display P3 của iPhone, CMYK) được sharp tự chuyển sang sRGB; test giữ điều này.
+    Số đo và lý do nằm ở comment `QUALITY_LADDER`; `media.test.ts` có các phép đo chống hồi quy
+    (PSNR, giữ cạnh, lossless, màu P3) trên ảnh thật của dự án.
+
+    **Bảo mật upload — nhiều lớp độc lập** (xem comment đầu `src/app/admin/upload-image/route.ts`):
+    proxy chặn `/admin/**`; handler TỰ kiểm lại cookie phiên (đừng dựa riêng vào matcher);
+    CSRF bằng `Sec-Fetch-Site` rồi mới đến Origin/`X-Forwarded-Host` (so Origin với `Host` trần
+    sai sau nginx); bắt buộc `content-length` hợp lệ và ≤ 4MB TRƯỚC khi đọc body; giới hạn 20
+    lượt/phút và 3 lượt xử lý đồng thời (`upload-guard.ts`); lỗi hạ tầng trả câu chung, không
+    lộ đường dẫn. `processImage()` là cửa duy nhất trước khi ghi: chỉ nhận jpeg/png/webp theo
+    NỘI DUNG (không tin `Content-Type` hay tên file), **từ chối SVG** (có thể chứa script), luôn
+    giải mã rồi mã hoá lại, bỏ EXIF/GPS, chặn ảnh khổng lồ về số điểm ảnh, và bị chặn CPU ở ảnh
+    nhiễu hạt (thử sàn chất lượng trước). Tên file = sha256 của byte đã nén (dùng chung cả ba driver, nên không có gì do client khai lọt vào khoá
+    object); `UPLOAD_FILE_RE` là toàn bộ phòng thủ path traversal của route phục vụ — đừng nới. File ghi bằng cờ `wx` qua
+    tên tạm rồi `rename` (nguyên tử), và tên tạm bị xoá nếu ghi lỗi. Route phục vụ gắn
+    `nosniff` + CSP `default-src 'none'; sandbox`. Ghi file mà không qua `processImage` là lỗ
+    XSS/rò vị trí.
+
+    Tải lên đi qua route handler, KHÔNG qua server action: giới hạn body 1MB của action áp cho
+    cả site (kể cả form liên hệ công khai), đừng nâng nó để chứa ảnh. Với `disk`, giá trị lưu là đường dẫn
+    TƯƠNG ĐỐI để đổi domain không làm hỏng ảnh cũ; chỗ nào xuất ra ngoài (thẻ OG, ở
+    `og-card.ts`) phải qua `absoluteImageUrl()` vì crawler không resolve được đường dẫn tương
+    đối. Chưa có dọn rác: ảnh bị thay thế vẫn nằm trên đĩa. Upload cần JS — dán link vẫn chạy
+    khi JS chưa tải.
+
 ---
 
 ## Commands
@@ -368,6 +424,7 @@ npm run lint
 npm run check:contrast   # gate WCAG cho design token
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
+npm run test:media       # ảnh tải lên: nén/độ nét, bảo mật route upload, ba driver lưu trữ (disk/vercel/s3)
 npm run test:botdetect   # unit test lib/botdetect (FCrDNS, điểm, rate limit, PoW)
 npm run check:botdetect-live  # FCrDNS với DNS thật (cần mạng, không nằm trong CI)
 npm run check:probe-browser   # probe client trong Chromium thật qua CDP (cần Chromium của Playwright)

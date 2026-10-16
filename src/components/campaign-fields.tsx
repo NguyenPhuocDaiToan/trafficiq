@@ -1,4 +1,5 @@
 import { CampaignNameSlugFields } from "@/components/campaign-name-slug-fields";
+import { ImageUrlField } from "@/components/image-url-field";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Field, inputClass } from "@/components/ui";
 import type { CampaignEditView } from "@/lib/control-plane/queries";
@@ -108,14 +109,13 @@ export function CampaignFields({
         hint="(không bắt buộc)"
       />
 
-      <Field label="Ảnh lớn đầu trang" hint="(không bắt buộc)">
-        <input
-          name="heroImageUrl"
-          defaultValue={landing?.heroImageUrl}
-          className={inputClass}
-          placeholder="https://…"
-        />
-      </Field>
+      <ImageUrlField
+        name="heroImageUrl"
+        kind="hero"
+        label="Ảnh lớn đầu trang"
+        hint="(không bắt buộc) dán link hoặc tải ảnh lên"
+        defaultValue={landing?.heroImageUrl}
+      />
 
       <SectionLabel>Hiển thị khi chia sẻ link</SectionLabel>
       <Field label="Tiêu đề khi chia sẻ" hint="hiện trên Facebook, Zalo, Telegram">
@@ -134,14 +134,13 @@ export function CampaignFields({
           className={inputClass}
         />
       </Field>
-      <Field label="Ảnh khi chia sẻ" hint="1200×630, nén nhẹ để tiết kiệm băng thông">
-        <input
-          name="ogImageUrl"
-          defaultValue={campaign?.og.imageUrl}
-          className={inputClass}
-          placeholder="https://…"
-        />
-      </Field>
+      <ImageUrlField
+        name="ogImageUrl"
+        kind="og"
+        label="Ảnh khi chia sẻ"
+        hint="tỉ lệ 1200×630; ảnh tải lên được nén tự động"
+        defaultValue={campaign?.og.imageUrl}
+      />
     </>
   );
 }

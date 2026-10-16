@@ -17,21 +17,25 @@
     "check:botdetect-live": "tsx scripts/check-botdetect-live.ts",
     "check:probe-browser": "tsx scripts/check-probe-browser.ts",
     "test:botdetect": "tsx --test --test-concurrency=1 src/lib/botdetect/botdetect.test.ts src/lib/botdetect/independent.test.ts src/lib/botdetect/round2.test.ts src/lib/botdetect/round3.test.ts src/lib/botdetect/round4.test.ts src/lib/botdetect/round5.test.ts src/lib/botdetect/round6.test.ts src/lib/botdetect/round7.test.ts src/lib/botdetect/round8.test.ts src/lib/botdetect/twitter.test.ts src/lib/botdetect/round9.test.ts",
+    "test:media": "tsx --test --test-concurrency=1 src/lib/media/media.test.ts src/lib/media/upload-route.test.ts src/lib/media/storage.test.ts",
     "gen:icons": "node scripts/generate-icons.mjs",
     "gen:thumbs": "tsx scripts/generate-thumbs.ts",
     "setup:indexes": "tsx --env-file-if-exists=.env.local scripts/setup-indexes.ts",
     "seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
     "@tiptap/extension-image": "^3.29.2",
     "@tiptap/pm": "^3.29.2",
     "@tiptap/react": "^3.29.2",
     "@tiptap/starter-kit": "^3.29.2",
+    "@vercel/blob": "^2.8.2",
     "mongodb": "^7.5.0",
     "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sanitize-html": "^2.17.6",
+    "sharp": "^0.34.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -42,7 +46,6 @@
     "@types/sanitize-html": "^2.16.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
-    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.5",
     "typescript": "^5"

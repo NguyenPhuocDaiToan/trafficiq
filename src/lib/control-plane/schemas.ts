@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isUploadPath } from "@/lib/media/path";
 
 export const statusSchema = z.enum(["pending", "active", "paused"]);
 
@@ -37,6 +38,31 @@ export const destinationSchema = z.object({
   category: z.string().trim().min(2).max(60),
 });
 
+/**
+ * Field ảnh của campaign: rỗng, link http(s) tuyệt đối, hoặc đường dẫn ảnh đã tải
+ * lên (`/uploads/<sha256>.<ext>`). Cùng một field nhận cả hai nguồn nên không có cờ
+ * "ảnh này là link hay là file" để lệch với giá trị thật — Mongo chỉ lưu chuỗi, không
+ * lưu byte ảnh.
+ *
+ * Chỉ http/https — trước đây là `z.url()` trần nhận cả `javascript:` và `data:`.
+ * Đường dẫn tương đối khác `/uploads/<sha256>.<ext>` bị từ chối: nó không phải ảnh
+ * của site này.
+ */
+const imageRefSchema = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine((value) => {
+    if (value === "" || isUploadPath(value)) return true;
+    try {
+      const url = new URL(value);
+      return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
+    } catch {
+      return false;
+    }
+  }, "Ảnh phải là link http(s) hoặc ảnh đã tải lên")
+  .optional();
+
 export const campaignSchema = z.object({
   name: z.string().trim().min(2).max(120),
   advertiserId: objectIdSchema,
@@ -63,11 +89,11 @@ export const campaignSchema = z.object({
    */
   bodyHtml: z.string().trim().max(20000).optional().or(z.literal("")),
   ctaLabel: z.string().trim().min(2).max(60),
-  heroImageUrl: z.url().trim().optional().or(z.literal("")),
+  heroImageUrl: imageRefSchema,
   autoRedirectSeconds: z.coerce.number().int().min(0).max(10).default(0),
   ogTitle: z.string().trim().min(3).max(140),
   ogDescription: z.string().trim().min(3).max(300),
-  ogImageUrl: z.url().trim().optional().or(z.literal("")),
+  ogImageUrl: imageRefSchema,
 });
 
 /**

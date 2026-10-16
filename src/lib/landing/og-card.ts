@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { absoluteImageUrl } from "@/lib/media/path";
 import { pageTitle } from "@/lib/site";
 import type { CampaignOg } from "@/lib/types";
 
@@ -40,8 +41,9 @@ export function buildOgCard(params: {
   return {
     title: params.og.title,
     description: params.og.description,
-    // Crawler không hiểu đường dẫn tương đối — ảnh OG phải là absolute URL.
-    imageUrl: params.og.imageUrl,
+    // Crawler không hiểu đường dẫn tương đối — ảnh OG phải là absolute URL. Ảnh tải
+    // lên được lưu dạng `/uploads/<tên>` nên phải nối base URL tại đây.
+    imageUrl: absoluteImageUrl(params.og.imageUrl, params.baseUrl),
     url: `${params.baseUrl}/c/${params.slug}`,
     index: params.index,
   };

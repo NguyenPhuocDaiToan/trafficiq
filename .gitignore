@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# ảnh admin tải lên khi chạy local (UPLOAD_DIR mặc định). Trên VM đặt UPLOAD_DIR ngoài repo.
+/uploads/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -391,6 +391,17 @@ tại chỗ trước.
     Số đo và lý do nằm ở comment `QUALITY_LADDER`; `media.test.ts` có các phép đo chống hồi quy
     (PSNR, giữ cạnh, lossless, màu P3) trên ảnh thật của dự án.
 
+    **Giới hạn kích thước — nói bằng số, và đừng bắt admin nén tay.** Trần file gửi lên là 4MB
+    (`MAX_UPLOAD_BYTES`, `src/lib/media/limits.ts`): Vercel cắt body Function ở 4,5MB và không nâng
+    được; nginx mặc định 1MB. Ảnh chụp điện thoại thường 3–12MB nên `ImageUrlField` tự thu nhỏ trong
+    trình duyệt (`client-shrink.ts`) khi file > 2MB: cạnh dài về 2800px (gấp đôi ảnh lớn nhất server
+    xuất, nên Lanczos của sharp vẫn thu nhỏ tiếp từ bản còn dư độ phân giải — độ nét cuối không đổi),
+    JPEG q0,92; PNG/WebP có alpha giữ PNG; EXIF Orientation được trình duyệt xử lý. Đo trên Chromium
+    thật: ảnh 12,8MB → 1,1MB → 97KB trên server, PNG trong suốt 15,4MB vẫn giữ 51% điểm ảnh trong suốt,
+    ảnh dọc EXIF ra đúng chiều. Mọi thông báo lỗi kèm kích thước thật và giới hạn thật (lỗi 413 của
+    nền tảng/proxy cũng được nhận ra và giải thích) — đừng quay lại câu chung chung "file quá lớn".
+    Hằng số nằm ở `limits.ts` (không import `sharp`) để client dùng chung với server.
+
     **Bảo mật upload — nhiều lớp độc lập** (xem comment đầu `src/app/admin/upload-image/route.ts`):
     proxy chặn `/admin/**`; handler TỰ kiểm lại cookie phiên (đừng dựa riêng vào matcher);
     CSRF bằng `Sec-Fetch-Site` rồi mới đến Origin/`X-Forwarded-Host` (so Origin với `Host` trần

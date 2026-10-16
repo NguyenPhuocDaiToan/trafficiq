@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionCookie } from "@/lib/auth/session";
-import { MAX_UPLOAD_BYTES, MediaError, processImage, type MediaKind } from "@/lib/media/process";
+import { formatBytes, MAX_UPLOAD_BYTES, MULTIPART_OVERHEAD } from "@/lib/media/limits";
+import { MediaError, processImage, type MediaKind } from "@/lib/media/process";
 import { acquireUploadSlot } from "@/lib/media/upload-guard";
 import { saveImage, StorageNotConfiguredError } from "@/lib/media/store";
 
@@ -26,9 +27,6 @@ import { saveImage, StorageNotConfiguredError } from "@/lib/media/store";
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/** Dư một chút cho phần đóng gói multipart (boundary, tên field) ngoài chính file. */
-const MULTIPART_OVERHEAD = 64 * 1024;
 
 function fail(error: string, status: number, headers?: Record<string, string>) {
   return NextResponse.json(
@@ -82,7 +80,7 @@ export async function POST(request: NextRequest) {
   if (!Number.isFinite(declared) || declared <= 0) return fail("Thiếu độ dài nội dung.", 411);
   if (declared > MAX_UPLOAD_BYTES + MULTIPART_OVERHEAD) {
     return fail(
-      `File quá lớn (tối đa ${MAX_UPLOAD_BYTES / 1024 / 1024}MB). Hãy thu nhỏ ảnh trước khi tải lên.`,
+      `File quá lớn: yêu cầu ${formatBytes(declared)}, tối đa ${formatBytes(MAX_UPLOAD_BYTES)}. Hãy thu nhỏ ảnh trước khi tải lên.`,
       413,
     );
   }

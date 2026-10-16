@@ -2,6 +2,8 @@
 
 import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { buttonSecondaryClass, inputClass } from "@/components/ui";
+import { needsShrink, shrinkImage } from "@/lib/media/client-shrink";
+import { CLIENT_SHRINK_ABOVE_BYTES, formatBytes, MAX_UPLOAD_BYTES } from "@/lib/media/limits";
 
 /**
  * Field ảnh: MỘT ô nhập duy nhất, nhận cả link dán vào lẫn ảnh tải lên.
@@ -23,12 +25,15 @@ type UploadResponse =
 
 type Status =
   | { kind: "idle" }
-  | { kind: "uploading" }
+  | { kind: "uploading"; message: string }
   | { kind: "error"; message: string }
   | { kind: "done"; message: string; warning?: string };
 
 /** Tỉ lệ ảnh chia sẻ chuẩn của Facebook/X/Zalo: 1200×630. */
 const OG_RATIO = 1200 / 630;
+
+/** Khớp `ACCEPTED_FORMATS` của server; GIF/SVG/HEIC bị từ chối ngay, khỏi tải rồi mới báo. */
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const subscribeNoop = () => () => {};
 /** `true` sau hydrate, `false` khi SSR — không cần effect để biết JS đã chạy. */
@@ -80,12 +85,39 @@ export function ImageUrlField({
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  async function upload(file: File) {
-    if (!file.type.startsWith("image/")) {
-      setStatus({ kind: "error", message: "Chỉ nhận file ảnh (JPG, PNG, WebP)." });
+  async function upload(original: File) {
+    if (!ACCEPTED_TYPES.includes(original.type)) {
+      setStatus({
+        kind: "error",
+        message: `Chỉ nhận ảnh JPG, PNG hoặc WebP (file này là ${original.type || "không rõ định dạng"}).`,
+      });
       return;
     }
-    setStatus({ kind: "uploading" });
+
+    // Ảnh chụp điện thoại thường 3–12MB, vượt trần của máy chủ. Thu nhỏ ngay trong trình duyệt
+    // thay vì bắt admin đi nén tay; server vẫn xử lý lại bản này nên độ nét cuối không đổi.
+    let file = original;
+    if (needsShrink(original.size)) {
+      setStatus({ kind: "uploading", message: `Đang thu nhỏ ảnh ${formatBytes(original.size)}…` });
+      const shrunk = await shrinkImage(original);
+      // Giữ bản gốc nếu thu nhỏ không giúp ích và bản gốc đã vừa trần.
+      if (shrunk && (shrunk.size < original.size || original.size > MAX_UPLOAD_BYTES)) file = shrunk;
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setStatus({
+        kind: "error",
+        message:
+          file === original
+            ? `Ảnh ${formatBytes(original.size)} vượt giới hạn ${formatBytes(MAX_UPLOAD_BYTES)} và trình duyệt này không tự thu nhỏ được. Hãy thu nhỏ ảnh bằng phần mềm chỉnh ảnh rồi tải lại.`
+            : `Ảnh ${formatBytes(original.size)} vẫn còn ${formatBytes(file.size)} sau khi tự thu nhỏ, vượt giới hạn ${formatBytes(MAX_UPLOAD_BYTES)}. Hãy chọn ảnh khác.`,
+      });
+      return;
+    }
+    const shrunkNote =
+      file === original ? undefined : `ảnh gốc ${formatBytes(original.size)} đã được thu nhỏ còn ${formatBytes(file.size)} trước khi gửi`;
+
+    setStatus({ kind: "uploading", message: `Đang tải lên ${formatBytes(file.size)}…` });
 
     const body = new FormData();
     body.set("file", file);
@@ -95,13 +127,13 @@ export function ImageUrlField({
       const res = await fetch("/admin/upload-image", { method: "POST", body });
       const isJson = res.headers.get("content-type")?.includes("application/json");
       if (!isJson) {
-        // Không phải JSON của route này nên là một lớp đứng trước nó trả lời. 413 = nginx cắt
-        // body (cần `client_max_body_size`); redirect = proxy đẩy về trang đăng nhập (phiên hết hạn).
+        // Không phải JSON của route này nên là một lớp đứng trước nó trả lời. 413 = nền tảng/proxy
+        // cắt body trước khi tới app; redirect = proxy đẩy về trang đăng nhập (phiên hết hạn).
         setStatus({
           kind: "error",
           message:
             res.status === 413
-              ? "File quá lớn so với giới hạn của máy chủ. Hãy thu nhỏ ảnh trước khi tải lên."
+              ? `Yêu cầu ${formatBytes(file.size)} bị máy chủ phía trước từ chối vì quá lớn. Giới hạn của ứng dụng là ${formatBytes(MAX_UPLOAD_BYTES)}, nhưng Vercel cắt ở 4,5MB và nginx mặc định ở 1MB (cần client_max_body_size).`
               : "Phiên đăng nhập đã hết hạn. Tải lại trang rồi đăng nhập lại.",
         });
         return;
@@ -115,7 +147,7 @@ export function ImageUrlField({
       commit(result.url);
 
       const kb = Math.max(1, Math.round(result.bytes / 1024));
-      const done = `Đã tải lên · ${result.width}×${result.height} · ${kb}KB`;
+      const done = `Đã tải lên · ${result.width}×${result.height} · ${kb}KB${shrunkNote ? ` (${shrunkNote})` : ""}`;
       // Ảnh chia sẻ lệch tỉ lệ sẽ bị mạng xã hội cắt. Chỉ cảnh báo, không chặn:
       // admin có thể cố ý dùng ảnh vuông.
       const warning =
@@ -179,7 +211,7 @@ export function ImageUrlField({
               onClick={() => fileRef.current?.click()}
               className={`${buttonSecondaryClass} shrink-0 whitespace-nowrap`}
             >
-              {uploading ? "Đang tải…" : "Tải ảnh lên"}
+              {uploading ? "Đang xử lý…" : "Tải ảnh lên"}
             </button>
             {/* Không `name`: file KHÔNG đi theo submit của form, chỉ đi qua fetch ở trên. */}
             <input
@@ -196,6 +228,16 @@ export function ImageUrlField({
       </div>
 
       <p role="status" aria-live="polite" className="mt-1 min-h-4 text-xs">
+        {status.kind === "idle" && hydrated && brokenValue !== value ? (
+          // Giới hạn thật, nói trước — không đợi tới khi bị từ chối mới cho biết.
+          <span className="text-muted-foreground">
+            JPG, PNG hoặc WebP · tối đa {formatBytes(MAX_UPLOAD_BYTES)} · ảnh trên{" "}
+            {formatBytes(CLIENT_SHRINK_ABOVE_BYTES)} được tự thu nhỏ trước khi gửi
+          </span>
+        ) : null}
+        {status.kind === "uploading" ? (
+          <span className="text-muted-foreground">{status.message}</span>
+        ) : null}
         {status.kind === "error" ? (
           <span className="text-destructive">{status.message}</span>
         ) : null}

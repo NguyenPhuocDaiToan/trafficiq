@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { formatBytes, MAX_UPLOAD_BYTES } from "@/lib/media/limits";
 
 /**
  * Xử lý ảnh admin tải lên TRƯỚC khi lưu. Thuần túy (không chạm DB) để test được.
@@ -32,11 +33,8 @@ export class MediaError extends Error {
   }
 }
 
-/**
- * Trần của file GỬI LÊN. Vercel cắt body request ở 4.5MB, nên 4MB là con số lớn nhất
- * còn trả được lỗi tiếng Việt thay vì lỗi 413 trần của nền tảng.
- */
-export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+// Trần upload nằm ở `limits.ts` để client dùng chung mà không kéo `sharp` vào bundle trình duyệt.
+export { MAX_UPLOAD_BYTES };
 
 /**
  * Chống "decompression bomb": file PNG vài chục KB có thể khai báo 60000×60000 px
@@ -124,7 +122,7 @@ export async function processImage(
   if (input.length === 0) throw new MediaError("File rỗng.");
   if (input.length > MAX_UPLOAD_BYTES) {
     throw new MediaError(
-      `File quá lớn (tối đa ${MAX_UPLOAD_BYTES / 1024 / 1024}MB). Hãy thu nhỏ ảnh trước khi tải lên.`,
+      `File quá lớn: ${formatBytes(input.length)}, tối đa ${formatBytes(MAX_UPLOAD_BYTES)}. Hãy thu nhỏ ảnh trước khi tải lên.`,
     );
   }
 

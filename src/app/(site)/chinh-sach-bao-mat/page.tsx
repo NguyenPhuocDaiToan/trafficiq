@@ -38,7 +38,11 @@ export default function PrivacyPage() {
         <Prose>
           <h2>Nói ngắn trước</h2>
           <ul>
-            <li>Đọc bài trên site này: tôi không thu thập gì về bạn.</li>
+            <li>
+              Đọc bài trên site này: tôi không tự thu thập gì về bạn. Nhưng các trang công khai nạp
+              script của <strong>Skimlinks</strong> (dịch vụ affiliate tự động) — script đó chạy ngay khi
+              trang mở, có thể đặt cookie và ghi nhận liên kết ra ngoài bạn bấm. Xem mục 2.
+            </li>
             <li>
               Bấm một liên kết theo dõi: tôi ghi lượt bấm đó, có kèm{" "}
               <strong>bản băm</strong> của địa chỉ IP — không phải IP thật.
@@ -46,7 +50,10 @@ export default function PrivacyPage() {
             <li>
               Gửi form liên hệ: tôi lưu tên, email và nội dung để trả lời bạn.
             </li>
-            <li>Tôi không dùng cookie theo dõi, không chạy Google Analytics.</li>
+            <li>
+              Tôi không chạy Google Analytics và không dùng pixel mạng xã hội. Cookie trên site chỉ có thể
+              đến từ Skimlinks, không phải từ tôi.
+            </li>
             <li>Tôi không bán dữ liệu của bạn cho bất kỳ ai.</li>
           </ul>
 
@@ -60,10 +67,25 @@ export default function PrivacyPage() {
 
           <h2>2. Khi bạn chỉ đọc bài</h2>
           <p>
-            Các trang nội dung được tạo sẵn dạng tĩnh và{" "}
-            <strong>không đặt cookie nào</strong>. Không có mã theo dõi của bên thứ ba,
-            không Google Analytics, không pixel mạng xã hội, không nhúng font từ máy
-            chủ bên ngoài (font được đóng gói cùng website).
+            Các trang nội dung được tạo sẵn dạng tĩnh. Website của tôi{" "}
+            <strong>không tự đặt cookie nào</strong>, không chạy Google Analytics, không dùng pixel
+            mạng xã hội và không nhúng font từ máy chủ bên ngoài (font được đóng gói cùng website).
+          </p>
+          <p>
+            <strong>Có một ngoại lệ:</strong> các trang công khai nạp script của{" "}
+            <strong>Skimlinks</strong> (<code>s.skimresources.com</code>), một dịch vụ affiliate. Script
+            này chạy trong trình duyệt của bạn và nhận ra các liên kết ra ngoài trên trang. Khi bạn bấm
+            một liên kết tới nhà bán nằm trong mạng của họ, Skimlinks có thể chuyển lượt bấm đó qua hệ
+            thống của họ để tính hoa hồng cho tôi.
+          </p>
+          <p>
+            Script chạy ngay khi trang mở, không đợi bạn bấm gì: nó gửi các yêu cầu tới máy chủ của
+            Skimlinks (kèm trang bạn đang đọc). Vì vậy trình duyệt của bạn gửi cho họ các thông tin kỹ thuật
+            thông thường của một yêu cầu web (như địa chỉ IP, loại trình duyệt), và Skimlinks có thể đặt
+            cookie của riêng họ. Dữ liệu đó do Skimlinks xử lý theo chính sách của
+            họ, không phải chính sách này; tôi không kiểm soát và không nhận lại dữ liệu nhận dạng cá nhân
+            nào từ họ. Nếu bạn không muốn, hãy chặn script hoặc cookie bên thứ ba bằng trình duyệt hay
+            tiện ích chặn quảng cáo — site vẫn đọc bình thường.
           </p>
           <p>
             Nhà cung cấp hạ tầng của tôi có log máy chủ ở mức kỹ thuật để chống
@@ -174,8 +196,13 @@ export default function PrivacyPage() {
           </p>
 
           <h2>6. Chia sẻ với bên thứ ba</h2>
-          <p>Tôi chia sẻ dữ liệu trong đúng ba trường hợp:</p>
+          <p>Tôi chia sẻ dữ liệu trong đúng bốn trường hợp:</p>
           <ul>
+            <li>
+              <strong>Skimlinks</strong> — khi bạn đọc một trang công khai, trình duyệt của bạn tải
+              script của họ và gửi cho họ dữ liệu kỹ thuật, trang đang đọc và liên kết ra ngoài bạn bấm,
+              như mô tả ở mục 2. Việc này xảy ra trực tiếp giữa trình duyệt của bạn và họ.
+            </li>
             <li>
               <strong>Bên bán / mạng affiliate</strong> — nhận mã lượt bấm ngẫu nhiên
               để đối chiếu giao dịch. Họ không nhận email, tên hay IP của bạn từ tôi.

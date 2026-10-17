@@ -154,20 +154,23 @@ export function SiteFooter() {
 
         <div className="mt-12 border-t border-border pt-6 text-xs text-muted-foreground">
           {/*
-            ⚠️ Ở ĐÂY TRƯỚC CÓ DÒNG TIẾT LỘ AFFILIATE — chủ dự án cho bỏ, và bỏ được
-            vì hiện KHÔNG bài nào chứa link tài trợ.
-
-            Đừng hiểu thành "site này không cần tiết lộ nữa". Thứ mang tính pháp lý
-            là nhãn **tại chỗ, ngay cạnh link** — `PromoBox` trong
-            `components/content.tsx` đã gánh (`rel="nofollow sponsored"` + nhãn
-            "Liên kết tài trợ" + link tới `/tiet-lo-lien-ket`). Một dòng ở chân
-            trang vốn không đủ để thay việc đó.
-
-            Vì vậy: khi bài đầu tiên có link tài trợ, KHÔNG được gỡ nhãn của
-            `PromoBox`, và nên cân nhắc đưa lại dòng này. Trang
-            `/tiet-lo-lien-ket` vẫn còn, vẫn được link từ `/gioi-thieu`.
+            Dòng tiết lộ affiliate ở chân MỌI trang công khai — ĐÃ QUAY LẠI. Trước đó nó bị bỏ vì không bài nào
+            chứa link tài trợ; điều kiện đó hết đúng khi site nạp Skimlinks (xem `lib/monetization.ts`), vì
+            Skimlinks tự chuyển link ra ngoài thành link có hoa hồng lúc bấm, kể cả link không có nhãn nào.
+            Một dòng ở chân trang không thay được nhãn tại chỗ của `PromoBox` (`rel="nofollow sponsored"` +
+            nhãn "Liên kết tài trợ") — nó là lớp bổ sung cho phần Skimlinks mà nhãn tại chỗ không phủ tới.
+            Trang `/tiet-lo-lien-ket` nói rằng "có một dòng tiết lộ ở chân mọi trang": gỡ dòng này là làm trang
+            đó nói sai.
           */}
           <p className="max-w-3xl">
+            Một số liên kết ra ngoài trên site này có thể mang lại hoa hồng cho tôi mà bạn không phải trả
+            thêm.{" "}
+            <Link href="/tiet-lo-lien-ket" className="underline underline-offset-2 hover:text-foreground">
+              Tiết lộ liên kết affiliate
+            </Link>
+            .
+          </p>
+          <p className="mt-2 max-w-3xl">
             © {year} {SITE.legal.entityName ?? SITE.name}. Nội dung mang tính tham
             khảo, không phải tư vấn tài chính, y tế hay pháp lý.
           </p>

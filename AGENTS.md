@@ -469,6 +469,18 @@ tại chỗ trước.
     (accent chỉ cho CTA chính của trang). Tiến độ "Đã xem" chỉ lưu trong `localStorage` của trình duyệt — hệ
     thống chỉ có một mật khẩu admin dùng chung nên không có "người dùng" nào để gắn tiến độ.
 
+22. **Script/thẻ bên thứ ba chỉ ở `(site)/layout.tsx`, khai ở một nơi (`src/lib/monetization.ts`), và thêm một cái là
+    PHẢI sửa ba trang pháp lý cùng lúc.** Hiện có: thẻ xác minh `clckd` (mạng quảng cáo) và script Skimlinks (chỉ
+    nạp ở production). KHÔNG gắn vào `/admin`, `/c/[slug]` (bất biến 12: landing không rò rỉ click, không thêm
+    script) hay `/go/[token]`. Skimlinks tự chuyển link ra ngoài thành link có hoa hồng LÚC BẤM, kể cả link không có
+    nhãn, và đặt cookie — nên `/chinh-sach-bao-mat` (mục 2 và 6), `/tiet-lo-lien-ket` (mục Skimlinks) và
+    `/gioi-thieu` (nguyên tắc thứ ba) phải nói đúng điều đó, và dòng tiết lộ affiliate ở chân mọi trang
+    (`SiteFooter`) phải còn. Trước khi gắn Skimlinks các trang đó từng khẳng định "không đặt cookie nào, không có mã
+    theo dõi của bên thứ ba" và "mọi liên kết không có nhãn là không sinh tiền" — thêm script mà không sửa là tuyên bố
+    sai sự thật với người đọc, build vẫn xanh và không gate nào bắt được. Đổi `policyUpdatedAt` trong `lib/site.ts`
+    khi sửa. CHƯA có banner đồng ý cookie: nếu site nhắm người đọc ở EU/Anh (GDPR/ePrivacy) thì script theo dõi phải
+    chờ sự đồng ý trước khi nạp — xem cảnh báo đã nêu với chủ dự án.
+
 ---
 
 ## Commands

@@ -55,8 +55,24 @@ export default function DisclosurePage() {
             <li>Có một dòng tiết lộ ở chân mọi trang, kể cả trang không có liên kết nào.</li>
           </ul>
           <p>
-            Mọi liên kết <em>không</em> có nhãn đó là liên kết tôi tự đặt vì nó
-            hữu ích, và không đem lại tiền cho tôi.
+            Các liên kết <em>không</em> có nhãn đó là liên kết tôi tự đặt vì nó hữu
+            ích. Có một ngoại lệ tôi nói thẳng ngay dưới đây.
+          </p>
+
+          <h2>Liên kết được gắn hoa hồng tự động (Skimlinks)</h2>
+          <p>
+            Ngoài các liên kết tôi tự gắn, site dùng <strong>Skimlinks</strong>, một dịch vụ affiliate tự
+            động. Khi bạn bấm một liên kết ra ngoài tới nhà bán nằm trong mạng của họ, liên kết đó có thể
+            được Skimlinks chuyển qua hệ thống của họ để tính hoa hồng cho tôi — <em>kể cả khi</em> tôi
+            đặt liên kết ấy chỉ vì nó hữu ích và không gắn nhãn &ldquo;Liên kết tài trợ&rdquo;. Việc
+            chuyển xảy ra lúc bạn bấm, nên bạn không thấy nhãn trước đó.
+          </p>
+          <p>
+            Hệ quả: <strong>không có nhãn không còn đảm bảo là liên kết đó không sinh hoa hồng</strong>.
+            Ba giới hạn về nội dung ở dưới áp dụng như nhau cho cả hai loại liên kết. Cách Skimlinks xử lý
+            dữ liệu được mô tả ở mục 2 của{" "}
+            <Link href="/chinh-sach-bao-mat">chính sách quyền riêng tư</Link>; bạn có thể chặn script của
+            họ trong trình duyệt mà vẫn đọc site bình thường.
           </p>
 
           <h2>Điều này ảnh hưởng tới nội dung như thế nào</h2>

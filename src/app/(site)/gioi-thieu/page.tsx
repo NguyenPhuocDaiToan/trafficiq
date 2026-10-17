@@ -130,8 +130,10 @@ export default function AboutPage() {
               lý được thì chỉ là thu địa chỉ email của bạn để đó.
             </li>
             <li>
-              <strong>Không theo dõi bạn khi bạn chỉ đọc bài.</strong> Không Google
-              Analytics, không pixel mạng xã hội, không cookie theo dõi. Chi tiết trong{" "}
+              <strong>Không tự theo dõi bạn khi bạn chỉ đọc bài.</strong> Không Google
+              Analytics, không pixel mạng xã hội, không cookie do tôi đặt. Một ngoại lệ tôi nói thẳng:
+              các trang công khai nạp script của Skimlinks (dịch vụ affiliate tự động), có thể đặt cookie
+              và ghi nhận liên kết ra ngoài bạn bấm. Chi tiết trong{" "}
               <Link href="/chinh-sach-bao-mat">chính sách quyền riêng tư</Link>.
             </li>
           </ul>

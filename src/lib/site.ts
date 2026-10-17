@@ -73,7 +73,7 @@ export const SITE = {
   },
 
   /** Ngày hiệu lực của điều khoản & privacy. Cập nhật khi sửa nội dung. */
-  policyUpdatedAt: "2026-08-03",
+  policyUpdatedAt: "2026-10-17",
 } as const;
 
 /**

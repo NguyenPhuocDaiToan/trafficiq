@@ -1,4 +1,15 @@
+import type { Metadata } from "next";
+import Script from "next/script";
 import { SiteFooter, SiteHeader } from "@/components/site";
+import { AD_NETWORK_VERIFICATION, SKIMLINKS_SRC } from "@/lib/monetization";
+
+/**
+ * Thẻ xác minh mạng quảng cáo chỉ có trên bề mặt công khai. `other` được các trang con thừa kế vì không trang
+ * nào khai lại field `other` (Next gộp metadata theo từng field cấp một).
+ */
+export const metadata: Metadata = {
+  other: { [AD_NETWORK_VERIFICATION.name]: AD_NETWORK_VERIFICATION.content },
+};
 
 /**
  * Shell của surface công khai: trang chủ, blog, chuyên mục, và các trang tĩnh.
@@ -43,6 +54,16 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       </main>
 
       <SiteFooter />
+
+      {/*
+        Skimlinks — script affiliate bên thứ ba, CHỈ ở bề mặt công khai và CHỈ ở production. Nó đặt cookie và
+        ghi nhận liên kết ra ngoài được bấm, nên `/chinh-sach-bao-mat`, `/tiet-lo-lien-ket` và `/gioi-thieu`
+        phải nói đúng điều đó (bất biến 11 và 22). `afterInteractive`: không chặn render, vẫn kịp chạy trước
+        khi người đọc bấm liên kết.
+      */}
+      {process.env.NODE_ENV === "production" ? (
+        <Script src={SKIMLINKS_SRC} strategy="afterInteractive" />
+      ) : null}
     </div>
   );
 }

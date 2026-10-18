@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState, useSyncExternalStore } from "react";
 import { buttonSecondaryClass, inputClass } from "@/components/ui";
 import { needsShrink, shrinkImage } from "@/lib/media/client-shrink";
 import { CLIENT_SHRINK_ABOVE_BYTES, formatBytes, MAX_UPLOAD_BYTES } from "@/lib/media/limits";
@@ -49,10 +49,19 @@ export function ImageUrlField({
   kind,
   defaultValue,
   tour,
+  required = false,
+  dropzone = false,
 }: {
   name: string;
   label: string;
   hint?: string;
+  /** Ô link bắt buộc có giá trị (tải lên cũng là điền giá trị vào đúng ô này). */
+  required?: boolean;
+  /**
+   * Chế độ "tải ảnh nhanh": một vùng lớn để kéo-thả / bấm chọn / dán ảnh bằng Ctrl+V, ô dán link thu xuống thành
+   * lựa chọn phụ. Dùng ở form tạo chiến dịch, nơi tải ảnh lên là thao tác CHÍNH chứ không phải một tuỳ chọn.
+   */
+  dropzone?: boolean;
   /** Chú thích dưới ô nhập (xem `Field`). */
   help?: string;
   /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
@@ -74,6 +83,24 @@ export function ImageUrlField({
   const [brokenValue, setBrokenValue] = useState<string | null>(null);
 
   const uploading = status.kind === "uploading";
+
+  // Dán ảnh từ clipboard (Ctrl+V sau khi chụp màn hình hoặc sao chép ảnh) — nhanh hơn lưu file rồi chọn. Chỉ ở chế
+  // độ `dropzone` và chỉ khi nội dung dán LÀ ảnh: dán chữ vào ô link hay ô khác vẫn chạy như bình thường.
+  // `useEffectEvent`: handler luôn thấy `upload` mới nhất mà không buộc effect đăng ký lại listener mỗi lần render.
+  const uploadPasted = useEffectEvent((file: File) => {
+    void upload(file);
+  });
+  useEffect(() => {
+    if (!dropzone) return;
+    function onPaste(event: ClipboardEvent) {
+      const file = [...(event.clipboardData?.files ?? [])].find((f) => f.type.startsWith("image/"));
+      if (!file) return;
+      event.preventDefault();
+      uploadPasted(file);
+    }
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, [dropzone]);
 
   /**
    * Gán giá trị vào ô nhập rồi phát một sự kiện `input` thật. Form cha
@@ -197,29 +224,56 @@ export function ImageUrlField({
       </label>
       {hint ? <span className="ml-1 text-xs text-muted-foreground">{hint}</span> : null}
 
-      <div className="mt-1 flex gap-2">
+      {dropzone && hydrated ? (
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileRef.current?.click()}
+          className={`mt-2 flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors duration-150 hover:bg-muted disabled:cursor-wait ${
+            dragging ? "border-ring bg-muted" : "border-input"
+          }`}
+        >
+          {showPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- ảnh admin vừa tải lên, không qua Image Optimization
+            <img src={value} alt="" className="max-h-40 max-w-full rounded-lg object-contain" />
+          ) : null}
+          <span className="text-sm font-semibold">
+            {uploading ? "Đang tải ảnh lên…" : showPreview ? "Bấm hoặc kéo ảnh khác vào để đổi" : "Kéo ảnh vào đây hoặc bấm để chọn ảnh"}
+          </span>
+          {showPreview || uploading ? null : (
+            <span className="text-xs text-muted-foreground">Cũng dán được ảnh bằng Ctrl+V · JPG, PNG, WebP</span>
+          )}
+        </button>
+      ) : null}
+
+      <div className={`mt-1 flex gap-2 ${dropzone && hydrated ? "mt-2" : ""}`}>
         <input
           ref={inputRef}
           id={inputId}
           name={name}
+          required={required}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className={inputClass}
-          placeholder={hydrated ? "Dán link ảnh, hoặc tải ảnh lên" : "https://…"}
+          placeholder={
+            dropzone && hydrated ? "hoặc dán link ảnh vào đây" : hydrated ? "Dán link ảnh, hoặc tải ảnh lên" : "https://…"
+          }
           inputMode="url"
           autoComplete="off"
           spellCheck={false}
         />
         {hydrated ? (
           <>
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              className={`${buttonSecondaryClass} shrink-0 whitespace-nowrap`}
-            >
-              {uploading ? "Đang xử lý…" : "Tải ảnh lên"}
-            </button>
+            {dropzone ? null : (
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                className={`${buttonSecondaryClass} shrink-0 whitespace-nowrap`}
+              >
+                {uploading ? "Đang xử lý…" : "Tải ảnh lên"}
+              </button>
+            )}
             {/* Không `name`: file KHÔNG đi theo submit của form, chỉ đi qua fetch ở trên. */}
             <input
               ref={fileRef}
@@ -265,7 +319,8 @@ export function ImageUrlField({
         ) : null}
       </p>
 
-      {showPreview ? (
+      {/* Ở chế độ vùng kéo-thả, bản xem trước nằm ngay trong vùng đó — không hiện hai lần. */}
+      {showPreview && !(dropzone && hydrated) ? (
         <div className="mt-2 flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element -- ảnh admin dán/tải lên, không qua Image Optimization (hạn mức free tier) */}
           <img

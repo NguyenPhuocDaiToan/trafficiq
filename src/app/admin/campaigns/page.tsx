@@ -31,9 +31,9 @@ export const metadata = { title: "Chiến dịch" };
 export default async function CampaignsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ new?: string }>;
+  searchParams: Promise<{ new?: string; reactivated?: string }>;
 }) {
-  const [{ new: createdSlug }, campaigns, options, verified] = await Promise.all([
+  const [{ new: createdSlug, reactivated }, campaigns, options, verified] = await Promise.all([
     searchParams,
     listCampaigns(),
     listActiveOptions(),
@@ -58,8 +58,10 @@ export default async function CampaignsPage({
 
       {createdSlug ? (
         <p className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success">
-          Đã tạo chiến dịch. Thêm đích chuyển hướng ở khung bên dưới rồi kích hoạt
-          thì link theo dõi mới chạy.
+          Đã tạo chiến dịch và đang chạy. Bấm &ldquo;Sao chép&rdquo; ở link theo dõi bên dưới để đem đi dùng.
+          {Number(reactivated) > 0
+            ? ` Đã bật lại ${Number(reactivated)} URL đích đang tạm dừng vì chiến dịch này dùng chúng.`
+            : ""}
         </p>
       ) : null}
 

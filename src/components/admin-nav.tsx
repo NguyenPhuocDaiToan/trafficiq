@@ -13,6 +13,8 @@ interface NavItem {
   label: string;
   /** Các đường dẫn khác cũng làm tab này sáng (tab "Cài đặt" gom nhiều trang con). */
   alsoActive?: string[];
+  /** Đường dẫn con KHÔNG làm tab này sáng (vì nó là tab riêng): "Chiến dịch" không sáng ở /admin/campaigns/new. */
+  notActive?: string[];
 }
 
 /**
@@ -28,7 +30,9 @@ export const SETTINGS_PAGES: { href: string; label: string; ownerOnly?: boolean 
 ];
 
 const NAV: NavItem[] = [
-  { href: "/admin/campaigns", label: "Chiến dịch" },
+  // Việc làm nhiều nhất: ảnh → link. Có tab riêng, đứng đầu, để không bao giờ phải đi qua danh sách mới tới được.
+  { href: "/admin/campaigns/new", label: "Tạo link" },
+  { href: "/admin/campaigns", label: "Chiến dịch", notActive: ["/admin/campaigns/new"] },
   { href: "/admin/tong-quan", label: "Tổng quan" },
   // Trang chẩn đoán, đứng sau hai mục làm việc chính vì mở thưa hơn. Vẫn phải có tab
   // riêng chứ không chỉ là link từ Tổng quan: nó là chỗ trả lời "click của tôi
@@ -63,7 +67,9 @@ export function AdminNav() {
   return (
     <>
       {NAV.map((item) => {
-        const active = [item.href, ...(item.alsoActive ?? [])].some((href) => isActive(pathname, href));
+        const active =
+          [item.href, ...(item.alsoActive ?? [])].some((href) => isActive(pathname, href)) &&
+          !(item.notActive ?? []).some((href) => isActive(pathname, href));
         return (
           <Link
             key={item.href}

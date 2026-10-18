@@ -6,5 +6,5 @@ import { redirect } from "next/navigation";
  * Dashboard vẫn còn, dời sang app/admin/tong-quan/page.tsx.
  */
 export default function AdminIndexPage() {
-  redirect("/admin/campaigns");
+  redirect("/admin/campaigns/new");
 }

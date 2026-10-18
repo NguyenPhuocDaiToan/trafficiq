@@ -14,7 +14,6 @@ import { isDuplicateKeyError } from "@/lib/tracking/emit";
 import { sanitizeLandingBody } from "@/lib/landing/sanitize-body";
 import { ogVersion } from "@/lib/landing/share-link";
 import { invalidateRouteCache } from "@/lib/redirect/resolve";
-import { slugify } from "@/lib/slug";
 import {
   advertiserSchema,
   advertiserUpdateSchema,
@@ -26,6 +25,13 @@ import {
   statusChangeSchema,
   type ActionResult,
 } from "@/lib/control-plane/schemas";
+import {
+  DEFAULT_DESTINATION_CATEGORY,
+  applyCreateDefaults,
+  hostLabel,
+  parseDestinationUrls,
+  withSlugSuffix,
+} from "@/lib/control-plane/campaign-defaults";
 import { generateToken } from "@/lib/control-plane/token";
 import { actorOf, requireUser } from "@/lib/auth/current-user";
 import { acceptShareDomain } from "@/lib/domains/registry";
@@ -64,14 +70,15 @@ export async function createAdvertiser(
     name: parsed.data.name,
     contactEmail: optional(parsed.data.contactEmail),
     notes: optional(parsed.data.notes),
-    // Đối tác mới luôn pending — phải review trước khi chạy traffic.
-    status: "pending",
+    // Đối tác mới chạy ngay: không còn bước duyệt tay. (Đối tác chỉ là nhãn gom đích; trạng thái của nó không
+    // chặn redirect — công tắc Tạm dừng vẫn còn để ngưng một đối tác khi cần.)
+    status: "active",
     createdAt: now,
     updatedAt: now,
   });
 
   revalidatePath("/admin/advertisers");
-  return { ok: true, message: `Đã tạo advertiser "${parsed.data.name}" (pending)` };
+  return { ok: true, message: `Đã thêm đối tác "${parsed.data.name}"` };
 }
 
 export async function setAdvertiserStatus(
@@ -143,7 +150,8 @@ export async function createDestination(
       advertiserId: new ObjectId(parsed.data.advertiserId),
       url: parsed.data.url,
       category: parsed.data.category,
-      status: "pending",
+      // Chạy ngay: không còn bước duyệt tay. Luật kiểm URL (chỉ http/https) vẫn là `destinationSchema` ở trên.
+      status: "active",
       createdAt: now,
       updatedAt: now,
     });
@@ -155,7 +163,8 @@ export async function createDestination(
   }
 
   revalidatePath("/admin/destinations");
-  return { ok: true, message: "Đã thêm destination (pending — cần activate để redirect được)" };
+  invalidateRouteCache();
+  return { ok: true, message: "Đã thêm URL đích — dùng được ngay." };
 }
 
 export async function setDestinationStatus(
@@ -226,105 +235,211 @@ export async function updateDestination(
 
 // ------------------------------------------------------------------ campaigns
 
+/**
+ * Đối tác cho chiến dịch mới. Người tạo không phải chọn: nếu họ không chọn thì suy ra từ URL đích.
+ *   1. Đã chọn → dùng (phải tồn tại).
+ *   2. Một URL đích đã có sẵn trong whitelist → dùng đối tác của nó.
+ *   3. Đã có đối tác tên đúng bằng tên miền của URL → dùng.
+ *   4. Chưa có gì → tạo đối tác mới tên là tên miền, ĐANG CHẠY (không còn bước duyệt tay).
+ */
+async function resolveAdvertiserId(
+  requested: string | undefined,
+  existingDestinationAdvertiser: ObjectId | undefined,
+  host: string,
+): Promise<{ ok: true; id: ObjectId } | { ok: false; error: string }> {
+  const col = await advertisers();
+
+  if (requested && requested.trim().length > 0) {
+    if (!/^[a-f0-9]{24}$/i.test(requested)) return { ok: false, error: "Đối tác không hợp lệ" };
+    const found = await col.findOne({ _id: new ObjectId(requested) }, { projection: { _id: 1 } });
+    return found ? { ok: true, id: found._id } : { ok: false, error: "Không tìm thấy đối tác đã chọn" };
+  }
+  if (existingDestinationAdvertiser) return { ok: true, id: existingDestinationAdvertiser };
+
+  const name = host || "Đối tác mới";
+  const byName = await col.findOne({ name }, { projection: { _id: 1 } });
+  if (byName) return { ok: true, id: byName._id };
+
+  const now = new Date();
+  const inserted = await col.insertOne({ name, status: "active", createdAt: now, updatedAt: now });
+  return { ok: true, id: inserted.insertedId };
+}
+
+/**
+ * TẠO chiến dịch — chỉ cần ảnh và URL đích, mọi thứ khác hệ thống tự điền (`campaign-defaults.ts`).
+ *
+ * Chiến dịch tạo xong CHẠY NGAY: trạng thái `active`, URL đích và đối tác mới cũng `active`. Trước đây mọi thứ vào
+ * ở `pending` và phải bấm "Kích hoạt" ba lần (đối tác, URL, chiến dịch) trước khi link chạy; chủ dự án đã quyết bỏ
+ * bước duyệt tay đó. Hệ quả cần nhớ: whitelist đích (bất biến 3) giờ được nạp ngay khi tạo chiến dịch, nên luật
+ * duy nhất giữ `javascript:`/`data:` ra ngoài là `destinationSchema` — mọi URL đi qua nó, KHÔNG có nhánh nào bỏ qua.
+ *
+ * Thứ tự ghi để một lần tạo hỏng không để lại chiến dịch "đang chạy mà không có đích": URL đích → offer (với
+ * `campaignId` cấp sẵn) → CHIẾN DỊCH. Chiến dịch ghi cuối cùng; nếu nó lỗi (trùng đường dẫn) thì xoá các offer vừa
+ * ghi. Đối tác/URL đích đã tạo ở bước trước được giữ lại — chúng hợp lệ và dùng lại được.
+ */
 export async function createCampaign(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
   const user = await requireUser();
-  const raw = fields(formData);
+  const input = fields(formData);
 
-  /*
-   * Đường dẫn để trống => suy ra từ tên.
-   *
-   * Client đã điền sẵn khi admin gõ tên, nên nhánh này chạy khi JS chưa tải — và
-   * đó chính là lý do nó phải tồn tại: field `slug` ở form tạo KHÔNG có `required`
-   * để không chặn luồng no-JS. Dùng đúng `slugify` mà client dùng, nếu không thì
-   * bật/tắt JS cho ra hai đường dẫn khác nhau cho cùng một tên.
-   */
-  if (!raw.slug || raw.slug.trim().length === 0) {
-    const derived = slugify(raw.name ?? "");
-    if (derived.length < 3) {
-      // Tên toàn ký tự không phải a-z0-9 (ví dụ chỉ tiếng Nhật) — nói rõ thay vì
-      // để zod trả "slug: Slug chỉ gồm a-z…" cho một field admin không hề nhập.
-      return {
-        ok: false,
-        error:
-          "Không sinh được đường dẫn từ tên này. Nhập đường dẫn tĩnh bằng tay (a-z, 0-9, dấu gạch ngang).",
-      };
-    }
-    raw.slug = derived;
+  // 1. URL đích: bắt buộc, mỗi URL qua `destinationSchema` (luật http/https duy nhất).
+  const list = parseDestinationUrls(input.destinationUrls);
+  if (!list.ok) return { ok: false, error: list.error };
+  for (const url of list.urls) {
+    const check = destinationSchema.shape.url.safeParse(url);
+    if (!check.success) return { ok: false, error: `URL đích không hợp lệ: ${url.slice(0, 80)} — chỉ nhận http hoặc https.` };
   }
+  const urls = list.urls;
+  const host = hostLabel(urls[0]);
 
-  const parsed = campaignSchema.safeParse(raw);
+  // 2. Điền field trống, rồi kiểm toàn bộ bằng `campaignSchema`. `advertiserId` chưa biết (có thể phải tạo mới)
+  // nên dùng giá trị giữ chỗ để kiểm phần còn lại trước — chưa ghi gì xuống DB nếu form sai.
+  const { raw, slugAuto } = applyCreateDefaults(input, urls[0]);
+  const requestedAdvertiser = raw.advertiserId;
+  const parsed = campaignSchema.safeParse({
+    ...raw,
+    advertiserId: /^[a-f0-9]{24}$/i.test(requestedAdvertiser ?? "") ? requestedAdvertiser : "0".repeat(24),
+  });
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
-
   const data = parsed.data;
+
   const domain = await acceptShareDomain(data.shareDomain);
   if (!domain.ok) return { ok: false, error: domain.error };
+
+  // 3. URL đích: dùng lại cái đã có, tạo cái mới (active). Đích đang tạm dừng mà người ta chủ động nhập lại vào
+  // chiến dịch mới thì bật lại — ý định rõ ràng; số lượng được báo ở thông báo sau khi tạo.
+  const destCol = await destinations();
+  const existing = await destCol.find({ url: { $in: urls } }).toArray();
+  const byUrl = new Map(existing.map((d) => [d.url, d]));
+
+  const advertiser = await resolveAdvertiserId(
+    requestedAdvertiser,
+    urls.map((u) => byUrl.get(u)?.advertiserId).find((id) => id !== undefined),
+    host,
+  );
+  if (!advertiser.ok) return { ok: false, error: advertiser.error };
+
   const now = new Date();
-  const col = await campaigns();
-
-  // Khai ngoài try để dùng được ở nhánh redirect bên dưới (redirect phải nằm
-  // ngoài try/catch vì nó throw).
-  let campaignId: string;
-
-  try {
-    const inserted = await col.insertOne({
-      slug: data.slug,
-      token: generateToken(),
-      name: data.name,
-      advertiserId: new ObjectId(data.advertiserId),
-      status: "pending",
-      landing: {
-        headline: data.headline,
-        subheadline: optional(data.subheadline),
-        // Cùng sanitizer với updateCampaign — hai đường ghi khác nhau vào cùng
-        // một field render bằng dangerouslySetInnerHTML là chỗ chắc chắn sẽ sót.
-        bodyHtml: sanitizeLandingBody(data.bodyHtml),
-        ctaLabel: data.ctaLabel,
-        heroImageUrl: optional(data.heroImageUrl),
-        autoRedirectSeconds: data.autoRedirectSeconds > 0 ? data.autoRedirectSeconds : undefined,
-      },
-      og: {
-        title: data.ogTitle,
-        description: data.ogDescription,
-        imageUrl: optional(data.ogImageUrl),
-      },
-      ...(domain.host ? { shareDomain: domain.host } : {}),
-      createdBy: actorOf(user),
-      updatedBy: actorOf(user),
-      createdAt: now,
-      updatedAt: now,
-    });
-    campaignId = inserted.insertedId.toString();
-  } catch (err) {
-    if (isDuplicateKeyError(err)) {
-      return { ok: false, error: `Đường dẫn "${data.slug}" đã được dùng` };
+  let reactivated = 0;
+  const destinationIds: { id: ObjectId; url: string }[] = [];
+  for (const url of urls) {
+    const found = byUrl.get(url);
+    if (found) {
+      if (found.status !== "active") {
+        await destCol.updateOne({ _id: found._id }, { $set: { status: "active", updatedAt: now } });
+        reactivated += 1;
+      }
+      destinationIds.push({ id: found._id as ObjectId, url });
+      continue;
     }
-    throw err;
+    try {
+      const inserted = await destCol.insertOne({
+        advertiserId: advertiser.id,
+        url,
+        category: DEFAULT_DESTINATION_CATEGORY,
+        status: "active",
+        createdAt: now,
+        updatedAt: now,
+      });
+      destinationIds.push({ id: inserted.insertedId, url });
+    } catch (err) {
+      if (!isDuplicateKeyError(err)) throw err;
+      // Hai người cùng thêm một URL một lúc: lấy bản vừa được ghi.
+      const raced = await destCol.findOne({ url });
+      if (!raced) throw err;
+      destinationIds.push({ id: raced._id as ObjectId, url });
+    }
   }
 
+  // 4. Offer (cấp sẵn campaignId) rồi tới chiến dịch.
+  const campaignId = new ObjectId();
+  const offersCol = await offers();
+  const offerDocs = destinationIds.map(({ id, url }) => ({
+    campaignId,
+    destinationId: id,
+    name: hostLabel(url) || "Đích",
+    weight: 1,
+    status: "active" as const,
+    createdAt: now,
+    updatedAt: now,
+  }));
+  const insertedOffers = await offersCol.insertMany(offerDocs);
+
+  const col = await campaigns();
+  let slug = data.slug;
+  let savedSlug: string | undefined;
+
+  // `redirect` throw nên mọi nhánh redirect phải nằm NGOÀI try/catch.
+  for (let attempt = 0; attempt < 4 && !savedSlug; attempt += 1) {
+    try {
+      await col.insertOne({
+        _id: campaignId,
+        slug,
+        token: generateToken(),
+        name: data.name,
+        advertiserId: advertiser.id,
+        status: "active",
+        landing: {
+          headline: data.headline,
+          subheadline: optional(data.subheadline),
+          // Cùng sanitizer với updateCampaign — hai đường ghi khác nhau vào cùng một field render bằng
+          // dangerouslySetInnerHTML là chỗ chắc chắn sẽ sót.
+          bodyHtml: sanitizeLandingBody(data.bodyHtml),
+          ctaLabel: data.ctaLabel,
+          heroImageUrl: optional(data.heroImageUrl),
+          autoRedirectSeconds: data.autoRedirectSeconds > 0 ? data.autoRedirectSeconds : undefined,
+        },
+        og: {
+          title: data.ogTitle,
+          description: data.ogDescription,
+          imageUrl: optional(data.ogImageUrl),
+        },
+        ...(domain.host ? { shareDomain: domain.host } : {}),
+        createdBy: actorOf(user),
+        updatedBy: actorOf(user),
+        createdAt: now,
+        updatedAt: now,
+      });
+      savedSlug = slug;
+    } catch (err) {
+      if (!isDuplicateKeyError(err)) {
+        await offersCol.deleteMany({ _id: { $in: Object.values(insertedOffers.insertedIds) } });
+        throw err;
+      }
+      // Đường dẫn do ta sinh mà trùng → thêm đuôi và thử lại. Đường dẫn người dùng tự gõ thì báo lỗi: tự đổi nó
+      // là đổi địa chỉ người ta đã chọn.
+      if (!slugAuto) {
+        await offersCol.deleteMany({ _id: { $in: Object.values(insertedOffers.insertedIds) } });
+        return { ok: false, error: `Đường dẫn "${slug}" đã được dùng` };
+      }
+      slug = withSlugSuffix(data.slug);
+    }
+  }
+  if (!savedSlug) {
+    await offersCol.deleteMany({ _id: { $in: Object.values(insertedOffers.insertedIds) } });
+    return { ok: false, error: "Không tạo được đường dẫn riêng cho chiến dịch. Thử lại hoặc nhập đường dẫn tay." };
+  }
+
+  // Routing map trong RAM chưa biết token mới (cache miss 15 giây) và URL đích có thể vừa được bật lại.
+  invalidateRouteCache();
   revalidatePath("/admin/campaigns");
+  revalidatePath("/admin/destinations");
+  revalidatePath("/admin/advertisers");
 
   /*
-   * `redirect` throw nên mọi nhánh dưới đây phải nằm NGOÀI try/catch ở trên.
-   *
-   * Nhánh "Tạo và xem trước": chiến dịch mới luôn ở trạng thái `pending`, tức nó
-   * ĐÃ là bản nháp — nên xem trước lúc tạo không cần cơ chế nháp riêng, chỉ cần
-   * lưu rồi mở đúng trang xem trước đang có. Làm cách này thì preview lúc tạo và
-   * preview lúc sửa là một code path; dựng một bản render riêng cho nội dung chưa
-   * lưu là tự tạo ra hai bản sẽ lệch nhau.
+   * Nhánh "Tạo và xem trước": mở trang xem trước đang có (cùng một code path với lúc sửa — không dựng bản render
+   * riêng cho nội dung chưa lưu, vì đó là bản render thứ hai sẽ lệch khỏi trang thật). Chiến dịch đã chạy rồi nên
+   * "xem trước" chỉ là xem, không còn nghĩa là "bản nháp".
    */
   if (raw.afterCreate === "preview") {
-    redirect(`/admin/campaigns/${campaignId}/preview`);
+    redirect(`/admin/campaigns/${campaignId.toString()}/preview`);
   }
 
-  /*
-   * Nhánh mặc định: về danh sách — ở lại trang tạo với một form rỗng thì không
-   * thấy chiến dịch vừa tạo, và việc tiếp theo (thêm đích chuyển hướng) nằm ở
-   * danh sách. Slug đi kèm để danh sách bung sẵn đúng chiến dịch này.
-   */
-  redirect(`/admin/campaigns?new=${data.slug}`);
+  // Về LẠI trang tạo (không phải danh sách): trang đó hiện link vừa tạo để sao chép và form trống sẵn cho lần
+  // kế tiếp — người dùng chủ yếu tạo nhiều chiến dịch liên tiếp, mỗi lần đi qua danh sách là một lần bấm thừa.
+  redirect(`/admin/campaigns/new?created=${savedSlug}${reactivated > 0 ? `&reactivated=${reactivated}` : ""}`);
 }
 
 /**

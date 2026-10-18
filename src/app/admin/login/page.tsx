@@ -18,7 +18,7 @@ export default async function LoginPage({
       </p>
 
       <form action={login} className="mt-6 flex flex-col gap-3">
-        <input type="hidden" name="next" value={next ?? "/admin/campaigns"} />
+        <input type="hidden" name="next" value={next ?? "/admin/campaigns/new"} />
         <input
           type="email"
           name="email"

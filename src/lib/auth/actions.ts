@@ -50,7 +50,7 @@ export async function login(formData: FormData): Promise<void> {
   const safeTarget =
     target.startsWith("/admin") && !target.startsWith("//") && !target.startsWith("/admin/login")
       ? target
-      : "/admin/campaigns";
+      : "/admin/campaigns/new";
 
   const result = await authenticate(
     { email: text(formData, "email"), password: text(formData, "password") },

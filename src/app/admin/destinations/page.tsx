@@ -43,12 +43,11 @@ export default async function DestinationsPage() {
       <div data-tour="destination-form">
       <Card
         title="Thêm URL đích"
-        description="Chỉ nhận http/https. Mới thêm là chờ duyệt — phải kích hoạt mới redirect được."
+        description="Chỉ nhận http/https. URL mới dùng được ngay. Tạo chiến dịch cũng tự thêm URL đích vào đây."
       >
         {options.advertisers.length === 0 ? (
           <Notice>
-            Chưa có đối tác nào đang chạy. Hãy kích hoạt một đối tác ở mục Đối tác
-            trước.
+            Chưa có đối tác nào. Thêm một đối tác ở mục Đối tác trước.
           </Notice>
         ) : (
           <ActionForm

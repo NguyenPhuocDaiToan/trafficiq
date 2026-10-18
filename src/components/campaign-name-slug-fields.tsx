@@ -41,10 +41,14 @@ export function CampaignNameSlugFields({
 
   return (
     <>
-      <Field label="Tên chiến dịch" tour="cf-name">
+      <Field label="Tên chiến dịch">
         <input
           name="name"
-          required
+          /*
+           * Chỉ bắt buộc khi SỬA. Lúc tạo, để trống là hợp lệ: server đặt tên theo tên miền của URL đích
+           * (`applyCreateDefaults`), nên đây là ô "tuỳ chọn" chứ không phải thứ phải nghĩ ra.
+           */
+          required={mode === "edit"}
           value={name}
           onChange={(event) => {
             const next = event.target.value;
@@ -53,7 +57,7 @@ export function CampaignNameSlugFields({
             if (mode === "create" && !slugTouched) setSlug(slugify(next));
           }}
           className={inputClass}
-          placeholder="Tài chính Q3 VN"
+          placeholder={mode === "create" ? "Để trống: tự đặt theo URL đích" : "Tài chính Q3 VN"}
         />
       </Field>
 
@@ -93,7 +97,7 @@ export function CampaignNameSlugFields({
             setSlugTouched(next.length > 0);
           }}
           className={inputClass}
-          placeholder="tai-chinh-q3-vn"
+          placeholder={mode === "create" ? "tự sinh từ tên" : "tai-chinh-q3-vn"}
         />
         </div>
         {mode === "edit" ? (

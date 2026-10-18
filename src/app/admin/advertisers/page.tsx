@@ -34,7 +34,7 @@ export default async function AdvertisersPage() {
       <div data-tour="advertiser-form">
       <Card
         title="Thêm đối tác"
-        description="Đối tác mới luôn ở trạng thái chờ duyệt — phải xem lại rồi mới kích hoạt."
+        description="Đối tác mới chạy ngay. Bạn cũng không cần thêm tay: tạo chiến dịch với URL đích mới là hệ thống tự tạo đối tác theo tên miền."
       >
         <ActionForm
           action={createAdvertiser}

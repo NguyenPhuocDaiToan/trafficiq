@@ -191,38 +191,26 @@ export default function GuidePage() {
 
         <div className="max-w-3xl space-y-6">
           {/* ------------------------------------------------------------------ 1 */}
-          <GuideSection id="bat-dau-nhanh" title="1. Bắt đầu nhanh — sáu bước để có link chạy được">
+          <GuideSection id="bat-dau-nhanh" title="1. Bắt đầu nhanh — ảnh, URL, link">
             <p>
-              Làm theo đúng thứ tự: mỗi bước cần bước trước đã xong. Thứ mới tạo ra đều ở trạng thái{" "}
-              <StatusBadge status="pending" /> và <strong>chưa chạy</strong> cho tới khi bạn bấm Kích
-              hoạt — đây là chủ ý, để không có link nào chạy khi chưa ai xem lại.
+              Chỉ cần <strong>một ảnh và một URL đích</strong>. Chiến dịch tạo xong là{" "}
+              <StatusBadge status="active" /> và <strong>chạy ngay</strong>: không còn bước duyệt tay. Mọi thứ
+              còn lại (tên, đường dẫn, tiêu đề, thẻ chia sẻ, đối tác) hệ thống tự điền.
             </p>
             <ol className="space-y-3">
-              <Step n={1} title="Thêm đối tác" href="/admin/advertisers" link="Mở Đối tác">
-                Đối tác là bên trả tiền cho traffic. Nhập tên, bấm thêm, rồi bấm <strong>Kích hoạt</strong>{" "}
-                ở dòng vừa tạo.
+              <Step n={1} title="Tải ảnh và dán URL đích" href="/admin/campaigns/new" link="Tạo link">
+                Kéo ảnh vào vùng tải (hoặc bấm chọn, hoặc dán bằng Ctrl+V), dán <strong>URL đích</strong> —
+                địa chỉ trang của đối tác, bắt đầu bằng <Code>https://</Code> — rồi bấm{" "}
+                <strong>Tạo link</strong>. Có thể nhập thêm một tiêu đề cho thẻ chia sẻ.
               </Step>
-              <Step n={2} title="Thêm URL đích" href="/admin/destinations" link="Mở URL đích">
-                Dán địa chỉ trang của đối tác (bắt đầu bằng <Code>https://</Code>), chọn đối tác, bấm
-                thêm, rồi <strong>Kích hoạt</strong>. Đây là danh sách duy nhất mà link được phép chuyển
-                hướng tới — không có cách nào khác để đưa người dùng ra ngoài.
+              <Step n={2} title="Sao chép link">
+                Link theo dõi hiện ngay đầu trang, đã được thử sao chép sẵn; bấm <strong>Sao chép link</strong>{" "}
+                nếu cần. Form bên dưới trống để tạo link tiếp theo. Xem thêm mục{" "}
+                <GuideLink href="#chia-se-link">Chia sẻ link đúng cách</GuideLink>.
               </Step>
-              <Step n={3} title="Tạo chiến dịch" href="/admin/campaigns/new" link="Tạo chiến dịch">
-                Điền tên, nội dung trang giới thiệu và thẻ chia sẻ. Chi tiết ở mục{" "}
-                <GuideLink href="#tao-chien-dich">Tạo chiến dịch</GuideLink>.
-              </Step>
-              <Step n={4} title="Thêm đích chuyển hướng" href="/admin/campaigns" link="Mở Chiến dịch">
-                Mở chiến dịch vừa tạo (bấm vào dòng của nó), kéo xuống khung <em>Thêm đích chuyển
-                hướng</em>: đặt tên, chọn URL đích, bấm thêm. Có nhiều đích thì đặt <em>tỷ lệ chia</em>{" "}
-                để chia traffic thử A/B.
-              </Step>
-              <Step n={5} title="Kích hoạt chiến dịch" href="/admin/campaigns" link="Mở Chiến dịch">
-                Trong chiến dịch, bấm <strong>Kích hoạt</strong>. Đây là công tắc chính: chỉ khi chiến
-                dịch đang chạy thì link theo dõi mới chuyển hướng.
-              </Step>
-              <Step n={6} title="Lấy link và đem đi đăng">
-                Copy <strong>Link theo dõi</strong> ngay trong khung chiến dịch. Luôn copy từ đây chứ
-                không tự ghép — xem mục <GuideLink href="#chia-se-link">Chia sẻ link đúng cách</GuideLink>.
+              <Step n={3} title="Đem đi đăng">
+                Dán link vào bài đăng. Muốn đổi tiêu đề, mô tả hay chia traffic thử A/B thì mở chiến dịch ở{" "}
+                <GuideLink href="/admin/campaigns">danh sách</GuideLink>.
               </Step>
             </ol>
           </GuideSection>
@@ -267,8 +255,10 @@ export default function GuidePage() {
                       <StatusBadge status="pending" />
                     </td>
                     <td className="px-3 py-2">
-                      Mới tạo, chưa chạy. Với chiến dịch: <strong>link theo dõi chưa chuyển hướng</strong>{" "}
-                      nhưng trang giới thiệu vẫn xem trước được (không được lập chỉ mục).
+                      Chờ duyệt: trạng thái của dữ liệu tạo từ trước. Thứ tạo mới giờ <strong>chạy ngay</strong>, nên
+                      thường chỉ còn thấy trạng thái này ở chiến dịch/đích cũ. Với chiến dịch:{" "}
+                      <strong>link theo dõi chưa chuyển hướng</strong> nhưng trang giới thiệu vẫn xem trước được
+                      (không được lập chỉ mục). Bấm Kích hoạt để chạy.
                     </td>
                   </Tr>
                   <Tr>
@@ -299,32 +289,30 @@ export default function GuidePage() {
           </GuideSection>
 
           {/* ------------------------------------------------------------------ 3 */}
-          <GuideSection id="tao-chien-dich" title="3. Tạo chiến dịch">
+          <GuideSection id="tao-chien-dich" title="3. Tạo link từ ảnh">
             <p>
-              Vào <GuideLink href="/admin/campaigns/new">Chiến dịch → Tạo chiến dịch</GuideLink>. Form có
-              ba nhóm:
+              Vào tab <GuideLink href="/admin/campaigns/new">Tạo link</GuideLink> (cũng là trang đầu tiên sau
+              khi đăng nhập). Form chỉ có:
             </p>
             <dl className="space-y-3">
-              <Term name="Thông tin chung">
-                <strong>Tên</strong> chỉ để bạn nhận ra chiến dịch. <strong>Đường dẫn tĩnh</strong> tự
-                sinh từ tên (chữ thường, không dấu, gạch ngang) và là phần cuối của trang giới thiệu.
-                Chọn <strong>Đối tác</strong>. <strong>Chữ trên nút bấm</strong> là nhãn của nút đi tiếp
-                trên trang giới thiệu. <strong>Tự động chuyển hướng</strong> từ 0 đến 10 giây: 0 là tắt
-                (người đọc tự bấm), 1 là tự nhảy sau 1 giây.
+              <Term name="Ảnh">
+                Dùng cho cả trang giới thiệu và thẻ chia sẻ trên X, Facebook, Zalo. Kéo-thả, bấm chọn, dán
+                bằng Ctrl+V, hoặc dán link ảnh.
               </Term>
-              <Term name="Nội dung trang giới thiệu">
-                Tiêu đề chính, tiêu đề phụ, thân bài và ảnh lớn đầu trang. Thân bài là trình soạn thảo
-                đơn giản; trang này cố ý không cho chèn liên kết, để mọi lượt bấm đều đi qua nút chính.
+              <Term name="URL đích">
+                Nơi người bấm link được chuyển tới. Nhiều URL (mỗi dòng một, tối đa 5) thì traffic chia đều.
+                URL mới tự được thêm vào danh sách cho phép và kích hoạt; URL đã có thì dùng lại. Đối tác
+                lấy theo URL đích, chưa có thì tự tạo theo tên miền.
               </Term>
-              <Term name="Hiển thị khi chia sẻ link">
-                Tiêu đề, mô tả và ảnh hiện trên thẻ khi dán link lên X, Facebook, Zalo, Telegram. Đây
-                là phần quyết định người ta có bấm hay không.
+              <Term name="Tiêu đề (không bắt buộc)">
+                Hiện trên thẻ chia sẻ. Để trống thì dùng tên miền của URL đích.
               </Term>
             </dl>
             <p>
-              Có hai nút lưu: <strong>Tạo chiến dịch</strong> về danh sách, còn{" "}
-              <strong>Tạo và xem trước</strong> mở luôn trang xem trước. Chiến dịch mới luôn ở{" "}
-              <StatusBadge status="pending" />, nên xem trước không ảnh hưởng gì tới người đọc thật.
+              Mọi thứ khác hệ thống tự điền: tên chiến dịch, đường dẫn tĩnh (sinh từ tên), chữ trên nút bấm,
+              mô tả chia sẻ và <strong>tự động chuyển hướng 2 giây</strong>. Chữ tự điền cố ý trung tính — nếu cần lời
+              kêu gọi cụ thể, mở chiến dịch ở danh sách và sửa (hiện công khai). Chiến dịch{" "}
+              <StatusBadge status="active" /> ngay khi tạo; muốn ngưng thì bấm Tạm dừng ở danh sách.
             </p>
             <Notice>
               Ở form <strong>sửa</strong>, đường dẫn tĩnh không tự đổi theo tên. Đổi đường dẫn là làm chết
@@ -526,10 +514,10 @@ export default function GuidePage() {
             <div className="space-y-2">
               <Collapsible summary={<span className="font-medium">Bấm link theo dõi mà thấy &ldquo;link không còn hoạt động&rdquo;</span>}>
                 <ul className="list-disc space-y-1.5 pl-5 text-sm">
-                  <li>Chiến dịch chưa bấm <strong>Kích hoạt</strong> (hoặc đang Tạm dừng).</li>
+                  <li>Chiến dịch đang <strong>Tạm dừng</strong> (hoặc là chiến dịch cũ còn ở &ldquo;Chờ duyệt&rdquo; — bấm Kích hoạt).</li>
                   <li>Chiến dịch chưa có đích chuyển hướng nào.</li>
                   <li>
-                    Đích chuyển hướng đang tạm dừng, hoặc <strong>URL đích</strong> của nó chưa kích hoạt ở
+                    Đích chuyển hướng đang tạm dừng, hoặc <strong>URL đích</strong> của nó đang tạm dừng ở
                     mục <GuideLink href="/admin/destinations">URL đích</GuideLink>. Trong khung chiến
                     dịch có dòng cảnh báo màu cho trường hợp này.
                   </li>

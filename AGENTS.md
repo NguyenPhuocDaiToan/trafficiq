@@ -268,34 +268,51 @@ tại chỗ trước.
     kế toán. Muốn hiện lại thì phải làm chỗ quản lý đối soát trước, không phải
     chỉ thêm lại cột vào `getOverview`/`getCampaignBreakdown`.
 
-15. **`/admin/campaigns` chỉ là DANH SÁCH; form tạo ở `/admin/campaigns/new`.**
-    Form tạo có 11 field — nhét chung một màn hình thì danh sách bị đẩy khỏi
-    viewport. Mỗi hàng chiến dịch là `<details>` (không phải state React) vì
-    control plane phải dùng được khi JS chưa tải, giống lý do ở `action-form.tsx`.
-    `createCampaign` redirect về `?new=<slug>` để danh sách bung sẵn chiến dịch
-    vừa tạo — đổi tên param đó thì sửa cả hai đầu.
+15. **`/admin/campaigns` chỉ là DANH SÁCH; `/admin/campaigns/new` là ĐƯỜNG NHANH ẢNH → LINK và là trang đầu tiên
+    sau khi đăng nhập.** Mục tiêu của sản phẩm: người dùng tải ảnh, dán URL đích và có link `/go` trong vài giây. Vì
+    vậy trang tạo là MỘT màn hình tối giản — ảnh (vùng kéo-thả, bấm chọn, hoặc Ctrl+V), URL đích, một tiêu đề tuỳ
+    chọn — không khung xem trước, không nhóm tuỳ chỉnh, không nút "xem trước", và có tab riêng "Tạo link" đứng đầu
+    menu. ĐỪNG thêm ô hay bước vào đó "cho đủ": mỗi ô thêm là một lần dừng trên con đường mà mục tiêu là không phải
+    dừng; thứ gì cần chỉnh thì chỉnh ở trang SỬA sau khi tạo. Tạo xong, `createCampaign` redirect VỀ LẠI `/new` với
+    `?created=<slug>` (không phải danh sách): đầu trang hiện link vừa tạo (`CreatedLinkPanel`, đã thử tự sao chép) và
+    form trống bên dưới cho lần kế tiếp. Đổi tên param đó thì sửa cả hai đầu. Mỗi hàng ở danh sách là `<details>`
+    (không phải state React) vì control plane phải dùng được khi JS chưa tải, giống lý do ở `action-form.tsx`; link
+    theo dõi (`TrackingLink`: `<a href>` + nút Sao chép) nằm sẵn trên hàng, không giấu trong phần bung.
 
-    Field của form nằm ở `src/components/campaign-fields.tsx`, **dùng chung** giữa
-    `/new` và `/[id]/edit`. Đừng thêm field trực tiếp vào một trong hai trang: nó
-    sẽ có ở form tạo mà không có ở form sửa, và vì `updateCampaign` ghi cả object
-    `landing`/`og` bằng `$set`, mỗi lần bấm Lưu là field đó bị xoá trắng.
+    Field của form nằm ở `src/components/campaign-fields.tsx` và **cố ý KHÔNG cùng bộ field giữa hai chế độ**: TẠO là
+    tập con tối giản (server tự điền phần còn lại), SỬA đầy đủ bốn nhóm. Form tạo chỉ ghi chiến dịch MỚI nên thiếu
+    field không xoá được gì; form sửa thì PHẢI chứa mọi field, vì `updateCampaign` ghi cả object `landing`/`og` bằng
+    `$set` — thiếu một field là mỗi lần bấm Lưu xoá trắng nó. Thêm field cho chiến dịch đã tồn tại thì thêm ở các khối
+    của chế độ SỬA.
 
-    **Đường dẫn tĩnh tự sinh từ tên — nhưng CHỈ khi tạo.** `slugify()`
-    (`src/lib/slug.ts`) chạy ở cả hai phía: client điền sẵn khi admin gõ tên, server
-    suy ra khi field để trống (đường duy nhất còn lại khi JS chưa tải — vì vậy field
-    `slug` ở form tạo **không** có `required`). Một hàm duy nhất, nếu không thì
-    bật/tắt JS cho ra hai đường dẫn khác nhau cho cùng một tên.
+    **Đường dẫn tĩnh: lúc tạo do server tự sinh** (`slugify()` ở `src/lib/slug.ts` + `applyCreateDefaults`, tự thêm
+    đuôi ngẫu nhiên nếu trùng), form tạo không có ô đường dẫn. Vẫn một hàm `slugify` duy nhất cho cả form sửa
+    (`CampaignNameSlugFields`), nếu không thì bật/tắt JS cho ra hai đường dẫn khác nhau cho cùng một tên.
 
     Ở form **sửa** thì KHÔNG tự sinh lại theo tên: đường dẫn đang sống, tự đổi nó
     nghĩa là sửa một chữ trong tên rồi bấm Lưu là mọi link `/c/…` đã chia sẻ thành
     404 mà không ai chọn điều đó. Muốn đổi thì bấm nút "Sinh lại từ tên" — vẫn làm
     được, nhưng phải cố ý. Đừng "thống nhất hành vi hai form".
 
-    **"Tạo và xem trước"** là nút submit thứ hai gửi `afterCreate=preview`
-    (`<button name value>`, nên chạy cả khi không có JS) để `createCampaign` chuyển
-    sang trang xem trước thay vì về danh sách. Không có cơ chế nháp riêng và không
-    cần: chiến dịch mới luôn `pending`, tức nó ĐÃ là nháp. Đừng dựng đường render
+    **Nút "Tạo và xem trước" đã bỏ khỏi form tạo** (thao tác thừa trên đường nhanh); `createCampaign` vẫn hiểu
+    `afterCreate=preview` nhưng không còn nút nào gửi nó. Trang xem trước vẫn có ở trang sửa. Đừng dựng đường render
     riêng cho nội dung chưa lưu — đó là bản render thứ hai sẽ lệch khỏi trang thật.
+
+    **Form TẠO chỉ cần ảnh + URL đích; chiến dịch tạo xong CHẠY NGAY — không còn bước duyệt tay.**
+    `createCampaign` (`actions.ts`) điền mọi field trống bằng `campaign-defaults.ts` (tên theo tên
+    miền của URL đích, đường dẫn sinh từ tên và tự thêm đuôi nếu trùng, tiêu đề/nút/thẻ chia sẻ bằng
+    chữ TRUNG TÍNH — đừng viết "ưu đãi giới hạn"/"giảm X%": nó hiện công khai và là lời hứa về nội dung
+    đối tác mà hệ thống không kiểm được), tạo hoặc dùng lại URL đích (`active`), chọn/tạo đối tác theo
+    URL (`active`), tạo offer, rồi mới ghi chiến dịch `active`. Thứ tự ghi là chủ ý: URL đích → offer
+    (campaignId cấp sẵn) → chiến dịch; chiến dịch lỗi thì xoá offer vừa ghi, để không có chiến dịch
+    "đang chạy mà không có đích". Mặc định tự chuyển hướng là 2 giây CHỈ ở form tạo — form sửa phải giữ
+    giá trị đã lưu (chưa đặt = 0), đừng gộp thành một `?? 2` chung. Đối tác và URL đích thêm tay ở
+    Cài đặt cũng `active` ngay. Hệ quả cho bất biến 3: whitelist đích giờ được nạp NGAY khi tạo chiến
+    dịch, nên `destinationSchema` (chỉ http/https) là rào duy nhất — mọi URL, kể cả từ ô nhiều dòng của
+    form tạo, đi qua nó trước khi ghi. `pending` còn tồn tại như một giá trị hợp lệ cho dữ liệu cũ.
+    `destinationUrls` và `headline` (tuỳ chọn) chỉ ở form tạo; có tiêu đề thì tên chiến dịch lấy
+    theo tiêu đề, không thì theo tên miền + ngày. Ảnh là BẮT BUỘC ở form tạo (một ô dùng cho cả trang giới thiệu lẫn
+    thẻ chia sẻ) — thẻ không ảnh là thẻ yếu, và đó là lý do người dùng làm link.
 
 16. **`landing.bodyHtml` chỉ được ghi qua `sanitizeLandingBody()`.** Thân bài
     landing render bằng `dangerouslySetInnerHTML` trên `/c/[slug]` — một trang
@@ -526,6 +543,7 @@ npm run test:fonts       # test của chính gate font (các cấu hình sai đ�
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
 npm run test:guide       # bài học coach mark: dữ liệu hợp lệ và mọi data-tour có thật trên giao diện
+npm run test:campaign    # giá trị mặc định khi tạo chiến dịch (tên, slug, chữ trung tính, tự chuyển hướng 2s)
 npm run test:auth        # mật khẩu scrypt, cookie ký, chính sách đăng nhập/khoá/bootstrap
 npm run test:domains     # chuẩn hoá tên miền, dựng link theo tên miền, chống SSRF khi kiểm tra
 npm run admin:user -- <email> [tên]  # cứu hộ: tạo/khôi phục owner (mật khẩu qua biến NEW_ADMIN_PASSWORD)

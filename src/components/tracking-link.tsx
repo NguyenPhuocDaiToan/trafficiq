@@ -8,7 +8,7 @@ import { buttonSecondaryClass } from "@/components/ui";
  * chối quyền; rơi về `execCommand("copy")` qua một textarea tạm để nút vẫn chạy khi trang mở qua HTTP hoặc
  * trong trình duyệt cũ. Trả `true` nếu chép được.
  */
-async function copyText(text: string): Promise<boolean> {
+export async function copyText(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);

@@ -183,6 +183,22 @@ export async function listCampaigns(): Promise<CampaignView[]> {
   }));
 }
 
+/** Đủ để dựng link theo dõi của MỘT chiến dịch vừa tạo (trang tạo hiện nó ngay để sao chép). */
+export interface CreatedCampaignView {
+  id: string;
+  name: string;
+  token: string;
+  og: CampaignOg;
+  shareDomain?: string;
+}
+
+export async function getCreatedCampaign(slug: string): Promise<CreatedCampaignView | null> {
+  if (!/^[a-z0-9-]{3,60}$/.test(slug)) return null;
+  const doc = await (await campaigns()).findOne({ slug }, { projection: { name: 1, token: 1, og: 1, shareDomain: 1 } });
+  if (!doc) return null;
+  return { id: doc._id.toString(), name: doc.name, token: doc.token, og: doc.og, shareDomain: doc.shareDomain };
+}
+
 /** Campaign đầy đủ để nạp vào form sửa. */
 export interface CampaignEditView {
   id: string;

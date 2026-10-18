@@ -20,6 +20,7 @@
     "check:probe-browser": "tsx scripts/check-probe-browser.ts",
     "test:botdetect": "tsx --test --test-concurrency=1 src/lib/botdetect/botdetect.test.ts src/lib/botdetect/independent.test.ts src/lib/botdetect/round2.test.ts src/lib/botdetect/round3.test.ts src/lib/botdetect/round4.test.ts src/lib/botdetect/round5.test.ts src/lib/botdetect/round6.test.ts src/lib/botdetect/round7.test.ts src/lib/botdetect/round8.test.ts src/lib/botdetect/twitter.test.ts src/lib/botdetect/round9.test.ts",
     "test:guide": "tsx --test src/lib/guide/lessons.test.ts",
+    "test:campaign": "tsx --test src/lib/control-plane/campaign-defaults.test.ts",
     "test:auth": "tsx --test src/lib/auth/auth.test.ts",
     "test:domains": "tsx --test src/lib/domains/domains.test.ts",
     "test:share": "tsx --test src/lib/landing/share-link.test.ts",

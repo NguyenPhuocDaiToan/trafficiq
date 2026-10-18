@@ -7,6 +7,7 @@ import { z } from "zod";
 import { contactMessages } from "@/lib/db/collections";
 import { HONEYPOT_FIELD, contactSchema } from "@/lib/contact/schema";
 import type { ActionResult } from "@/lib/control-plane/schemas";
+import { requireUser } from "@/lib/auth/current-user";
 import { hashIp } from "@/lib/tracking/request-context";
 
 /** Tối đa 3 tin nhắn / 1 giờ / một IP đã hash. */
@@ -107,6 +108,7 @@ export async function setContactHandled(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = z
     .object({
       id: z.string().regex(/^[a-f0-9]{24}$/i, "ID không hợp lệ"),

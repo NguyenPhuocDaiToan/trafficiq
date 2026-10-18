@@ -112,16 +112,26 @@ export function FieldsButton({
   fields: Record<string, string>;
   label: string;
 }) {
-  const [, formAction, pending] = useActionState(action, null);
+  const [state, formAction, pending] = useActionState(action, null);
 
   return (
-    <form action={formAction} className="inline">
+    <form action={formAction} className="inline-block">
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
       <button type="submit" disabled={pending} className={buttonSecondaryClass}>
         {pending ? "…" : label}
       </button>
+      {/*
+        Kết quả hiện ngay dưới nút. Trước đây bị bỏ (`[, formAction, pending]`) — chấp nhận được với một nút
+        "đánh dấu đã xử lý" luôn thành công, nhưng sai với action có thể bị TỪ CHỐI (kiểm tra tên miền thất
+        bại, tắt owner cuối cùng): người bấm không thấy lý do và tưởng nút hỏng.
+      */}
+      {state ? (
+        <p role="status" aria-live="polite" className={`mt-1 max-w-xs text-xs ${state.ok ? "text-success" : "text-destructive"}`}>
+          {state.ok ? state.message : state.error}
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -1,6 +1,7 @@
 import type { Collection } from "mongodb";
 import { getDb } from "@/lib/db/client";
 import type {
+  AdminUser,
   Advertiser,
   Campaign,
   ClickEvent,
@@ -9,6 +10,7 @@ import type {
   Destination,
   Offer,
   Rollup,
+  ShareDomain,
 } from "@/lib/types";
 
 export const COLLECTIONS = {
@@ -20,6 +22,8 @@ export const COLLECTIONS = {
   conversions: "conversions",
   rollups: "rollups",
   contactMessages: "contactMessages",
+  adminUsers: "adminUsers",
+  shareDomains: "shareDomains",
 } as const;
 
 export async function advertisers(): Promise<Collection<Advertiser>> {
@@ -52,4 +56,12 @@ export async function rollups(): Promise<Collection<Rollup>> {
 
 export async function contactMessages(): Promise<Collection<ContactMessage>> {
   return (await getDb()).collection<ContactMessage>(COLLECTIONS.contactMessages);
+}
+
+export async function adminUsers(): Promise<Collection<AdminUser>> {
+  return (await getDb()).collection<AdminUser>(COLLECTIONS.adminUsers);
+}
+
+export async function shareDomains(): Promise<Collection<ShareDomain>> {
+  return (await getDb()).collection<ShareDomain>(COLLECTIONS.shareDomains);
 }

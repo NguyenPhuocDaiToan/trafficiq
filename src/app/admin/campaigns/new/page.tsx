@@ -5,6 +5,7 @@ import { CampaignFields } from "@/components/campaign-fields";
 import { Card, Notice } from "@/components/ui";
 import { createCampaign } from "@/lib/control-plane/actions";
 import { listActiveOptions } from "@/lib/control-plane/queries";
+import { verifiedHostSet } from "@/lib/domains/registry";
 import { publicBaseUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export const metadata = { title: "Tạo chiến dịch" };
  * Lưu là field đó bị xoá trắng.
  */
 export default async function NewCampaignPage() {
-  const options = await listActiveOptions();
+  const [options, domains] = await Promise.all([listActiveOptions(), verifiedHostSet()]);
   const baseUrl = publicBaseUrl();
 
   return (
@@ -74,7 +75,7 @@ export default async function NewCampaignPage() {
                 label: "Tạo và xem trước",
               }}
             >
-              <CampaignFields advertisers={options.advertisers} />
+              <CampaignFields advertisers={options.advertisers} domains={[...domains]} />
             </ActionForm>
           </Card>
 

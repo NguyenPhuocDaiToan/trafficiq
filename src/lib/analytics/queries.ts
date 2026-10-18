@@ -165,6 +165,8 @@ export interface CampaignRow {
   token: string;
   /** Mã thẻ chia sẻ hiện tại, để dựng link `?v=` — xem `lib/landing/share-link.ts`. */
   shareVersion: string;
+  /** Tên miền chọn cho link chia sẻ; vắng = tên miền chính. Xem `lib/domains/links.ts`. */
+  shareDomain?: string;
   status: string;
   clicks: number;
   conversions: number;
@@ -178,7 +180,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
 
   const [allCampaigns, clickRows, conversionRows] = await Promise.all([
     campaignsCol
-      .find({}, { projection: { name: 1, slug: 1, token: 1, status: 1, og: 1 } })
+      .find({}, { projection: { name: 1, slug: 1, token: 1, status: 1, og: 1, shareDomain: 1 } })
       .sort({ createdAt: -1 })
       .toArray(),
     clicksCol
@@ -216,6 +218,7 @@ export async function getCampaignBreakdown(range: DateRange): Promise<CampaignRo
         slug: campaign.slug,
         token: campaign.token,
         shareVersion: ogVersion(campaign.og),
+        shareDomain: campaign.shareDomain,
         status: campaign.status,
         clicks,
         conversions: convCount,

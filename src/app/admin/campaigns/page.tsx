@@ -12,6 +12,8 @@ import {
 } from "@/components/ui";
 import { createOffer, setCampaignStatus, setOfferStatus } from "@/lib/control-plane/actions";
 import { listActiveOptions, listCampaigns } from "@/lib/control-plane/queries";
+import { resolveShareBase } from "@/lib/domains/links";
+import { verifiedHostSet } from "@/lib/domains/registry";
 import { publicBaseUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -30,10 +32,11 @@ export default async function CampaignsPage({
 }: {
   searchParams: Promise<{ new?: string }>;
 }) {
-  const [{ new: createdSlug }, campaigns, options] = await Promise.all([
+  const [{ new: createdSlug }, campaigns, options, verified] = await Promise.all([
     searchParams,
     listCampaigns(),
     listActiveOptions(),
+    verifiedHostSet(),
   ]);
   const baseUrl = publicBaseUrl();
 
@@ -78,6 +81,7 @@ export default async function CampaignsPage({
             const activeOffers = campaign.offers.filter(
               (offer) => offer.status === "active" && offer.destinationStatus === "active",
             ).length;
+            const share = resolveShareBase(campaign.shareDomain, verified, baseUrl);
 
             return (
               <Collapsible
@@ -151,6 +155,14 @@ export default async function CampaignsPage({
                     </span>
                   </div>
 
+                  {campaign.createdByName || campaign.updatedByName ? (
+                    <p className="text-xs text-muted-foreground">
+                      {campaign.createdByName ? <>Tạo bởi {campaign.createdByName}</> : null}
+                      {campaign.createdByName && campaign.updatedByName ? " · " : null}
+                      {campaign.updatedByName ? <>Sửa gần nhất bởi {campaign.updatedByName}</> : null}
+                    </p>
+                  ) : null}
+
                   <dl className="grid gap-2 text-sm sm:grid-cols-2">
                     <div>
                       <dt className="text-xs tracking-wide text-muted-foreground uppercase">
@@ -172,8 +184,14 @@ export default async function CampaignsPage({
                       </dt>
                       <dd>
                         <code className="font-mono text-xs break-all">
-                          {baseUrl}/go/{campaign.token}?v={campaign.shareVersion}
+                          {share.baseUrl}/go/{campaign.token}?v={campaign.shareVersion}
                         </code>
+                        {share.fellBack ? (
+                          <p className="mt-1 text-xs text-warning">
+                            Tên miền {campaign.shareDomain} đã tắt hoặc chưa kiểm tra — đang hiện link theo tên
+                            miền chính.
+                          </p>
+                        ) : null}
                         <p className="mt-1 text-xs text-muted-foreground">
                           Đuôi <code className="font-mono">?v=</code> tự đổi khi tiêu đề, mô tả hoặc
                           ảnh chia sẻ đổi, để X/Facebook lấy thẻ mới. Link không có đuôi vẫn chạy.

@@ -58,6 +58,12 @@ export interface CampaignOg {
   imageUrl?: string;
 }
 
+/** Ai thao tác — chụp tên lúc đó để danh sách không phải $lookup và vẫn đọc được khi tài khoản bị xoá. */
+export interface Actor {
+  id: ObjectId;
+  name: string;
+}
+
 export interface Campaign {
   _id?: ObjectId;
   /** Slug công khai của landing: /c/[slug] */
@@ -69,6 +75,14 @@ export interface Campaign {
   status: EntityStatus;
   landing: CampaignLanding;
   og: CampaignOg;
+  /**
+   * Tên miền (host, đã chuẩn hoá) dùng để dựng link chia sẻ `/go/...` của campaign này. Vắng = tên miền
+   * chính (`publicBaseUrl()`). Chỉ là NHÃN HIỂN THỊ của link: redirect, whitelist đích và landing không
+   * đổi theo nó. Xem `lib/domains`.
+   */
+  shareDomain?: string;
+  createdBy?: Actor;
+  updatedBy?: Actor;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -194,5 +208,49 @@ export interface Rollup {
   clicks: number;
   conversions: number;
   payout: number;
+  updatedAt: Date;
+}
+
+export type AdminRole = "owner" | "member";
+
+/**
+ * Tài khoản vào /admin. `owner` quản lý thành viên và tên miền; `member` làm việc với chiến dịch, đối tác,
+ * URL đích. Mọi tài khoản đều thấy toàn bộ dữ liệu — không có phân vùng theo người.
+ */
+export interface AdminUser {
+  _id?: ObjectId;
+  /** Chữ thường, đã trim. Unique. */
+  email: string;
+  name: string;
+  role: AdminRole;
+  /** `scrypt$<N>$<r>$<p>$<salt b64>$<hash b64>` — xem `lib/auth/password.ts`. */
+  passwordHash: string;
+  /** Tắt tài khoản = không đăng nhập được và phiên đang mở hết hiệu lực ở lần tải trang kế tiếp. */
+  active: boolean;
+  /**
+   * Số phiên bản của phiên đăng nhập. Nằm trong cookie đã ký; tăng nó (đổi mật khẩu, tắt tài khoản, đổi
+   * vai trò) là mọi cookie cũ của người này mất hiệu lực — thứ proxy (Edge, không có DB) không làm được.
+   */
+  tokenVersion: number;
+  failedLogins: number;
+  lockedUntil?: Date;
+  lastLoginAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Tên miền phụ dùng để dựng link chia sẻ. `pending` = vừa khai báo, chưa chứng minh được là trỏ về app này;
+ * chỉ `verified` mới được chọn ở form chiến dịch.
+ */
+export interface ShareDomain {
+  _id?: ObjectId;
+  /** Hostname chữ thường, không scheme/port/đường dẫn. Unique. */
+  host: string;
+  label?: string;
+  status: "pending" | "verified" | "disabled";
+  verifiedAt?: Date;
+  createdBy?: Actor;
+  createdAt: Date;
   updatedAt: Date;
 }

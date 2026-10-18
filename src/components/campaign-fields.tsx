@@ -20,8 +20,11 @@ import { legacyBodyToHtml } from "@/lib/landing/legacy-body";
 export function CampaignFields({
   advertisers,
   campaign,
+  domains,
 }: {
   advertisers: { id: string; name: string }[];
+  /** Tên miền đang `verified` (xem `verifiedHostSet`). Rỗng = form không hiện ô chọn. */
+  domains: string[];
   /** Có = đang sửa (nạp giá trị cũ). Không có = đang tạo mới. */
   campaign?: CampaignEditView;
 }) {
@@ -53,6 +56,27 @@ export function CampaignFields({
           ))}
         </select>
       </Field>
+      {/*
+        Luôn gửi field `shareDomain` (kể cả khi không có tên miền phụ nào) để form sửa không bao giờ ngầm bỏ
+        nó — `updateCampaign` hiểu "không gửi" là "gỡ tên miền". Không có tên miền phụ thì gửi rỗng.
+      */}
+      {domains.length > 0 || campaign?.shareDomain ? (
+        <Field label="Tên miền của link chia sẻ" hint="chỉ đổi địa chỉ hiển thị, không đổi cách link chạy">
+          <select name="shareDomain" defaultValue={campaign?.shareDomain ?? ""} className={inputClass}>
+            <option value="">Tên miền chính</option>
+            {campaign?.shareDomain && !domains.includes(campaign.shareDomain) ? (
+              <option value={campaign.shareDomain}>{campaign.shareDomain} (đã tắt — link đang dùng tên miền chính)</option>
+            ) : null}
+            {domains.map((host) => (
+              <option key={host} value={host}>
+                {host}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : (
+        <input type="hidden" name="shareDomain" value="" />
+      )}
       <Field label="Chữ trên nút bấm" tour="cf-cta">
         <input
           name="ctaLabel"

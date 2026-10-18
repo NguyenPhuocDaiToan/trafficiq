@@ -481,6 +481,33 @@ tại chỗ trước.
     khi sửa. CHƯA có banner đồng ý cookie: nếu site nhắm người đọc ở EU/Anh (GDPR/ePrivacy) thì script theo dõi phải
     chờ sự đồng ý trước khi nạp — xem cảnh báo đã nêu với chủ dự án.
 
+23. **Đăng nhập admin là nhiều tài khoản trong Mongo (`adminUsers`), phiên là cookie KÝ — và kiểm tài khoản bằng DB ở
+    ba nơi, không chỉ ở proxy.** Cookie `v2.<uid>.<tokenVersion>.<hết hạn>.<HMAC>` (`lib/auth/session.ts`, Web Crypto để chạy
+    được ở Edge). `proxy.ts` chỉ kiểm chữ ký + hạn vì Edge không có DB. Phần "tài khoản còn hoạt động và `tokenVersion` khớp"
+    do `lib/auth/current-user.ts` làm: layout admin, route upload, trang xem trước, và **đầu MỌI server action** (`requireUser()`;
+    action của owner dùng `requireOwner()`). Server action không đi qua layout nên action nào quên `requireUser()` là người vừa
+    bị tắt vẫn ghi được tới khi cookie hết hạn 7 ngày — thêm action admin mới thì gọi nó ở dòng đầu. Layout giữ qua các lần
+    chuyển trang bằng link nên không phải rào chắn dữ liệu; trang chỉ-owner tự gọi `requireOwner()`.
+    Tắt tài khoản / đổi vai trò / đổi hoặc đặt lại mật khẩu đều tăng `tokenVersion` → mọi cookie cũ chết. Khoá ký là
+    `SESSION_SECRET` (≥32 ký tự) hoặc, nếu chưa đặt, dẫn xuất từ `IP_HASH_SALT`+`ADMIN_PASSWORD` — KHÔNG BAO GIỜ từ mật khẩu
+    một mình: chữ ký kiểm được offline và thành viên nào cũng có một cookie hợp lệ, khoá yếu là họ tự ký cookie owner.
+    Mật khẩu băm scrypt (`password.ts`). Sai 5 lần khoá 5 phút theo TÀI KHOẢN (serverless không có chỗ đếm theo IP) và UI chỉ có
+    MỘT câu lỗi cho sai mật khẩu/không có tài khoản/đã tắt/bị khoá (không cho dò email); email lạ vẫn tốn một lượt băm.
+    `ADMIN_PASSWORD` chỉ còn là mật khẩu BOOTSTRAP: tạo owner đầu tiên khi bảng rỗng. Mất owner cuối → `npm run admin:user`.
+    Không thể tắt/hạ owner cuối (`otherActiveOwners`). Cần `npm run setup:indexes` (unique `email`, `host`) — action tạo cũng
+    kiểm trùng trước, vì thiếu chỉ mục thì unique im lặng không có.
+    Mọi tài khoản thấy toàn bộ dữ liệu; chiến dịch chỉ ghi `createdBy`/`updatedBy` để biết ai làm. Không có phân vùng theo người.
+
+24. **Tên miền chia sẻ (`shareDomains`, `campaign.shareDomain`) chỉ là NHÃN HIỂN THỊ của link `/go` — đừng cho `Host` điều khiển
+    hành vi.** Cùng một deployment phục vụ mọi tên miền: cùng whitelist đích, cùng thẻ chia sẻ, `canonical`/`og:url` luôn là tên
+    miền chính (`publicBaseUrl()`). `/go/[token]` KHÔNG đọc `Host` và không có nhánh nào đối xử khác nhau theo tên miền — thêm một
+    nhánh như vậy là tự mở cổng cho việc trả nội dung khác nhau theo nơi truy cập (bất biến 18). Link dựng bằng
+    `resolveShareBase` (`lib/domains/links.ts`); tên miền chỉ dùng khi `verified`, đã tắt thì rơi về tên miền chính VÀ báo
+    `fellBack` (đừng im lặng đưa link chết). `verifyDomainReachable` gọi `https://<host>/api/health` đòi `{"app":"trafficiq"}`
+    (đừng bỏ field `app` ở health) với chống SSRF: chỉ https, đường dẫn cố định, từ chối IP riêng/nội bộ, không theo redirect,
+    chỉ trả lý do ngắn. Thêm tên miền vào app KHÔNG làm nó tới được app — DNS và việc thêm vào Vercel/nginx là việc bên ngoài.
+    Chỉ owner quản lý tên miền. Chưa có tự động hoá DNS/Vercel API cố ý: mã không kiểm thử được ở đây.
+
 ---
 
 ## Commands
@@ -496,6 +523,9 @@ npm run test:fonts       # test của chính gate font (các cấu hình sai đ�
 npm run check:content    # gate nội dung blog (metadata, ảnh bìa, thumbnail, anchor, link nội bộ)
 npm run check:bot        # gate regex UA crawler: recall + specificity ≥ 90% trên corpus
 npm run test:guide       # bài học coach mark: dữ liệu hợp lệ và mọi data-tour có thật trên giao diện
+npm run test:auth        # mật khẩu scrypt, cookie ký, chính sách đăng nhập/khoá/bootstrap
+npm run test:domains     # chuẩn hoá tên miền, dựng link theo tên miền, chống SSRF khi kiểm tra
+npm run admin:user -- <email> [tên]  # cứu hộ: tạo/khôi phục owner (mật khẩu qua biến NEW_ADMIN_PASSWORD)
 npm run test:share       # mã ?v= của link chia sẻ và og:url ở /go
 npm run test:media       # ảnh tải lên: nén/độ nét, bảo mật route upload, ba driver lưu trữ (disk/vercel/s3)
 npm run test:botdetect   # unit test lib/botdetect (FCrDNS, điểm, rate limit, PoW)

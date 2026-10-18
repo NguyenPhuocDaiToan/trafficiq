@@ -91,6 +91,10 @@ export interface CampaignView {
   token: string;
   /** Mã thẻ chia sẻ hiện tại, để dựng link `?v=` — xem `lib/landing/share-link.ts`. */
   shareVersion: string;
+  /** Tên miền chọn cho link chia sẻ; vắng = tên miền chính. */
+  shareDomain?: string;
+  createdByName?: string;
+  updatedByName?: string;
   status: EntityStatus;
   advertiserName: string;
   offers: OfferView[];
@@ -105,6 +109,9 @@ export async function listCampaigns(): Promise<CampaignView[]> {
       slug: string;
       token: string;
       og: CampaignOg;
+      shareDomain?: string;
+      createdBy?: { name: string };
+      updatedBy?: { name: string };
       status: EntityStatus;
       advertiser: { name: string }[];
       offerList: {
@@ -155,6 +162,9 @@ export async function listCampaigns(): Promise<CampaignView[]> {
     slug: doc.slug,
     token: doc.token,
     shareVersion: ogVersion(doc.og),
+    shareDomain: doc.shareDomain,
+    createdByName: doc.createdBy?.name,
+    updatedByName: doc.updatedBy?.name,
     status: doc.status,
     advertiserName: doc.advertiser[0]?.name ?? "(đã xóa)",
     offers: doc.offerList.map((offer) => ({
@@ -178,6 +188,7 @@ export interface CampaignEditView {
   advertiserId: string;
   landing: CampaignLanding;
   og: CampaignOg;
+  shareDomain?: string;
 }
 
 /**
@@ -204,6 +215,7 @@ export async function getCampaignById(id: string): Promise<CampaignEditView | nu
     advertiserId: doc.advertiserId.toString(),
     landing: doc.landing,
     og: doc.og,
+    shareDomain: doc.shareDomain,
   };
 }
 

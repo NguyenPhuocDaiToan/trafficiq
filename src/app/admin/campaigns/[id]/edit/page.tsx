@@ -1,4 +1,5 @@
-import { shareUrl } from "@/lib/landing/share-link";
+import { campaignShareUrl } from "@/lib/domains/links";
+import { verifiedHostSet } from "@/lib/domains/registry";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/action-form";
@@ -30,8 +31,12 @@ export default async function EditCampaignPage({
   const campaign = await getCampaignById(id);
   if (!campaign) notFound();
 
-  const advertisers = await listAdvertiserOptionsForEdit(campaign.advertiserId);
+  const [advertisers, domains] = await Promise.all([
+    listAdvertiserOptionsForEdit(campaign.advertiserId),
+    verifiedHostSet(),
+  ]);
   const baseUrl = publicBaseUrl();
+  const link = campaignShareUrl(campaign, domains, baseUrl);
 
   return (
     <div className="space-y-6">
@@ -56,7 +61,7 @@ export default async function EditCampaignPage({
           </Link>
           , không đổi ở đây. Link theo dõi{" "}
           <code className="font-mono text-xs break-all">
-            {shareUrl(baseUrl, campaign.token, campaign.og)}
+            {link.url}
           </code>
           . Phần <code className="font-mono text-xs">/go/{campaign.token}</code> không bao giờ
           thay đổi khi sửa — link đã đem đi chạy traffic vẫn sống. Đuôi{" "}
@@ -74,10 +79,17 @@ export default async function EditCampaignPage({
             resetOnSuccess={false}
           >
             <input type="hidden" name="id" value={campaign.id} />
-            <CampaignFields advertisers={advertisers} campaign={campaign} />
+            <CampaignFields advertisers={advertisers} campaign={campaign} domains={[...domains]} />
           </ActionForm>
         </Card>
       </CampaignEditLivePreview>
+
+      {link.fellBack ? (
+        <Notice>
+          Tên miền {campaign.shareDomain} đã bị tắt hoặc chưa kiểm tra, nên link ở trên đang dùng tên miền chính.
+          Chọn tên miền khác ở ô &ldquo;Tên miền của link chia sẻ&rdquo; hoặc bật lại ở mục Tên miền.
+        </Notice>
+      ) : null}
 
       {campaign.status === "active" ? (
         <Notice>

@@ -94,6 +94,17 @@ export const campaignSchema = z.object({
   ogTitle: z.string().trim().min(3).max(140),
   ogDescription: z.string().trim().min(3).max(300),
   ogImageUrl: imageRefSchema,
+  /**
+   * Tên miền của link chia sẻ. Chỉ kiểm HÌNH DẠNG ở đây; việc nó có đang `verified` không do action kiểm
+   * bằng DB (schema thì không có DB). Rỗng = tên miền chính.
+   */
+  shareDomain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(253)
+    .regex(/^[a-z0-9.-]*$/, "Tên miền không hợp lệ")
+    .optional(),
 });
 
 /**

@@ -6,23 +6,33 @@ import { after, beforeEach, describe, it } from "node:test";
 import { NextRequest } from "next/server";
 import sharp from "sharp";
 import { POST } from "../../app/admin/upload-image/route";
-import { SESSION_COOKIE, sessionValueFor } from "../auth/session";
+import { userLookup } from "../auth/current-user";
+import { SESSION_COOKIE, newSessionClaims, sessionSecret, signSession } from "../auth/session";
+import type { AdminUser } from "../types";
 import { acquireUploadSlot, resetUploadGuard } from "./upload-guard";
 
-const PASSWORD = "test-password";
+const SECRET = "x".repeat(40);
+const UID = "a".repeat(24);
+let user: Partial<AdminUser> | null = { active: true, tokenVersion: 1 };
+const realById = userLookup.byId;
+userLookup.byId = async (id) => (user && id === UID ? ({ _id: UID, email: "a@b.c", name: "A", role: "member", ...user } as unknown as AdminUser) : null);
+
+/** Cookie phiên hợp lệ của tài khoản giả ở trên, ký bằng khoá thử. */
+const sessionFor = (ver = 1, secret = SECRET) => signSession(newSessionClaims(UID, ver), `s|${secret}`);
 const dir = mkdtempSync(path.join(tmpdir(), "tiq-route-"));
-const prev = { dir: process.env.UPLOAD_DIR, pw: process.env.ADMIN_PASSWORD, vercel: process.env.VERCEL };
+const prev = { dir: process.env.UPLOAD_DIR, pw: process.env.SESSION_SECRET, vercel: process.env.VERCEL };
 process.env.UPLOAD_DIR = dir;
-process.env.ADMIN_PASSWORD = PASSWORD;
+process.env.SESSION_SECRET = SECRET;
 delete process.env.VERCEL;
 // Mặc định của dự án là vercel; các test đĩa phải chọn disk tường minh.
 process.env.STORAGE_DRIVER = "disk";
 
 after(() => {
+  userLookup.byId = realById;
   rmSync(dir, { recursive: true, force: true });
   for (const [k, v] of [
     ["UPLOAD_DIR", prev.dir],
-    ["ADMIN_PASSWORD", prev.pw],
+    ["SESSION_SECRET", prev.pw],
     ["VERCEL", prev.vercel],
   ] as const) {
     if (v === undefined) delete process.env[k];
@@ -58,7 +68,7 @@ async function request(opts: Opts = {}) {
   const probe = new Request("http://localhost:3000/admin/upload-image", { method: "POST", body: fd });
   const body = Buffer.from(await probe.arrayBuffer());
 
-  const cookie = opts.cookie === undefined ? await sessionValueFor(PASSWORD) : opts.cookie;
+  const cookie = opts.cookie === undefined ? await sessionFor() : opts.cookie;
   const headers: Record<string, string> = {
     "content-type": probe.headers.get("content-type")!,
     "sec-fetch-site": "same-origin",
@@ -90,16 +100,40 @@ describe("upload-image — xác thực", () => {
     const before = readdirSync(dir).length;
     assert.equal((await call({ cookie: null })).status, 401);
     assert.equal((await call({ cookie: "0".repeat(64) })).status, 401);
-    assert.equal((await call({ cookie: await sessionValueFor("mật-khẩu-khác") })).status, 401);
+    // Chữ ký bằng khoá khác (kẻ giả mạo không biết SESSION_SECRET).
+    assert.equal((await call({ cookie: await sessionFor(1, "y".repeat(40)) })).status, 401);
     assert.equal(readdirSync(dir).length, before);
   });
 
-  it("chưa cấu hình ADMIN_PASSWORD → 503 (khoá hẳn, không mở toang)", async () => {
+  it("tài khoản bị tắt, bị xoá, hoặc phiên bị thu hồi (tokenVersion lệch) → 401 dù chữ ký đúng", async () => {
+    const before = readdirSync(dir).length;
+    const saved = user;
+    try {
+      user = { active: false, tokenVersion: 1 };
+      assert.equal((await call()).status, 401, "đã tắt");
+      user = { active: true, tokenVersion: 2 };
+      assert.equal((await call()).status, 401, "đã đổi mật khẩu/vai trò");
+      user = null;
+      assert.equal((await call()).status, 401, "đã xoá");
+    } finally {
+      user = saved;
+    }
+    assert.equal(readdirSync(dir).length, before);
+    assert.equal((await call()).status, 200);
+  });
+
+  it("chưa cấu hình khoá phiên → 503 (khoá hẳn, không mở toang)", async () => {
+    const saved = [process.env.IP_HASH_SALT, process.env.ADMIN_PASSWORD];
+    delete process.env.SESSION_SECRET;
+    delete process.env.IP_HASH_SALT;
     delete process.env.ADMIN_PASSWORD;
     try {
+      assert.equal(sessionSecret(), null);
       assert.equal((await call()).status, 503);
     } finally {
-      process.env.ADMIN_PASSWORD = PASSWORD;
+      process.env.SESSION_SECRET = SECRET;
+      if (saved[0] !== undefined) process.env.IP_HASH_SALT = saved[0];
+      if (saved[1] !== undefined) process.env.ADMIN_PASSWORD = saved[1];
     }
   });
 });
@@ -179,7 +213,7 @@ describe("upload-image — kích thước và đầu vào", () => {
         "content-type": probe.headers.get("content-type")!,
         "content-length": String(body.length),
         "sec-fetch-site": "same-origin",
-        cookie: `${SESSION_COOKIE}=${await sessionValueFor(PASSWORD)}`,
+        cookie: `${SESSION_COOKIE}=${await sessionFor()}`,
       },
     });
     const res = await POST(req);

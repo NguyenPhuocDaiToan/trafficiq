@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
  * người Việt — thuật ngữ nào là danh từ riêng của ngành thì giữ nguyên trong
  * ngoặc để đối chiếu với tài liệu ad network (postback, offer, destination…).
  */
-const NAV = [
+const NAV: { href: string; label: string; ownerOnly?: boolean }[] = [
   { href: "/admin/campaigns", label: "Chiến dịch" },
   { href: "/admin/tong-quan", label: "Tổng quan" },
   { href: "/admin/destinations", label: "URL đích" },
@@ -18,6 +18,9 @@ const NAV = [
   // riêng chứ không chỉ là link từ Tổng quan: nó là chỗ trả lời "click của tôi
   // đi đâu mất", và người đang đi tìm câu đó không nghĩ tới việc vào báo cáo.
   { href: "/admin/nhat-ky", label: "Nhật ký" },
+  // Chỉ owner thấy hai mục này; trang và action của chúng tự chặn member (nút ẩn chỉ là UX).
+  { href: "/admin/ten-mien", label: "Tên miền", ownerOnly: true },
+  { href: "/admin/thanh-vien", label: "Thành viên", ownerOnly: true },
   // Trung tâm bài học + coach mark. Đứng cuối cùng và tách khỏi các mục làm việc: mở thưa hơn hẳn, nhưng
   // phải có tab riêng để người mới thấy ngay thay vì phải biết đường tìm.
   { href: "/admin/huong-dan", label: "Hướng dẫn" },
@@ -37,12 +40,12 @@ function isActive(pathname: string, href: string): boolean {
  * Client component vì `usePathname` chỉ chạy phía client. Chỉ phần link là
  * client — layout và trang vẫn là server component.
  */
-export function AdminNav() {
+export function AdminNav({ isOwner = false }: { isOwner?: boolean }) {
   const pathname = usePathname();
 
   return (
     <>
-      {NAV.map((item) => {
+      {NAV.filter((item) => isOwner || !item.ownerOnly).map((item) => {
         const active = isActive(pathname, item.href);
         return (
           <Link

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifySessionCookie } from "@/lib/auth/session";
+import { userFromCookie } from "@/lib/auth/current-user";
+import { SESSION_COOKIE, sessionSecret } from "@/lib/auth/session";
 import { formatBytes, MAX_UPLOAD_BYTES, MULTIPART_OVERHEAD } from "@/lib/media/limits";
 import { MediaError, processImage, type MediaKind } from "@/lib/media/process";
 import { acquireUploadSlot } from "@/lib/media/upload-guard";
@@ -65,9 +66,8 @@ function isSameOrigin(request: NextRequest): boolean {
 
 export async function POST(request: NextRequest) {
   // Lớp 2: tự kiểm phiên, không chỉ dựa vào matcher của proxy.
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password) return fail("ADMIN_PASSWORD chưa được cấu hình.", 503);
-  if (!(await verifySessionCookie(request.cookies.get(SESSION_COOKIE)?.value, password))) {
+  if (!sessionSecret()) return fail("Chưa cấu hình khoá phiên.", 503);
+  if (!(await userFromCookie(request.cookies.get(SESSION_COOKIE)?.value))) {
     return fail("Chưa đăng nhập.", 401);
   }
 

@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db/client";
 import { clickTtlDays } from "@/lib/env";
 import {
   COLLECTIONS,
+  adminUsers,
   advertisers,
   campaigns,
   clickEvents,
@@ -10,6 +11,7 @@ import {
   destinations,
   offers,
   rollups,
+  shareDomains,
 } from "@/lib/db/collections";
 
 const TTL_INDEX_NAME = "ts_ttl";
@@ -102,6 +104,13 @@ export async function ensureIndexes(): Promise<string[]> {
   // Giới hạn tần suất gửi trong submitContactMessage đếm theo cặp này.
   log(await contactCol.createIndex({ ipHash: 1, createdAt: -1 }));
   // KHÔNG đặt TTL ở collection này: đây là thư người thật gửi, không phải log.
+
+  // Đăng nhập tra theo email; unique để không có hai tài khoản cùng một địa chỉ.
+  const usersCol = await adminUsers();
+  log(await usersCol.createIndex({ email: 1 }, { unique: true }));
+
+  const domainsCol = await shareDomains();
+  log(await domainsCol.createIndex({ host: 1 }, { unique: true }));
 
   return created;
 }

@@ -25,6 +25,8 @@ import {
   type ActionResult,
 } from "@/lib/control-plane/schemas";
 import { generateToken } from "@/lib/control-plane/token";
+import { actorOf, requireUser } from "@/lib/auth/current-user";
+import { acceptShareDomain } from "@/lib/domains/registry";
 
 function firstIssue(error: z.ZodError): string {
   const issue = error.issues[0];
@@ -50,6 +52,7 @@ export async function createAdvertiser(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = advertiserSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -73,6 +76,7 @@ export async function setAdvertiserStatus(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = statusChangeSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -92,6 +96,7 @@ export async function createDestination(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = destinationSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -121,6 +126,7 @@ export async function setDestinationStatus(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = statusChangeSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -142,6 +148,7 @@ export async function createCampaign(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const user = await requireUser();
   const raw = fields(formData);
 
   /*
@@ -170,6 +177,8 @@ export async function createCampaign(
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
   const data = parsed.data;
+  const domain = await acceptShareDomain(data.shareDomain);
+  if (!domain.ok) return { ok: false, error: domain.error };
   const now = new Date();
   const col = await campaigns();
 
@@ -199,6 +208,9 @@ export async function createCampaign(
         description: data.ogDescription,
         imageUrl: optional(data.ogImageUrl),
       },
+      ...(domain.host ? { shareDomain: domain.host } : {}),
+      createdBy: actorOf(user),
+      updatedBy: actorOf(user),
       createdAt: now,
       updatedAt: now,
     });
@@ -249,6 +261,7 @@ export async function updateCampaign(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const user = await requireUser();
   const parsed = campaignUpdateSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -259,9 +272,12 @@ export async function updateCampaign(
   // nào phải revalidate.
   const before = await col.findOne(
     { _id: new ObjectId(data.id) },
-    { projection: { slug: 1, token: 1, og: 1 } },
+    { projection: { slug: 1, token: 1, og: 1, shareDomain: 1 } },
   );
   if (!before) return { ok: false, error: "Không tìm thấy chiến dịch" };
+
+  const domain = await acceptShareDomain(data.shareDomain, before.shareDomain);
+  if (!domain.ok) return { ok: false, error: domain.error };
 
   /*
    * Lọc thẻ HTML TẠI ĐÂY, trước khi ghi xuống Mongo. Đây là điểm duy nhất được
@@ -292,8 +308,13 @@ export async function updateCampaign(
             description: data.ogDescription,
             imageUrl: optional(data.ogImageUrl),
           },
+          updatedBy: actorOf(user),
           updatedAt: new Date(),
+          ...(domain.host ? { shareDomain: domain.host } : {}),
         },
+        // Form sửa luôn gửi field này (kể cả rỗng = tên miền chính), nên rỗng nghĩa là gỡ. Hai operator ở
+        // hai path khác nhau (`shareDomain` vs `landing`/`og`) nên không đụng nhau.
+        ...(domain.host ? {} : { $unset: { shareDomain: "" } }),
         /*
          * KHÔNG thêm `$unset: { "landing.bodyText": "" }` ở đây, dù mục tiêu là
          * bỏ field @deprecated đó:
@@ -346,6 +367,7 @@ export async function setCampaignStatus(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = statusChangeSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -368,6 +390,7 @@ export async function createOffer(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = offerSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
@@ -393,6 +416,7 @@ export async function setOfferStatus(
   _prevState: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireUser();
   const parsed = statusChangeSchema.safeParse(fields(formData));
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 

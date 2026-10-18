@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getDashboardSnapshot } from "@/lib/analytics/queries";
+import { resolveShareBase } from "@/lib/domains/links";
+import { verifiedHostSet } from "@/lib/domains/registry";
 import { publicBaseUrl } from "@/lib/env";
 import { botReasonLabel, countryLabel, deviceLabel, sourceLabel } from "@/lib/labels";
 import {
@@ -61,8 +63,8 @@ export default async function DashboardPage({
   const days = RANGES.includes(Number(daysParam) as (typeof RANGES)[number])
     ? Number(daysParam)
     : DEFAULT_DAYS;
-  const { overview, campaignRows, sources, countries, devices, botReasons, series } =
-    await getDashboardSnapshot(days);
+  const [snapshot, verified] = await Promise.all([getDashboardSnapshot(days), verifiedHostSet()]);
+  const { overview, campaignRows, sources, countries, devices, botReasons, series } = snapshot;
 
   const baseUrl = publicBaseUrl();
   const peak = Math.max(1, ...series.map((point) => point.clicks));
@@ -165,7 +167,7 @@ export default async function DashboardPage({
                     </td>
                     <td className="px-3 py-2">
                       <code className="font-mono text-xs text-muted-foreground">
-                        {`${baseUrl}/go/${row.token}?v=${row.shareVersion}`}
+                        {`${resolveShareBase(row.shareDomain, verified, baseUrl).baseUrl}/go/${row.token}?v=${row.shareVersion}`}
                       </code>
                     </td>
                     <TdNum>{row.clicks}</TdNum>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { LandingView } from "@/components/landing-view";
+import { requireUser } from "@/lib/auth/current-user";
 import { getCampaignById } from "@/lib/control-plane/queries";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,8 @@ export default async function CampaignPreviewFrame({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Nằm ngoài /admin nên không có layout admin kiểm tài khoản: tự kiểm ở đây (proxy chỉ kiểm chữ ký cookie).
+  await requireUser();
   const { id } = await params;
   const campaign = await getCampaignById(id);
   if (!campaign) notFound();

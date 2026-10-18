@@ -75,7 +75,7 @@ export default async function EditCampaignPage({
           <ActionForm
             action={updateCampaign}
             submitLabel="Lưu thay đổi"
-            className="grid gap-3 sm:grid-cols-2"
+            className="grid gap-8"
             resetOnSuccess={false}
           >
             <input type="hidden" name="id" value={campaign.id} />

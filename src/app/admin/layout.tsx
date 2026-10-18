@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AdminNav } from "@/components/admin-nav";
+import { AdminNav, SettingsTabs } from "@/components/admin-nav";
 import { GuideTour } from "@/components/guide-tour";
 import { logout } from "@/lib/auth/actions";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <nav className="mx-auto flex min-h-14 max-w-350 flex-wrap items-center gap-4 px-4 py-2 text-sm">
             {/* Logo dùng font-sans như mọi heading khác — xem MASTER.md § Typography. */}
             <span className="font-semibold tracking-tight">TrafficIQ</span>
-            <AdminNav isOwner={user.role === "owner"} />
+            <AdminNav />
             <div className="ml-auto flex flex-wrap items-center gap-4">
               <Link
                 href="/"
@@ -65,7 +65,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </header>
       ) : null}
       {/* Dashboard max-width 1400px theo pages/dashboard.md */}
-      <main className={user ? "mx-auto max-w-350 px-4 py-6" : undefined}>{children}</main>
+      <main className={user ? "mx-auto max-w-350 px-4 py-6" : undefined}>
+        {/* Tự ẩn khi không ở trang nào của "Cài đặt" (xem `SettingsTabs`). */}
+        {user ? <SettingsTabs isOwner={user.role === "owner"} /> : null}
+        {children}
+      </main>
       {/*
         Coach mark + nút "Hướng dẫn trang này". Gắn một lần ở đây để mọi trang admin có, và để
         `?huongdan=<bài>` chạy được trên bất kỳ trang nào mà không trang nào phải tự nhớ. `Suspense` vì

@@ -36,21 +36,62 @@ export function StatusBadge({ status }: { status: EntityStatus | string }) {
 export function Field({
   label,
   hint,
+  help,
+  helpTone = "muted",
   tour,
+  className,
   children,
 }: {
   label: string;
+  /** Chú thích NGẮN cùng dòng với nhãn, vd "(không bắt buộc)". Câu dài thì dùng `help`. */
   hint?: string;
+  /**
+   * Chú thích dưới ô nhập. Câu dài để ở đây chứ không để cạnh nhãn: cạnh nhãn nó tràn xuống dòng và làm hai
+   * cột đứng cạnh nhau lệch độ cao, ô nhập không còn thẳng hàng.
+   */
+  help?: string;
+  /** `warning` cho điều có hậu quả (vd đổi đường dẫn làm link đã chia sẻ chết). */
+  helpTone?: "muted" | "warning";
   /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
   tour?: string;
+  /** Vd `sm:col-span-2` để field chiếm cả hàng của lưới cha. */
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm" data-tour={tour}>
+    <label className={`block text-sm ${className ?? ""}`} data-tour={tour}>
       <span className="font-medium">{label}</span>
       {hint ? <span className="ml-1 text-xs text-muted-foreground">{hint}</span> : null}
       <div className="mt-1">{children}</div>
+      {help ? (
+        <p className={`mt-1 text-xs ${helpTone === "warning" ? "text-warning" : "text-muted-foreground"}`}>{help}</p>
+      ) : null}
     </label>
+  );
+}
+
+/**
+ * Một nhóm field trong form dài: tiêu đề + một câu mô tả + lưới field. Dùng thay cho việc xếp mọi field vào
+ * một lưới phẳng với vài dòng tiêu đề nhỏ — ở form 12 field đó là thứ khiến form trông rối: không có chỗ nào
+ * để mắt dừng, và các ô không liên quan nằm chung một hàng.
+ */
+export function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <header className="border-b border-border pb-2">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        {description ? <p className="mt-0.5 text-xs text-muted-foreground">{description}</p> : null}
+      </header>
+      <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">{children}</div>
+    </section>
   );
 }
 

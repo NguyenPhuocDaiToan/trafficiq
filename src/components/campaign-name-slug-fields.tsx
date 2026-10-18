@@ -59,12 +59,22 @@ export function CampaignNameSlugFields({
 
       <Field
         label="Đường dẫn tĩnh"
-        hint={
+        help={
           mode === "edit"
-            ? "đổi cái này là link /c/… đã chia sẻ sẽ thành 404"
-            : "tự sinh từ tên, sửa được"
+            ? "Đổi đường dẫn thì link /c/… đã chia sẻ sẽ không còn hoạt động (404)."
+            : "Tự sinh từ tên chiến dịch, sửa được."
         }
+        helpTone={mode === "edit" ? "warning" : "muted"}
       >
+        <div className="flex flex-wrap gap-2">
+        {/* Tiền tố cố định: cho thấy đây là phần đuôi của /c/…, không phải một URL đầy đủ. */}
+        <span
+          aria-hidden="true"
+          className="inline-flex items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground"
+        >
+          /c/
+        </span>
+        <div className="min-w-40 flex-1">
         <input
           name="slug"
           /*
@@ -85,16 +95,18 @@ export function CampaignNameSlugFields({
           className={inputClass}
           placeholder="tai-chinh-q3-vn"
         />
+        </div>
         {mode === "edit" ? (
           <button
             type="button"
             onClick={() => setSlug(slugify(name))}
             disabled={slugify(name) === slug || slugify(name).length === 0}
-            className="mt-1.5 cursor-pointer rounded-md border border-primary px-2.5 py-1 text-xs font-semibold text-primary transition-colors duration-150 hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-primary px-3 text-xs font-semibold text-primary transition-colors duration-150 hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Sinh lại từ tên
           </button>
         ) : null}
+        </div>
       </Field>
     </>
   );

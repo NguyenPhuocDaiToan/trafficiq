@@ -45,6 +45,7 @@ export function ImageUrlField({
   name,
   label,
   hint,
+  help,
   kind,
   defaultValue,
   tour,
@@ -52,6 +53,8 @@ export function ImageUrlField({
   name: string;
   label: string;
   hint?: string;
+  /** Chú thích dưới ô nhập (xem `Field`). */
+  help?: string;
   /** Điểm chỉ của coach mark (`data-tour`) — xem `lib/guide/lessons.ts`. */
   tour?: string;
   /** Quyết định cỡ và định dạng server nén ra — xem `lib/media/process.ts`. */
@@ -230,6 +233,8 @@ export function ImageUrlField({
           </>
         ) : null}
       </div>
+
+      {help ? <p className="mt-1 text-xs text-muted-foreground">{help}</p> : null}
 
       <p role="status" aria-live="polite" className="mt-1 min-h-4 text-xs">
         {status.kind === "idle" && hydrated && brokenValue !== value ? (

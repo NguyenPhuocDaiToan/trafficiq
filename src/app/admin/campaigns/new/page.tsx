@@ -62,7 +62,7 @@ export default async function NewCampaignPage() {
             <ActionForm
               action={createCampaign}
               submitLabel="Tạo chiến dịch"
-              className="grid gap-3 sm:grid-cols-2"
+              className="grid gap-8"
               /*
                * Xem trước lúc tạo = lưu bản nháp rồi mở đúng trang xem trước đang
                * có. Chiến dịch mới luôn `pending` nên nó đã là nháp — không cần

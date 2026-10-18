@@ -126,11 +126,6 @@ export const LESSONS: readonly Lesson[] = [
         body: "Chỉ hiện các đối tác đang chạy. Chưa có đối tác nào thì phải quay lại mục Đối tác để thêm và kích hoạt trước.",
       },
       {
-        target: "cf-cta",
-        title: "Chữ trên nút bấm",
-        body: "Nhãn của nút đi tiếp trên trang giới thiệu, ví dụ “Nhận ưu đãi”. Bên dưới có ô tự động chuyển hướng: 0 là tắt, 1–10 là số giây trước khi tự nhảy.",
-      },
-      {
         target: "cf-headline",
         title: "Nội dung trang giới thiệu",
         body: "Tiêu đề chính hiện to đầu trang. Tiêu đề phụ và thân bài không bắt buộc. Thân bài cố ý không cho chèn liên kết, để mọi lượt bấm đều đi qua nút chính.",
@@ -139,6 +134,11 @@ export const LESSONS: readonly Lesson[] = [
         target: "cf-hero",
         title: "Ảnh lớn đầu trang",
         body: "Dán link ảnh hoặc bấm “Tải ảnh lên” (kéo-thả cũng được). Ảnh lớn hơn 2MB tự thu nhỏ ngay trong trình duyệt; tối đa 4MB, nhận JPG, PNG, WebP.",
+      },
+      {
+        target: "cf-cta",
+        title: "Chữ trên nút bấm",
+        body: "Nhãn của nút đi tiếp trên trang giới thiệu, ví dụ “Nhận ưu đãi”. Ô tự động chuyển hướng nằm trong mục “Tuỳ chọn nâng cao” ở cuối form: 0 là tắt, 1–10 là số giây trước khi tự nhảy.",
       },
       {
         target: "cf-share",

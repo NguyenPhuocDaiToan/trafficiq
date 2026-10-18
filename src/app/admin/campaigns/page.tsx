@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ActionForm, StatusButton } from "@/components/action-form";
+import { TrackingLink } from "@/components/tracking-link";
 import {
   Card,
   Collapsible,
@@ -90,6 +91,7 @@ export default async function CampaignsPage({
                 // Chiến dịch vừa tạo mở sẵn: việc tiếp theo luôn là thêm đích.
                 defaultOpen={campaign.slug === createdSlug}
                 summary={
+                  <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-medium">{campaign.name}</span>
                     <StatusBadge status={campaign.status} />
@@ -111,6 +113,20 @@ export default async function CampaignsPage({
                     <code className="ml-auto hidden font-mono text-xs text-muted-foreground sm:inline">
                       /c/{campaign.slug}
                     </code>
+                  </div>
+                  {/*
+                   * Link theo dõi nằm ngay trên dòng, không giấu trong phần bung: đây là thứ người dùng hệ thống
+                   * cần nhất ("chỉ đi gửi link"), mà trước đây phải bấm bung từng chiến dịch mới thấy. Nằm trong
+                   * <summary> vẫn bấm/sao chép được mà không làm bung dòng (xem `TrackingLink`).
+                   */}
+                  <div data-tour="tracking-link" className="text-xs">
+                    <TrackingLink url={`${share.baseUrl}/go/${campaign.token}?v=${campaign.shareVersion}`} />
+                    {share.fellBack ? (
+                      <p className="mt-1 text-warning">
+                        Tên miền {campaign.shareDomain} đã tắt hoặc chưa kiểm tra — đang hiện link theo tên miền chính.
+                      </p>
+                    ) : null}
+                  </div>
                   </div>
                 }
               >
@@ -178,24 +194,15 @@ export default async function CampaignsPage({
                         </Link>
                       </dd>
                     </div>
-                    <div data-tour="tracking-link">
+                    <div>
                       <dt className="text-xs tracking-wide text-muted-foreground uppercase">
-                        Link theo dõi (link đem đi chạy traffic)
+                        Về link theo dõi
                       </dt>
-                      <dd>
-                        <code className="font-mono text-xs break-all">
-                          {share.baseUrl}/go/{campaign.token}?v={campaign.shareVersion}
-                        </code>
-                        {share.fellBack ? (
-                          <p className="mt-1 text-xs text-warning">
-                            Tên miền {campaign.shareDomain} đã tắt hoặc chưa kiểm tra — đang hiện link theo tên
-                            miền chính.
-                          </p>
-                        ) : null}
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Đuôi <code className="font-mono">?v=</code> tự đổi khi tiêu đề, mô tả hoặc
-                          ảnh chia sẻ đổi, để X/Facebook lấy thẻ mới. Link không có đuôi vẫn chạy.
-                        </p>
+                      <dd className="text-xs text-muted-foreground">
+                        Link ở đầu dòng chiến dịch là link đem đi chạy traffic. Đuôi{" "}
+                        <code className="font-mono">?v=</code> tự đổi khi tiêu đề, mô tả hoặc ảnh chia sẻ đổi, để
+                        X/Facebook lấy thẻ mới; link không có đuôi vẫn chạy. Mở link cũng được tính là một click
+                        thật — muốn xem trang mà không tạo click thì dùng nút Xem trước.
                       </dd>
                     </div>
                   </dl>

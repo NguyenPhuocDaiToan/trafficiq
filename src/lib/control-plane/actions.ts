@@ -17,9 +17,11 @@ import { invalidateRouteCache } from "@/lib/redirect/resolve";
 import { slugify } from "@/lib/slug";
 import {
   advertiserSchema,
+  advertiserUpdateSchema,
   campaignSchema,
   campaignUpdateSchema,
   destinationSchema,
+  destinationUpdateSchema,
   offerSchema,
   statusChangeSchema,
   type ActionResult,
@@ -90,6 +92,40 @@ export async function setAdvertiserStatus(
   return { ok: true, message: `Trạng thái advertiser → ${parsed.data.status}` };
 }
 
+export async function updateAdvertiser(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireUser();
+  const parsed = advertiserUpdateSchema.safeParse(fields(formData));
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const data = parsed.data;
+
+  // Ô để trống nghĩa là xoá giá trị đó (không lưu chuỗi rỗng vào Mongo). Hai operator ở hai path khác nhau.
+  const unset: Record<string, ""> = {};
+  if (!optional(data.contactEmail)) unset.contactEmail = "";
+  if (!optional(data.notes)) unset.notes = "";
+
+  const result = await (await advertisers()).updateOne(
+    { _id: new ObjectId(data.id) },
+    {
+      $set: {
+        name: data.name,
+        ...(optional(data.contactEmail) ? { contactEmail: data.contactEmail } : {}),
+        ...(optional(data.notes) ? { notes: data.notes } : {}),
+        updatedAt: new Date(),
+      },
+      ...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
+    },
+  );
+  if (result.matchedCount === 0) return { ok: false, error: "Không tìm thấy đối tác" };
+
+  revalidatePath("/admin/advertisers");
+  revalidatePath("/admin/destinations");
+  revalidatePath("/admin/campaigns");
+  return { ok: true, message: `Đã lưu đối tác "${data.name}"` };
+}
+
 // --------------------------------------------------------------- destinations
 
 export async function createDestination(
@@ -140,6 +176,52 @@ export async function setDestinationStatus(
   invalidateRouteCache();
   revalidatePath("/admin/destinations");
   return { ok: true, message: `Trạng thái destination → ${parsed.data.status}` };
+}
+
+/**
+ * Sửa URL đích. Đây là chỗ thay đổi nơi traffic đang chảy tới, nên có ba điều cần giữ:
+ *  - Luật kiểm URL là `destinationSchema` (chỉ http/https) — cùng luật với lúc tạo, không có đường sửa nào
+ *    được lách qua nó (bất biến 3: redirect chỉ tới URL trong whitelist).
+ *  - Trạng thái KHÔNG đổi theo: đích đang chạy vẫn chạy, nhưng về URL mới. Muốn tạm dừng thì dùng công tắc.
+ *  - `invalidateRouteCache()` (xoá cả cache): routing map của mọi campaign dùng đích này mang theo URL cũ, và
+ *    nó nằm trong RAM của instance tới 60 giây (bất biến 8).
+ */
+export async function updateDestination(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireUser();
+  const parsed = destinationUpdateSchema.safeParse(fields(formData));
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const data = parsed.data;
+
+  try {
+    const result = await (await destinations()).updateOne(
+      { _id: new ObjectId(data.id) },
+      {
+        $set: {
+          advertiserId: new ObjectId(data.advertiserId),
+          url: data.url,
+          category: data.category,
+          updatedAt: new Date(),
+        },
+      },
+    );
+    if (result.matchedCount === 0) return { ok: false, error: "Không tìm thấy URL đích" };
+  } catch (err) {
+    if (isDuplicateKeyError(err)) {
+      return { ok: false, error: "URL này đã có trong whitelist" };
+    }
+    throw err;
+  }
+
+  invalidateRouteCache();
+  revalidatePath("/admin/destinations");
+  revalidatePath("/admin/campaigns");
+  return {
+    ok: true,
+    message: "Đã lưu. Link đang chạy dùng đích này sẽ chuyển tới URL mới trong tối đa khoảng 1 phút.",
+  };
 }
 
 // ------------------------------------------------------------------ campaigns

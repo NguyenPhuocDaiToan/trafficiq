@@ -189,12 +189,12 @@ export const LESSONS: readonly Lesson[] = [
       {
         target: "campaign-row",
         title: "Mở chiến dịch cần đăng",
-        body: "Bấm vào dòng chiến dịch để xổ chi tiết.",
+        body: "Mỗi dòng là một chiến dịch. Bấm vào dòng để xổ chi tiết (đích chuyển hướng, trạng thái) — riêng link theo dõi thì nằm sẵn trên dòng, không cần bung.",
       },
       {
         target: "tracking-link",
-        title: "Copy Link theo dõi từ đây",
-        body: "Luôn copy từ khung này, đừng tự ghép. Đuôi ?v= là mã của thẻ chia sẻ, tự đổi khi bạn sửa tiêu đề, mô tả hoặc ảnh chia sẻ — để X/Facebook lấy thẻ mới thay vì giữ ảnh cũ.",
+        title: "Sao chép link theo dõi từ đây",
+        body: "Link nằm ngay trên dòng chiến dịch, bấm “Sao chép” là xong. Luôn sao chép từ đây, đừng tự ghép. Đuôi ?v= là mã của thẻ chia sẻ, tự đổi khi bạn sửa tiêu đề, mô tả hoặc ảnh chia sẻ — để X/Facebook lấy thẻ mới thay vì giữ ảnh cũ. Lưu ý: tự mở link cũng được tính là một click thật.",
       },
       {
         target: "campaign-actions",

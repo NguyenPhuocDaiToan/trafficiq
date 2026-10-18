@@ -1,3 +1,4 @@
+import { TrackingLink } from "@/components/tracking-link";
 import { campaignShareUrl } from "@/lib/domains/links";
 import { verifiedHostSet } from "@/lib/domains/registry";
 import Link from "next/link";
@@ -59,11 +60,11 @@ export default async function EditCampaignPage({
           >
             danh sách chiến dịch
           </Link>
-          , không đổi ở đây. Link theo dõi{" "}
-          <code className="font-mono text-xs break-all">
-            {link.url}
-          </code>
-          . Phần <code className="font-mono text-xs">/go/{campaign.token}</code> không bao giờ
+          , không đổi ở đây. Link theo dõi:
+          <span className="my-2 block">
+            <TrackingLink url={link.url} />
+          </span>
+          Phần <code className="font-mono text-xs">/go/{campaign.token}</code> không bao giờ
           thay đổi khi sửa — link đã đem đi chạy traffic vẫn sống. Đuôi{" "}
           <code className="font-mono text-xs">?v=</code> tự đổi khi tiêu đề, mô tả hoặc ảnh chia sẻ
           đổi, để X/Facebook không dùng thẻ cũ đã lưu; sửa xong thì copy lại link ở đây.

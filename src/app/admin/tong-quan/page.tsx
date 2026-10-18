@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrackingLink } from "@/components/tracking-link";
 import { getDashboardSnapshot } from "@/lib/analytics/queries";
 import { resolveShareBase } from "@/lib/domains/links";
 import { verifiedHostSet } from "@/lib/domains/registry";
@@ -166,9 +167,9 @@ export default async function DashboardPage({
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <code className="font-mono text-xs text-muted-foreground">
-                        {`${resolveShareBase(row.shareDomain, verified, baseUrl).baseUrl}/go/${row.token}?v=${row.shareVersion}`}
-                      </code>
+                      <TrackingLink
+                        url={`${resolveShareBase(row.shareDomain, verified, baseUrl).baseUrl}/go/${row.token}?v=${row.shareVersion}`}
+                      />
                     </td>
                     <TdNum>{row.clicks}</TdNum>
                     <TdNum>{row.conversions}</TdNum>

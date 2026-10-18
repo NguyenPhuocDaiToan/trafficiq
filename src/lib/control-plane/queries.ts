@@ -13,6 +13,7 @@ export interface AdvertiserView {
   id: string;
   name: string;
   contactEmail?: string;
+  notes?: string;
   status: EntityStatus;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +26,7 @@ export async function listAdvertisers(): Promise<AdvertiserView[]> {
     id: doc._id.toString(),
     name: doc.name,
     contactEmail: doc.contactEmail,
+    notes: doc.notes,
     status: doc.status,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
@@ -36,6 +38,7 @@ export interface DestinationView {
   url: string;
   category: string;
   status: EntityStatus;
+  advertiserId: string;
   advertiserName: string;
   updatedAt: string;
 }
@@ -45,6 +48,7 @@ export async function listDestinations(): Promise<DestinationView[]> {
   const docs = await col
     .aggregate<{
       _id: ObjectId;
+      advertiserId: ObjectId;
       url: string;
       category: string;
       status: EntityStatus;
@@ -70,6 +74,7 @@ export async function listDestinations(): Promise<DestinationView[]> {
     url: doc.url,
     category: doc.category,
     status: doc.status,
+    advertiserId: doc.advertiserId.toString(),
     advertiserName: doc.advertiser[0]?.name ?? "(đã xóa)",
     updatedAt: doc.updatedAt.toISOString(),
   }));

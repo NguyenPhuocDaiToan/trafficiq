@@ -184,6 +184,9 @@ tại chỗ trước.
 3. **Redirect chỉ 302 tới URL trong whitelist** (`destinations` collection).
    `/go/[token]` **không bao giờ** nhận URL từ query param — đó là open-redirect.
    `buildTargetUrl()` chỉ được *thêm* param vào URL đã whitelist.
+   Sửa URL đích (`updateDestination`) cũng PHẢI đi qua `destinationSchema` (qua `destinationUpdateSchema` = `.extend`) —
+   luật chỉ http/https là toàn bộ phòng thủ chống `javascript:`/`data:` vào whitelist, đừng thêm đường ghi `url` nào khác;
+   và phải `invalidateRouteCache()` vì routing map trong RAM mang theo URL cũ.
 
 4. **`clickEvents` có TTL index; `conversions` có unique index trên `clickId`.**
    TTL vì M0 chỉ 512MB. Unique để postback idempotent — advertiser nào cũng retry.

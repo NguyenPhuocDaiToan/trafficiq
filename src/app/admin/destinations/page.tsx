@@ -11,8 +11,8 @@ import {
   Tr,
   inputClass,
 } from "@/components/ui";
-import { createDestination, setDestinationStatus } from "@/lib/control-plane/actions";
-import { listActiveOptions, listDestinations } from "@/lib/control-plane/queries";
+import { createDestination, setDestinationStatus, updateDestination } from "@/lib/control-plane/actions";
+import { listActiveOptions, listAdvertisers, listDestinations } from "@/lib/control-plane/queries";
 import { formatDateTime } from "@/lib/labels";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,13 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "URL đích" };
 
 export default async function DestinationsPage() {
-  const [rows, options] = await Promise.all([listDestinations(), listActiveOptions()]);
+  const [rows, options, allAdvertisers] = await Promise.all([
+    listDestinations(),
+    listActiveOptions(),
+    // Form sửa cần cả đối tác chưa active: đích có thể đang thuộc về một đối tác đã tạm dừng, và nếu ô chọn
+    // không có họ thì bấm Lưu sẽ âm thầm đổi chủ của đích sang người đứng đầu danh sách.
+    listAdvertisers(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -108,7 +114,7 @@ export default async function DestinationsPage() {
                     <td className="px-3 py-2 font-mono text-xs tabular-nums text-muted-foreground">
                       {formatDateTime(row.updatedAt)}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 align-top">
                       <div className="flex gap-2">
                         <StatusButton
                           action={setDestinationStatus}
@@ -123,6 +129,41 @@ export default async function DestinationsPage() {
                           label="Tạm dừng"
                         />
                       </div>
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-xs font-medium text-primary">Sửa</summary>
+                        <ActionForm
+                          action={updateDestination}
+                          submitLabel="Lưu"
+                          submitVariant="secondary"
+                          resetOnSuccess={false}
+                          className="mt-2 flex w-80 max-w-full flex-col gap-3"
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <Field label="Đối tác">
+                            <select name="advertiserId" required defaultValue={row.advertiserId} className={inputClass}>
+                              {allAdvertisers.map((advertiser) => (
+                                <option key={advertiser.id} value={advertiser.id}>
+                                  {advertiser.status === "active"
+                                    ? advertiser.name
+                                    : `${advertiser.name} (${advertiser.status === "paused" ? "đã tạm dừng" : "chờ duyệt"})`}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field label="URL đích">
+                            <input name="url" required defaultValue={row.url} className={inputClass} />
+                          </Field>
+                          <Field label="Phân loại">
+                            <input name="category" required defaultValue={row.category} className={inputClass} />
+                          </Field>
+                          {row.status === "active" ? (
+                            <p className="text-xs text-warning">
+                              Đích đang chạy: sau khi lưu, người bấm link sẽ được chuyển tới URL mới trong tối đa
+                              khoảng 1 phút.
+                            </p>
+                          ) : null}
+                        </ActionForm>
+                      </details>
                     </td>
                   </Tr>
                 ))

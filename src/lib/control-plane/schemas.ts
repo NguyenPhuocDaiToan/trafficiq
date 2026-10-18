@@ -13,6 +13,9 @@ export const advertiserSchema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+/** Sửa đối tác: cùng field với lúc tạo (không đổi trạng thái — đó là việc của công tắc riêng). */
+export const advertiserUpdateSchema = advertiserSchema.extend({ id: objectIdSchema });
+
 /**
  * Validate URL đích trước khi vào whitelist.
  * Chỉ http/https — chặn javascript:, data:, file: ngay từ cửa vào.
@@ -37,6 +40,13 @@ export const destinationSchema = z.object({
     }, "URL phải là http(s) hợp lệ"),
   category: z.string().trim().min(2).max(60),
 });
+
+/**
+ * Sửa URL đích: cùng field với lúc tạo. Dùng `.extend` trên chính `destinationSchema` để form tạo và form sửa
+ * không bao giờ lệch luật kiểm URL (chỉ http/https) — lệch ở đây là mở đường cho `javascript:`/`data:` lọt vào
+ * whitelist bằng đường sửa.
+ */
+export const destinationUpdateSchema = destinationSchema.extend({ id: objectIdSchema });
 
 /**
  * Field ảnh của campaign: rỗng, link http(s) tuyệt đối, hoặc đường dẫn ảnh đã tải

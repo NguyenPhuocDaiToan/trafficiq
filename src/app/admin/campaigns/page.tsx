@@ -12,6 +12,13 @@ import {
   linkPrimaryClass,
 } from "@/components/ui";
 import { createOffer, setCampaignStatus, setOfferStatus } from "@/lib/control-plane/actions";
+import {
+  countByStatus,
+  filterCampaigns,
+  filterHref,
+  parseCampaignFilter,
+  type CampaignFilter,
+} from "@/lib/control-plane/campaign-filter";
 import { listActiveOptions, listCampaigns } from "@/lib/control-plane/queries";
 import { resolveShareBase } from "@/lib/domains/links";
 import { verifiedHostSet } from "@/lib/domains/registry";
@@ -31,15 +38,28 @@ export const metadata = { title: "Chiến dịch" };
 export default async function CampaignsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ new?: string; reactivated?: string }>;
+  searchParams: Promise<{ new?: string; reactivated?: string; status?: string }>;
 }) {
-  const [{ new: createdSlug, reactivated }, campaigns, options, verified] = await Promise.all([
+  const [{ new: createdSlug, reactivated, status }, allCampaigns, options, verified] = await Promise.all([
     searchParams,
     listCampaigns(),
     listActiveOptions(),
     verifiedHostSet(),
   ]);
   const baseUrl = publicBaseUrl();
+
+  // Mặc định chỉ hiện chiến dịch ĐANG CHẠY (xem `campaign-filter.ts`). Đếm trên toàn bộ trước khi lọc để các tab
+  // luôn nói đúng "còn bao nhiêu chiến dịch tạm dừng", kể cả khi chúng đang bị ẩn.
+  const filter = parseCampaignFilter(status);
+  const counts = countByStatus(allCampaigns);
+  const campaigns = filterCampaigns(allCampaigns, filter);
+  const tabs: { filter: CampaignFilter; label: string }[] = [
+    { filter: "active", label: "Đang chạy" },
+    { filter: "paused", label: "Tạm dừng" },
+    // "Chờ duyệt" chỉ còn ở dữ liệu cũ (thứ mới tạo chạy ngay): chỉ hiện khi thật sự có.
+    ...(counts.pending > 0 ? [{ filter: "pending" as const, label: "Chờ duyệt" }] : []),
+    { filter: "all", label: "Tất cả" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -65,7 +85,30 @@ export default async function CampaignsPage({
         </p>
       ) : null}
 
-      {campaigns.length === 0 ? (
+      {allCampaigns.length > 0 ? (
+        <nav aria-label="Lọc chiến dịch theo trạng thái" className="flex flex-wrap gap-1 border-b border-border">
+          {tabs.map((tab) => {
+            const current = tab.filter === filter;
+            return (
+              <Link
+                key={tab.filter}
+                href={filterHref(tab.filter)}
+                aria-current={current ? "page" : undefined}
+                className={`-mb-px cursor-pointer border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                  current
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}{" "}
+                <span className="font-mono text-xs tabular-nums text-muted-foreground">{counts[tab.filter]}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      ) : null}
+
+      {allCampaigns.length === 0 ? (
         <Card title="Chưa có chiến dịch nào">
           <p className="text-sm text-muted-foreground">
             Bấm{" "}
@@ -76,6 +119,16 @@ export default async function CampaignsPage({
               Tạo chiến dịch
             </Link>{" "}
             để bắt đầu.
+          </p>
+        </Card>
+      ) : campaigns.length === 0 ? (
+        <Card title={`Không có chiến dịch nào ở mục “${tabs.find((t) => t.filter === filter)?.label ?? "này"}”`}>
+          <p className="text-sm text-muted-foreground">
+            {filter === "active" ? "Hiện không có chiến dịch nào đang chạy." : "Mục này đang trống."}{" "}
+            <Link href={filterHref("all")} className="cursor-pointer text-primary underline">
+              Xem tất cả ({counts.all})
+            </Link>
+            .
           </p>
         </Card>
       ) : (

@@ -123,7 +123,7 @@ export const LESSONS: readonly Lesson[] = [
       {
         target: "cf-urls",
         title: "Dán URL đích",
-        body: "Địa chỉ trang đối tác mà người bấm link được chuyển tới. Nhiều URL (mỗi dòng một) thì traffic chia đều. URL mới tự được kích hoạt, đối tác tự lấy hoặc tự tạo theo URL.",
+        body: "Nơi người bấm link được chuyển tới. Bấm vào ô để CHỌN URL đã lưu ở Cài đặt → URL đích, hoặc dán URL mới (tự được lưu và kích hoạt). “Thêm URL đích khác” để chia đều traffic cho nhiều đích.",
       },
       {
         target: "cf-headline",

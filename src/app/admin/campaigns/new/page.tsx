@@ -4,7 +4,7 @@ import { CampaignFields } from "@/components/campaign-fields";
 import { CreatedLinkPanel } from "@/components/created-link-panel";
 import { Card } from "@/components/ui";
 import { createCampaign } from "@/lib/control-plane/actions";
-import { getCreatedCampaign, listActiveOptions } from "@/lib/control-plane/queries";
+import { getCreatedCampaign, listActiveOptions, listDestinations } from "@/lib/control-plane/queries";
 import { resolveShareBase } from "@/lib/domains/links";
 import { verifiedHostSet } from "@/lib/domains/registry";
 import { publicBaseUrl } from "@/lib/env";
@@ -31,9 +31,10 @@ export default async function NewCampaignPage({
   searchParams: Promise<{ created?: string; reactivated?: string }>;
 }) {
   const { created: createdSlug, reactivated } = await searchParams;
-  const [options, domains, created] = await Promise.all([
+  const [options, domains, destinations, created] = await Promise.all([
     listActiveOptions(),
     verifiedHostSet(),
+    listDestinations(),
     createdSlug ? getCreatedCampaign(createdSlug) : Promise.resolve(null),
   ]);
 
@@ -72,7 +73,14 @@ export default async function NewCampaignPage({
           submitLabel="Tạo link"
           className="grid gap-5"
         >
-          <CampaignFields advertisers={options.advertisers} domains={[...domains]} />
+          <CampaignFields
+            advertisers={options.advertisers}
+            domains={[...domains]}
+            // Gợi ý chọn từ danh sách đích đã lưu (đang chạy). Dán URL mới vẫn được và tự được lưu thêm.
+            destinationChoices={destinations
+              .filter((d) => d.status === "active")
+              .map((d) => ({ url: d.url, label: `${d.advertiserName} · ${d.category}` }))}
+          />
         </ActionForm>
       </Card>
     </div>

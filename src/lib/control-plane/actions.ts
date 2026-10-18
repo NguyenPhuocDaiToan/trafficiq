@@ -283,6 +283,12 @@ export async function createCampaign(
 ): Promise<ActionResult> {
   const user = await requireUser();
   const input = fields(formData);
+  // `destinationUrls` có thể xuất hiện nhiều lần (mỗi hàng của ô chọn URL là một input cùng tên): `fields()` chỉ giữ
+  // giá trị cuối, nên gom đủ bằng `getAll`.
+  input.destinationUrls = formData
+    .getAll("destinationUrls")
+    .filter((value): value is string => typeof value === "string")
+    .join("\n");
 
   // 1. URL đích: bắt buộc, mỗi URL qua `destinationSchema` (luật http/https duy nhất).
   const list = parseDestinationUrls(input.destinationUrls);

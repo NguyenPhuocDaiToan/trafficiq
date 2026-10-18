@@ -1,11 +1,9 @@
 import { CampaignNameSlugFields } from "@/components/campaign-name-slug-fields";
+import { DestinationPicker, type DestinationChoice } from "@/components/destination-picker";
 import { ImageUrlField } from "@/components/image-url-field";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Field, FormSection, inputClass } from "@/components/ui";
-import {
-  DEFAULT_AUTO_REDIRECT_SECONDS,
-  MAX_DESTINATIONS_PER_CAMPAIGN,
-} from "@/lib/control-plane/campaign-defaults";
+import { DEFAULT_AUTO_REDIRECT_SECONDS } from "@/lib/control-plane/campaign-defaults";
 import type { CampaignEditView } from "@/lib/control-plane/queries";
 import { legacyBodyToHtml } from "@/lib/landing/legacy-body";
 
@@ -28,8 +26,11 @@ export function CampaignFields({
   advertisers,
   campaign,
   domains,
+  destinationChoices = [],
 }: {
   advertisers: { id: string; name: string }[];
+  /** URL đích đang chạy, để form TẠO gợi ý chọn từ danh sách đã lưu (Cài đặt → URL đích). */
+  destinationChoices?: DestinationChoice[];
   /** Có = đang sửa (nạp giá trị cũ). Không có = đang tạo mới. */
   campaign?: CampaignEditView;
   /** Tên miền đang `verified` (xem `verifiedHostSet`). Rỗng = form không hiện ô chọn. */
@@ -75,21 +76,7 @@ export function CampaignFields({
           defaultValue={undefined}
         />
 
-        <Field
-          label="URL đích"
-          tour="cf-urls"
-          help={`Nơi người bấm link được chuyển tới. Nhiều URL (mỗi dòng một, tối đa ${MAX_DESTINATIONS_PER_CAMPAIGN}) thì traffic chia đều.`}
-        >
-          <textarea
-            name="destinationUrls"
-            required
-            rows={2}
-            spellCheck={false}
-            autoComplete="off"
-            className={inputClass}
-            placeholder="https://offer.example.com/landing"
-          />
-        </Field>
+        <DestinationPicker choices={destinationChoices} />
 
         <Field
           label="Tiêu đề"

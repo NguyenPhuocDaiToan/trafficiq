@@ -300,9 +300,10 @@ export default function GuidePage() {
                 bằng Ctrl+V, hoặc dán link ảnh.
               </Term>
               <Term name="URL đích">
-                Nơi người bấm link được chuyển tới. Nhiều URL (mỗi dòng một, tối đa 5) thì traffic chia đều.
-                URL mới tự được thêm vào danh sách cho phép và kích hoạt; URL đã có thì dùng lại. Đối tác
-                lấy theo URL đích, chưa có thì tự tạo theo tên miền.
+                Nơi người bấm link được chuyển tới. Bấm vào ô để <strong>chọn</strong> một URL đã lưu ở{" "}
+                <GuideLink href="/admin/destinations">Cài đặt → URL đích</GuideLink>, hoặc dán URL mới — nó
+                tự được thêm vào danh sách và kích hoạt. Bấm &ldquo;Thêm URL đích khác&rdquo; (tối đa 5) thì
+                traffic chia đều. Đối tác lấy theo URL đích, chưa có thì tự tạo theo tên miền.
               </Term>
               <Term name="Tiêu đề (không bắt buộc)">
                 Hiện trên thẻ chia sẻ. Để trống thì dùng tên miền của URL đích.
